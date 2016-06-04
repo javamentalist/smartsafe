@@ -2,6 +2,7 @@ import Promise from 'bluebird'
 import request from 'request'
 import { doAuthentication } from './dropboxAuth.js'
 import fetch from 'node-fetch'
+import fs from 'fs'
 
 export default class DropboxClient {
   constructor (key, secret) {
@@ -31,6 +32,29 @@ export default class DropboxClient {
         path: folder,
         recursive: false
       })
+    }).then((res) => {
+      return res.json()
+    })
+  }
+
+  upload (localFile, dropboxPath) {
+    const URL = 'https://content.dropboxapi.com/2/files/upload'
+
+    const options = {
+      path: dropboxPath,
+      mode: 'add',
+      autorename: true,
+      mute: false
+    }
+
+    return fetch(URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+        'Content-Type': 'application/octet-stream',
+        'Dropbox-API-Arg': JSON.stringify(options)
+      },
+      body: fs.createReadStream(localFile)
     }).then((res) => {
       return res.json()
     })
