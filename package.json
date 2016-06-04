@@ -1,0 +1,23 @@
+{
+  "name": "lockbox",
+  "version": "0.0.1",
+  "description": "Dropbox file syncing",
+  "main": "index.js",
+  "scripts": {
+    "start": "babel-node app/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node.js",
+    "dropbox"
+  ],
+  "author": "Jaan Lambert",
+  "license": "MIT",
+  "dependencies": {
+    "babel-preset-es2015": "^6.3.13",
+    "bluebird": "^3.3.3",
+    "chokidar": "^1.4.3",
+    "lodash": "^4.13.1",
+    "request": "^2.72.0"
+  }
+}
