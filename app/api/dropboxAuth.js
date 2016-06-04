@@ -69,7 +69,7 @@ const getToken = (id, code, secret) => {
   })
 }
 
-export const authenticate = (id, secret) => {
+export const doAuthentication = (id, secret) => {
   return new Promise((resolve, reject) => {
     listenForOAuthCallback(id, secret).then((token) => {
       setToken(token)
