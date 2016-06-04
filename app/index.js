@@ -8,7 +8,8 @@ const FILE_DIR = `${HOME_DIR}/Lockbox`
 const dropboxClient = new DropboxClient(authData.key, authData.secret)
 
 dropboxClient.authenticate().then(() => {
-  return readDir(FILE_DIR) 
+  dropboxClient.listFolder()
+  return readDir(FILE_DIR)
 }).then((files) => {
   console.log(files)
 })
