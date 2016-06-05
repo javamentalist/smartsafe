@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
 import chalk from 'chalk'
+import { isString } from 'lodash'
 
 const formatErrorMessage = (url, status, msg) => {
   return chalk.red('ERROR: ') + `${url} failed with status: ${status}. Message: ${msg}`
@@ -24,7 +25,7 @@ export const post = (url, headers, body) => {
   const options = {
     method: 'POST',
     headers,
-    body: JSON.stringify(body)
+    body: isString(body) ? JSON.stringify(body) : body
   }
 
   return fetch(url, options)
