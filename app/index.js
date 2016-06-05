@@ -18,7 +18,8 @@ dropboxClient.authenticate().then(() => {
     return dropboxClient.upload(`${FILE_DIR}/${file}`, `/${file}`)
   })
 
-  Promise.all(promises).then(() => {
+  Promise.all(promises).then((results) => {
+    console.log(results)
     console.log('Upload complete!')
   })
 })

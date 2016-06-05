@@ -57,6 +57,27 @@ export default class DropboxClient {
       body: fs.createReadStream(localFile)
     }).then((res) => {
       return res.json()
+    }).then((json) => {
+      return this.createSharedLink(json.path_display)
+    })
+  }
+
+  createSharedLink (path) {
+    const URL = 'https://api.dropboxapi.com/2/sharing/create_shared_link'
+
+    const options = {
+      path
+    }
+
+    return fetch(URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(options)
+    }).then((res) => {
+      return res.json()
     })
   }
 }
