@@ -1,14 +1,17 @@
-import DropboxClient from './api/dropboxApi.js'
-import { readDir } from './utils/fileUtils.js'
-import authData from '../dropbox-auth.json'
 import Promise from 'bluebird'
+import DropboxClient from './api/dropboxApi.js'
+import authData from '../dropbox-auth.json'
+import { readDir } from './utils/fileUtils.js'
+import EthereumClient from './api/ethereum/ethereumApi.js'
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE
 const FILE_DIR = `${HOME_DIR}/Lockbox`
 const IGNORED_FILES = ['.DS_Store']
 
 const dropboxClient = new DropboxClient(authData.key, authData.secret)
+const ethereumClient = new EthereumClient()
 
+/*
 dropboxClient.authenticate().then(() => {
   return readDir(FILE_DIR)
 }).then((files) => {
@@ -23,3 +26,4 @@ dropboxClient.authenticate().then(() => {
     console.log('Upload complete!')
   })
 })
+*/
