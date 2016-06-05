@@ -3,11 +3,19 @@ import request from 'request'
 import { doAuthentication } from './dropboxAuth.js'
 import fetch from 'node-fetch'
 import fs from 'fs'
+import { post } from './apiUtils.js'
 
 export default class DropboxClient {
   constructor (key, secret) {
     this.key = key
     this.secret = secret
+  }
+
+  getDefaultHeaders () {
+    return {
+      'Authorization': `Bearer ${this.token}`,
+      'Content-Type': 'application/json'
+    }
   }
 
   authenticate () {
@@ -38,46 +46,27 @@ export default class DropboxClient {
   }
 
   upload (localFile, dropboxPath) {
-    const URL = 'https://content.dropboxapi.com/2/files/upload'
+    const url = 'https://content.dropboxapi.com/2/files/upload'
 
-    const options = {
-      path: dropboxPath,
-      mode: 'add',
-      autorename: true,
-      mute: false
+    const options = { path: dropboxPath }
+    const headers = {
+      'Authorization': `Bearer ${this.token}`,
+      'Content-Type': 'application/octet-stream',
+      'Dropbox-API-Arg': JSON.stringify(options)
     }
+    const body = fs.createReadStream(localFile)
 
-    return fetch(URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.token}`,
-        'Content-Type': 'application/octet-stream',
-        'Dropbox-API-Arg': JSON.stringify(options)
-      },
-      body: fs.createReadStream(localFile)
-    }).then((res) => {
-      return res.json()
-    }).then((json) => {
-      return this.createSharedLink(json.path_display)
-    })
+    return post(url, headers, body)
+      .then((json) => {
+        console.log(json)
+        return this.createSharedLink(json.path_display)
+      })
   }
 
   createSharedLink (path) {
-    const URL = 'https://api.dropboxapi.com/2/sharing/create_shared_link'
+    const url = 'https://api.dropboxapi.com/2/sharing/create_shared_link'
+    const body = { path }
 
-    const options = {
-      path
-    }
-
-    return fetch(URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(options)
-    }).then((res) => {
-      return res.json()
-    })
+    return post(url, this.getDefaultHeaders(), body)
   }
 }
