@@ -8,12 +8,12 @@ export default class EthereumClient {
     web3.eth.defaultAccount = web3.eth.coinbase;
     this.web3 = web3
 
-    const test = new Contract('test', web3)
-    test.load().then(() => {
-      console.log(test.contract)
-      console.log(+test.contract.multiply(3))
+    const File = new Contract('FileSharing', 'file', web3)
+    File.load().then(() => {
+      File.contract.saveFile('6d12a41e72e644f017b6f0e2f7b44c6285f06dd5d2c5b075', 'www.dropbox.com')
     }).catch((e) => {
-      console.log(e) 
+      console.log('hi')
+      console.log(e)
     })
   }
 }

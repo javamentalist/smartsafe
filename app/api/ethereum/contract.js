@@ -2,17 +2,18 @@ import path from 'path'
 import fs from 'fs'
 
 export default class Contract {
-  constructor (name, web3) {
+  constructor (name, fileName, web3) {
     this.name = name
+    this.fileName = fileName
     this.web3 = web3
   }
 
   load () {
     return new Promise((resolve, reject) => {
-      const source = this.getSource(this.name)
+      const source = this.getSource(this.fileName)
       const compiled = this.web3.eth.compile.solidity(source);
-      const code = compiled.test.code;
-      const abi = compiled.test.info.abiDefinition;
+      const code = compiled[this.name].code;
+      const abi = compiled[this.name].info.abiDefinition;
       this.web3.eth.contract(abi).new({data: code}, (err, contract) => {
         if (err) return reject(err)
         
