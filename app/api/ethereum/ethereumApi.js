@@ -11,15 +11,15 @@ export default class EthereumClient {
       console.log('Failed to connect to etherium network')
     }
     this.web3 = web3
+    this.file = new Contract('FileSharing', 'file', web3)
+  }
 
-    const File = new Contract('FileSharing', 'file', web3)
-    const batch = web3.createBatch()
-    File.load().then(() => {
-      File.contract.saveFile('www.dropbox.com', (error) => {
-        console.log(File.contract.getLink.call(0))
+  addFile (hash, link) {
+    this.file.getContract().then((contract) => {
+      contract.saveFile(hash, link, (error) => {
+        console.log(contract.getLink.call(hash))
       })
     }).catch((e) => {
-      console.log('hi')
       console.log(e)
     })
   }

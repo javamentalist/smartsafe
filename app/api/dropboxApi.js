@@ -58,7 +58,6 @@ export default class DropboxClient {
 
     return post(url, headers, body)
       .then((json) => {
-        console.log(json)
         return this.createSharedLink(json.path_display)
       })
   }

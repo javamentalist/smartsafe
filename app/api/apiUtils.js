@@ -12,7 +12,7 @@ const checkStatus = (res) => {
       return resolve(res)
     }
 
-    res.json().then((json) => {
+    res.text().then((json) => {
       console.log(formatErrorMessage(res.url, res.status, json.error_summary))
       reject(json)
     })
@@ -25,7 +25,7 @@ export const post = (url, headers, body) => {
   const options = {
     method: 'POST',
     headers,
-    body: isString(body) ? JSON.stringify(body) : body
+    body: isString(body) ? body : JSON.stringify(body)
   }
 
   return fetch(url, options)

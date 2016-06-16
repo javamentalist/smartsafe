@@ -16,15 +16,23 @@ export default class Contract {
       const abi = compiled[this.name].info.abiDefinition;
       this.web3.eth.contract(abi).new({data: code}, (err, contract) => {
         if (err) return reject(err)
-        
+
         if (contract.address) {
           this.contract = contract;
-          resolve()
+          resolve(this.contract)
         }
       })
     })
   }
-  
+
+  getContract () {
+    return new Promise((resolve, reject) => {
+      if (this.contract) resolve(this.contract)
+
+      this.load().then(resolve).catch(reject)
+    })
+  }
+
   getSource (contractName) {
     const filePath = path.join(__dirname, `contracts/${contractName}.sol`)
     return fs.readFileSync(filePath, 'utf8')

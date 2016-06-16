@@ -9,16 +9,14 @@ contract FileSharing {
     string link;
   }
 
-  mapping (uint => File) files;
-  uint numFiles;
+  mapping (string => File) files;
 
-  function saveFile(string link) returns (uint fileId) {
-    fileId = numFiles++;
-    files[fileId].owner = msg.sender;
-    files[fileId].link = link;
+  function saveFile(string hash, string link) returns (uint fileId) {
+    files[hash].owner = msg.sender;
+    files[hash].link = link;
   }
 
-  function getLink(uint id) returns (string link) {
-    link = files[id].link;
+  function getLink(string hash) returns (string link) {
+    link = files[hash].link;
   }
 }
