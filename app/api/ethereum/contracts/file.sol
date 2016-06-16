@@ -14,7 +14,7 @@ contract FileSharing {
 
   function saveFile(string link) returns (uint fileId) {
     fileId = numFiles++;
-    files[fileId].owner = msg.sender; 
+    files[fileId].owner = msg.sender;
     files[fileId].link = link;
   }
 
