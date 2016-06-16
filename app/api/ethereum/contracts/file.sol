@@ -9,16 +9,16 @@ contract FileSharing {
     string link;
   }
 
-  mapping (bytes24 => File) filesMap;
-  File[] filesArr;
+  mapping (uint => File) files;
+  uint numFiles;
 
-  function saveFile(bytes24 hash, string link) constant returns(bool success) {
-    filesMap[hash] = File(msg.sender, link);
-    filesArr.push(File(msg.sender, link));
-    return true;
+  function saveFile(string link) returns (uint fileId) {
+    fileId = numFiles++;
+    files[fileId].owner = msg.sender; 
+    files[fileId].link = link;
   }
 
-  function getFile() constant returns(uint length) {
-    return filesArr.length;
+  function getLink(uint id) returns (string link) {
+    link = files[id].link;
   }
 }
