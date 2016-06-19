@@ -9,7 +9,7 @@ export default class Contract {
   }
 
   load () {
-    return new Promise((resolve, reject) => {
+    this.loadPromise = new Promise((resolve, reject) => {
       const source = this.getSource(this.fileName)
       const compiled = this.web3.eth.compile.solidity(source);
       const code = compiled[this.name].code;
@@ -23,12 +23,14 @@ export default class Contract {
         }
       })
     })
+
+    return this.loadPromise
   }
 
   getContract () {
-    return new Promise((resolve, reject) => {
-      if (this.contract) resolve(this.contract)
+    if (this.loadPromise) return this.loadPromise
 
+    return new Promise((resolve, reject) => {
       this.load().then(resolve).catch(reject)
     })
   }
