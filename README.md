@@ -1,3 +1,4 @@
-## Node filer
+## Lockbox
 
-P2P file syncing application in node.js
+Secure and private cloud storage application.
+Using Dropbox for data storage and ethereum network for backuping data.
