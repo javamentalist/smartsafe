@@ -8,35 +8,52 @@ export default class Contract {
     this.web3 = web3
   }
 
-  load () {
+  load (address) {
     this.loadPromise = new Promise((resolve, reject) => {
-      const source = this.getSource(this.fileName)
-      const compiled = this.web3.eth.compile.solidity(source);
-      const code = compiled[this.name].code;
-      const abi = compiled[this.name].info.abiDefinition;
-      this.web3.eth.contract(abi).new({data: code}, (err, contract) => {
-        if (err) return reject(err)
+      this.getSource(this.fileName).then((source) => {
+        this.web3.eth.compile.solidity(source, (err, compiled) => {
+          if (err) return reject(err)
 
-        if (contract.address) {
-          this.contract = contract;
-          resolve(this.contract)
-        }
-      })
+          const code = compiled[this.name].code;
+          const abi = compiled[this.name].info.abiDefinition;
+
+          if (address) {
+            const contract = this.web3.eth.contract(abi).at(address)
+            this.contract = contract;
+            resolve(this.contract)
+          } else {
+            this.web3.eth.contract(abi).new({data: code}, (err, contract) => {
+              if (err) return reject(err)
+
+              if (contract.address) {
+                this.contract = contract;
+                resolve(this.contract)
+              }
+            })
+          }
+        })
+      }).catch(reject)
     })
 
     return this.loadPromise
   }
 
-  getContract () {
+  getContract (address) {
     if (this.loadPromise) return this.loadPromise
 
     return new Promise((resolve, reject) => {
-      this.load().then(resolve).catch(reject)
+      this.load(address).then(resolve).catch(reject)
     })
   }
 
   getSource (contractName) {
     const filePath = path.join(__dirname, `contracts/${contractName}.sol`)
-    return fs.readFileSync(filePath, 'utf8')
+    return new Promise((resolve, reject) => {
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) return reject(err)
+
+        resolve(data)
+      })
+    })
   }
 }
