@@ -3,3 +3,4 @@ data
 npm-debug.log
 dropbox-auth.json
 .DS_Store
+contracts.json
