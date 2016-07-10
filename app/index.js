@@ -4,16 +4,19 @@ import authData from '../dropbox-auth.json'
 import { readDir } from './utils/fileUtils.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
 import crypto from 'crypto'
+import contractAddresses from '../contracts.json'
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE
 const FILE_DIR = `${HOME_DIR}/Lockbox`
 const IGNORED_FILES = ['.DS_Store']
 
 const dropboxClient = new DropboxClient(authData.key, authData.secret)
-const ethereumClient = new EthereumClient()
+const ethereumClient = new EthereumClient(contractAddresses)
+
+ethereumClient.watchFileChanges()
 
 const saveFileToEthereum = (data) => {
-  const hash = crypto.createHash('sha256').update(data.url).digest("hex")
+  const hash = crypto.createHash('sha256').update(data.url).digest('hex')
   ethereumClient.addFile(hash, data.url)
 }
 
@@ -32,3 +35,5 @@ dropboxClient.authenticate().then(() => {
     console.log('Upload complete!')
   })
 })
+
+console.log(contractAddresses)
