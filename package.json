@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "babel-node app/index.js",
+    "testrpc": "babel-node testrpc.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -18,6 +19,7 @@
     "bluebird": "^3.3.3",
     "chalk": "^1.1.3",
     "chokidar": "^1.4.3",
+    "ethereumjs-testrpc": "^2.0.9",
     "lodash": "^4.13.1",
     "node-fetch": "^1.5.3",
     "request": "^2.72.0",
