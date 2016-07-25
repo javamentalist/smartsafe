@@ -1,10 +1,12 @@
 [
   {
-    "balance": "0x186A0",
+    "balance": "0x186A0000000000000F",
+    "address": "0xb998e0d04e06008e3a0430e93630b73d0e56862e",
     "secretKey": "0x850b243e398eae19bf3e7622bde89ed389d1641cb181b22cb93f7c75e0b91e63"
   },
   {
-    "balance": "0x186A0",
+    "balance": "0x186A00000000000000F",
+    "address": "0x9be9c448e9193f5d33394372b4a74bb738c406d0",
     "secretKey": "0x434cbbd4395e0e3688fd2cabab8cbcb5fec6ee7645bd4cc4868b023d2bef9f6c"
   }
-]    
+]
