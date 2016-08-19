@@ -1,6 +1,7 @@
 import fetch from 'node-fetch'
 import chalk from 'chalk'
 import { isString } from 'lodash'
+import isStream from 'isstream'
 
 const formatErrorMessage = (url, status, msg) => {
   return chalk.red('ERROR: ') + `${url} failed with status: ${status}. Message: ${msg}`
@@ -21,11 +22,15 @@ const checkStatus = (res) => {
 
 const toJSON = (res) => res.json()
 
+const needToStrigify = (body) => {
+  return !isString(body) && !isStream(body)
+}
+
 export const post = (url, headers, body) => {
   const options = {
     method: 'POST',
     headers,
-    body: isString(body) ? body : JSON.stringify(body)
+    body: needToStrigify(body) ? JSON.stringify(body) : body
   }
 
   return fetch(url, options)

@@ -16,8 +16,6 @@ export default class EthereumClient {
   }
 
   getFileContract () {
-    console.log('getFileContract')
-    console.log(this.contractAddresses)
     if (this.contractAddresses) {
       return this.file.getContract(this.contractAddresses.file)
     } else {
