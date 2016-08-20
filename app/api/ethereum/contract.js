@@ -14,8 +14,8 @@ export default class Contract {
         this.web3.eth.compile.solidity(source, (err, compiled) => {
           if (err) return reject(err)
 
-          const code = compiled[this.name].code;
-          const abi = compiled[this.name].info.abiDefinition;
+          const code = compiled.code;
+          const abi = compiled.info.abiDefinition;
 
           if (address) {
             const contract = this.web3.eth.contract(abi).at(address)
