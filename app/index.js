@@ -8,12 +8,10 @@ import contractAddresses from '../contracts.json'
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE
 const FILE_DIR = `${HOME_DIR}/Lockbox`
-const IGNORED_FILES = ['.DS_Store']
+const IGNORED_FILES = ['.DS_Store', 'temp']
 
 const dropboxClient = new DropboxClient(authData.key, authData.secret)
 const ethereumClient = new EthereumClient(contractAddresses)
-
-ethereumClient.watchFileChanges()
 
 const saveFileToEthereum = (data) => {
   const hash = crypto.createHash('sha256').update(data.url).digest('hex')
@@ -35,5 +33,3 @@ dropboxClient.authenticate().then(() => {
     console.log('Upload complete!')
   })
 })
-
-console.log(contractAddresses)

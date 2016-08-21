@@ -41,13 +41,14 @@ export default class EthereumClient {
     })
   }
 
-  watchFileChanges () {
+  watchFileChanges (callback) {
     const web3 = this.web3
     const filter = web3.eth.filter('latest')
 
     filter.watch((error, result) => {
       this.getFileContract().then((contract) => {
-        console.log('watch: ', contract.getFile.call())
+        const url = contract.getFile.call()[1]
+        callback(url)
       })
     })
   }
