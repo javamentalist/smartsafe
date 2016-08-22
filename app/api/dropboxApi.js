@@ -48,6 +48,7 @@ export default class DropboxClient {
   upload (localFile, dropboxPath) {
     const url = 'https://content.dropboxapi.com/2/files/upload'
 
+    console.log(localFile, dropboxPath)
     const options = { path: dropboxPath }
     const headers = {
       'Authorization': `Bearer ${this.token}`,

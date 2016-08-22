@@ -7,6 +7,7 @@ import request from 'request'
 const SERVER_PORT = 8912
 const REDIRECT_URL = 'http://localhost:8912/oauth_callback'
 const TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token'
+const isServer = process.argv.some(arg => arg === 'SERVER=true')
 
 const getAuthenicationUrl = (id) => {
   const baseUrl = 'https://www.dropbox.com/oauth2/authorize?'
@@ -68,7 +69,7 @@ export const doAuthentication = (id, secret) => {
   return new Promise((resolve, reject) => {
     listenForOAuthCallback(id, secret).then(resolve).catch(reject)
 
-    const proc = spawn('open', ['-a', 'Google Chrome', getAuthenicationUrl(id)])
+    const proc = spawn('open', ['-a', isServer ? 'Safari' : 'Google Chrome', getAuthenicationUrl(id)])
   })
 }
 
