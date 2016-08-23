@@ -52,4 +52,27 @@ export default class EthereumClient {
       })
     })
   }
+
+  addPeer (hash, link) {
+    console.log('addPeer')
+    return new Promise((resolve, reject) => {
+      this.getFileContract().then((contract) => {
+        contract.addPeer(hash, link, (error) => {
+          if (error) reject(error)
+          resolve()
+        })
+      }).catch((e) => {
+        console.log(e)
+      })
+    })
+  }
+
+  getPeer (hash) {
+    console.log('getPeer')
+    return new Promise((resolve, reject) => {
+      this.getFileContract().then((contract) => {
+         resolve(contract.getPeers.call(hash)[1])
+      })
+    })
+  }
 }

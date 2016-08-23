@@ -3,6 +3,7 @@ import DropboxClient from './api/dropboxApi.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
 import https from 'https'
 import fs from 'fs'
+import crypto from 'crypto'
 import { writeFile } from 'fs'
 import authData from '../dropbox-auth.json'
 
@@ -26,18 +27,28 @@ dropboxClient.authenticate().then(() => {
 
 const onNewFile = (url) => {
   // Replace dl=0 with dl=1 to get direct downloadable link
-  url = url.replace(/^https:\/\/www.dropbox.com/, 'https://dl.dropboxusercontent.com')
-  url = url.replace(/0$/, '1')
+  const dlUrl = url
+    .replace(/^https:\/\/www.dropbox.com/, 'https://dl.dropboxusercontent.com')
+    .replace(/0$/, '1')
 
   const filePathRegex = /^https:\/\/dl.dropboxusercontent.com\/s\/[\w\d]+\/(.*)\?dl=1$/
-  const filePath = filePathRegex.exec(url)[1]
+  const filePath = filePathRegex.exec(dlUrl)[1]
   const file = fs.createWriteStream(`${TEMP_DIR}/${filePath}`)
-  https.get(url, (res) => {
+  https.get(dlUrl, (res) => {
     res.pipe(file)
     file.on('finish', () => {
-      console.log(`${TEMP_DIR}/${filePath}`)
       if (filePath) {
-        dropboxClient.upload(`${TEMP_DIR}/${filePath}`, `/${filePath}`)
+        dropboxClient.upload(`${TEMP_DIR}/${filePath}`, `/${filePath}`).then((data) => {
+          console.log('uploaded')
+          const hash = crypto.createHash('sha256').update(url).digest('hex')
+          ethereumClient.addPeer(hash, data.url).then(() => {
+            ethereumClient.getPeer(hash).then((peerUrl) => {
+              console.log('peerUrl', peerUrl)
+            })
+          }).catch((e) => {
+            console.log(e)
+          })
+        })
       }
     })
   }).on('error', (err) => console.log(err))

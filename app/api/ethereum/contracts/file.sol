@@ -36,4 +36,9 @@ contract FileSharing {
   function addPeer(string hash, string link) {
     files[hash].peers.push(Peer(msg.sender, link));
   }
+
+  function getPeers(string hash) returns (address, string) {
+    Peer peer = files[hash].peers[0];
+    return (peer.addr, peer.link);
+  }
 }
