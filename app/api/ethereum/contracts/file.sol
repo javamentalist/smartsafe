@@ -7,16 +7,17 @@ contract FileSharing {
   struct File {
     address owner;
     string link;
+    Peer[] peers;
   }
 
   mapping (string => File) files;
-  File[] fileArr;
+  string[] fileHashes;
   uint fileLen;
 
   function saveFile(string hash, string link) returns (uint fileId) {
     files[hash].owner = msg.sender;
     files[hash].link = link;
-    fileArr.push(File(msg.sender, link));
+    fileHashes.push(hash);
   }
 
   function getLink(string hash) returns (string link) {
@@ -24,9 +25,15 @@ contract FileSharing {
   }
 
   function getFile() returns (address, string) {
-    if (fileArr.length == 0) return (0, '');
-    address owner = fileArr[1].owner;
-    string link = fileArr[1].link;
-    return (owner, link);
+    if (fileHashes.length == 0) return;
+
+    for (uint i = 0; i < fileHashes.length; i++) {
+        File file = files[fileHashes[i]];
+        if (file.peers.length == 0) return (file.owner, file.link);
+    }
+  }
+
+  function addPeer(string hash, string link) {
+    files[hash].peers.push(Peer(msg.sender, link));
   }
 }
