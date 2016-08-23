@@ -20,11 +20,11 @@ contract FileSharing {
     fileHashes.push(hash);
   }
 
-  function getLink(string hash) returns (string link) {
+  function getLink(string hash) constant returns (string link) {
     link = files[hash].link;
   }
 
-  function getFile() returns (address, string) {
+  function getFile() constant returns (address, string) {
     if (fileHashes.length == 0) return;
 
     for (uint i = 0; i < fileHashes.length; i++) {
@@ -37,7 +37,7 @@ contract FileSharing {
     files[hash].peers.push(Peer(msg.sender, link));
   }
 
-  function getPeers(string hash) returns (address, string) {
+  function getPeers(string hash) constant returns (address, string) {
     Peer peer = files[hash].peers[0];
     return (peer.addr, peer.link);
   }
