@@ -66,4 +66,16 @@ export default class DropboxClient {
 
     return post(url, this.getDefaultHeaders(), body)
   }
+
+  getDirectDownloadLink (url) {
+    // Replace dl=0 with dl=1 to get direct downloadable link
+    return url
+      .replace(/^https:\/\/www.dropbox.com/, 'https://dl.dropboxusercontent.com')
+      .replace(/0$/, '1')
+  }
+
+  getFilePathFromUrl (url) {
+    const filePathRegex = /^https:\/\/dl.dropboxusercontent.com\/s\/[\w\d]+\/(.*)\?dl=1$/
+    return filePathRegex.exec(url)[1]
+  }
 }

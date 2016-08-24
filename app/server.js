@@ -27,13 +27,8 @@ dropboxClient.authenticate().then(() => {
 
 const onNewFile = ({ url, hash }) => {
   // Replace dl=0 with dl=1 to get direct downloadable link
-  console.log(url, hash)
-  const dlUrl = url
-    .replace(/^https:\/\/www.dropbox.com/, 'https://dl.dropboxusercontent.com')
-    .replace(/0$/, '1')
-
-  const filePathRegex = /^https:\/\/dl.dropboxusercontent.com\/s\/[\w\d]+\/(.*)\?dl=1$/
-  const filePath = filePathRegex.exec(dlUrl)[1]
+  const dlUrl = dropboxClient.getDirectDownloadLink(url)
+  const filePath = dropboxClient.getFilePathFromUrl(dlUrl)
   const file = fs.createWriteStream(`${TEMP_DIR}/${filePath}`)
   https.get(dlUrl, (res) => {
     res.pipe(file)

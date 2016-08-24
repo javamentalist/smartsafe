@@ -8,6 +8,7 @@ contract FileSharing {
     address owner;
     string link;
     Peer[] peers;
+    string name;
   }
 
   mapping (string => File) files;
@@ -17,16 +18,18 @@ contract FileSharing {
 
   event NewFile (string _hash, string _link);
 
-  function saveFile(string hash, string link) returns (uint fileId) {
+  function saveFile(string hash, string link, string name) returns (uint fileId) {
     files[hash].owner = msg.sender;
     files[hash].link = link;
+    files[hash].name = name;
     fileHashes.push(hash);
     userFiles[msg.sender].push(hash);
     NewFile(hash, link);
   }
 
-  function getLink(string hash) constant returns (string link) {
-    link = files[hash].link;
+  function getFileByHash(string hash) constant returns (string, string) {
+    File file = files[hash];
+    return (file.link, file.name);
   }
 
   function getFile() constant returns (address, string, string) {

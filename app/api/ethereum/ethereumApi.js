@@ -24,9 +24,9 @@ export default class EthereumClient {
     }
   }
 
-  addFile (hash, link) {
+  addFile (hash, link, name) {
     this.getFileContract().then((contract) => {
-      contract.saveFile(hash, link, (error) => {
+      contract.saveFile(hash, link, name, (error) => {
         //console.log(contract.getLink.call(hash))
       })
     }).catch((e) => {
@@ -97,5 +97,17 @@ export default class EthereumClient {
         resolve(hashes)
       })
     })
+  }
+
+  getFile (hash) {
+    return new Promise((resolve, reject) => {
+      this.getFileContract().then((contract) => {
+        console.log(hash)
+        const result = contract.getFileByHash.call(hash)
+        console.log(result)
+        resolve({ link: result[0], name: result[1] })
+      })
+    })
+
   }
 }
