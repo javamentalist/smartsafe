@@ -25,7 +25,7 @@ dropboxClient.authenticate().then(() => {
   ethereumClient.watchFileChanges(onNewFile)
 })
 
-const onNewFile = (url) => {
+const onNewFile = ({ url, hash }) => {
   // Replace dl=0 with dl=1 to get direct downloadable link
   const dlUrl = url
     .replace(/^https:\/\/www.dropbox.com/, 'https://dl.dropboxusercontent.com')
@@ -39,8 +39,6 @@ const onNewFile = (url) => {
     file.on('finish', () => {
       if (filePath) {
         dropboxClient.upload(`${TEMP_DIR}/${filePath}`, `/${filePath}`).then((data) => {
-          console.log('uploaded')
-          const hash = crypto.createHash('sha256').update(url).digest('hex')
           ethereumClient.addPeer(hash, data.url).then(() => {
             ethereumClient.getPeer(hash).then((peerUrl) => {
               console.log('peerUrl', peerUrl)

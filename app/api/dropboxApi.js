@@ -45,23 +45,19 @@ export default class DropboxClient {
     })
   }
 
-  upload (localFile, dropboxPath) {
+  upload (localPath, dropboxPath) {
     const url = 'https://content.dropboxapi.com/2/files/upload'
-
-    console.log('upload')
-    console.log(localFile, dropboxPath)
     const options = { path: dropboxPath }
     const headers = {
       'Authorization': `Bearer ${this.token}`,
       'Content-Type': 'application/octet-stream',
       'Dropbox-API-Arg': JSON.stringify(options)
     }
-    const body = fs.createReadStream(localFile)
+    const stream = fs.createReadStream(localPath)
 
-    return post(url, headers, body)
-      .then((json) => {
-        return this.createSharedLink(json.path_display)
-      })
+    return post(url, headers, stream).then((json) => {
+      return this.createSharedLink(json.path_display)
+    })
   }
 
   createSharedLink (path) {

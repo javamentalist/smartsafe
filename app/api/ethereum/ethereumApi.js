@@ -47,8 +47,10 @@ export default class EthereumClient {
 
     filter.watch((error, result) => {
       this.getFileContract().then((contract) => {
-        const url = contract.getFile.call()[1]
-        callback(url)
+        const results = contract.getFile.call()
+        const url = results[1]
+        const hash = results[2]
+        callback({ url, hash })
       })
     })
   }

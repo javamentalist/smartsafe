@@ -11,6 +11,7 @@ contract FileSharing {
   }
 
   mapping (string => File) files;
+  mapping (address => string[]) userFiles;
   string[] fileHashes;
   uint fileLen;
 
@@ -18,18 +19,19 @@ contract FileSharing {
     files[hash].owner = msg.sender;
     files[hash].link = link;
     fileHashes.push(hash);
+    userFiles[msg.sender].push(hash);
   }
 
   function getLink(string hash) constant returns (string link) {
     link = files[hash].link;
   }
 
-  function getFile() constant returns (address, string) {
+  function getFile() constant returns (address, string, string) {
     if (fileHashes.length == 0) return;
 
     for (uint i = 0; i < fileHashes.length; i++) {
         File file = files[fileHashes[i]];
-        if (file.peers.length == 0) return (file.owner, file.link);
+        if (file.peers.length == 0) return (file.owner, file.link, fileHashes[i]);
     }
   }
 
@@ -40,5 +42,13 @@ contract FileSharing {
   function getPeers(string hash) constant returns (address, string) {
     Peer peer = files[hash].peers[0];
     return (peer.addr, peer.link);
+  }
+
+  function getUserFileCount () constant returns (uint) {
+    return userFiles[msg.sender].length;
+  }
+
+  function getUserFile (uint index) constant returns (string) {
+    return userFiles[msg.sender][index];
   }
 }
