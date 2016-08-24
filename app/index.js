@@ -21,12 +21,16 @@ dropboxClient.authenticate().then(() => {
     return IGNORED_FILES.indexOf(file) === -1
   })
 
-  userFiles.forEach(filePath => {
-    const readStream = fs.createReadStream(`${FILE_DIR}/${filePath}`)
-    createHash(readStream).then(hash => {
-      dropboxClient.upload(`${FILE_DIR}/${filePath}`, `/${filePath}`).then(data => {
-        ethereumClient.addFile(hash, data.url)
+  ethereumClient.getUserFiles().then(hashes => {
+    userFiles.forEach(filePath => {
+      const readStream = fs.createReadStream(`${FILE_DIR}/${filePath}`)
+      createHash(readStream).then(hash => {
+        if (hashes.indexOf(hash) === -1) {
+          dropboxClient.upload(`${FILE_DIR}/${filePath}`, `/${filePath}`).then(data => {
+            ethereumClient.addFile(hash, data.url)
+          })
+        }
       })
     })
-  })
+  }).catch(e => console.log(e))
 })

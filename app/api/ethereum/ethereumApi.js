@@ -1,5 +1,6 @@
 import Web3 from 'web3'
 import Contract from './contract.js'
+import _ from 'lodash'
 
 export default class EthereumClient {
   constructor (contractAddresses) {
@@ -78,6 +79,22 @@ export default class EthereumClient {
     return new Promise((resolve, reject) => {
       this.getFileContract().then((contract) => {
          resolve(contract.getPeers.call(hash)[1])
+      })
+    })
+  }
+
+  getUserFiles () {
+    return new Promise((resolve, reject) => {
+      this.getFileContract().then((contract) => {
+        const fileCount = +contract.getUserFileCount.call()
+        if (!fileCount) return resolve([])
+        const hashes = _.times(fileCount, i => {
+          const result = contract.getUserFile.call(i)
+          return result;
+        }).map(result => {
+          return result
+        })
+        resolve(hashes)
       })
     })
   }
