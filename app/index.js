@@ -14,6 +14,28 @@ const IGNORED_FILES = ['.DS_Store', 'temp']
 const dropboxClient = new DropboxClient(authData.key, authData.secret)
 const ethereumClient = new EthereumClient(contractAddresses)
 
+const syncFiles = (hashes, userFiles) => {
+  const hashPromises = userFiles.map(filePath => {
+    return new Promise((resolve, reject) => {
+      const readStream = fs.createReadStream(`${FILE_DIR}/${filePath}`)
+      createHash(readStream).then((hash) => {
+        resolve({ filePath, hash })
+      })
+    })
+  })
+
+  Promise.all(hashPromises).then(results => {
+    results.forEach(fileData => {
+      const { hash, filePath } = fileData
+      if (hashes.indexOf(hash) === -1) {
+        dropboxClient.upload(`${FILE_DIR}/${filePath}`, `/${filePath}`).then(data => {
+          ethereumClient.addFile(hash, data.url)
+        })
+      }
+    })
+  })
+}
+
 dropboxClient.authenticate().then(() => {
   return readDir(FILE_DIR)
 }).then((files) => {
@@ -21,16 +43,7 @@ dropboxClient.authenticate().then(() => {
     return IGNORED_FILES.indexOf(file) === -1
   })
 
-  ethereumClient.getUserFiles().then(hashes => {
-    userFiles.forEach(filePath => {
-      const readStream = fs.createReadStream(`${FILE_DIR}/${filePath}`)
-      createHash(readStream).then(hash => {
-        if (hashes.indexOf(hash) === -1) {
-          dropboxClient.upload(`${FILE_DIR}/${filePath}`, `/${filePath}`).then(data => {
-            ethereumClient.addFile(hash, data.url)
-          })
-        }
-      })
-    })
-  }).catch(e => console.log(e))
+  ethereumClient.getUserFiles()
+    .then(hashes => syncFiles(hashes, userFiles))
+    .catch(e => console.log(e))
 })
