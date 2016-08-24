@@ -27,6 +27,7 @@ dropboxClient.authenticate().then(() => {
 
 const onNewFile = ({ url, hash }) => {
   // Replace dl=0 with dl=1 to get direct downloadable link
+  console.log(url, hash)
   const dlUrl = url
     .replace(/^https:\/\/www.dropbox.com/, 'https://dl.dropboxusercontent.com')
     .replace(/0$/, '1')

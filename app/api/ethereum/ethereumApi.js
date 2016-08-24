@@ -45,11 +45,15 @@ export default class EthereumClient {
     const web3 = this.web3
     const filter = web3.eth.filter('latest')
 
-    filter.watch((error, result) => {
-      this.getFileContract().then((contract) => {
-        const results = contract.getFile.call()
-        const url = results[1]
-        const hash = results[2]
+    this.getFileContract().then((contract) => {
+      contract.allEvents().watch((error, result) => {
+        if (error) {
+          console.log('Error', error)
+          return
+        }
+
+        const url = result.args._link
+        const hash = result.args._hash
         callback({ url, hash })
       })
     })

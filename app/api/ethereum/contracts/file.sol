@@ -15,11 +15,14 @@ contract FileSharing {
   string[] fileHashes;
   uint fileLen;
 
+  event NewFile (string _hash, string _link);
+
   function saveFile(string hash, string link) returns (uint fileId) {
     files[hash].owner = msg.sender;
     files[hash].link = link;
     fileHashes.push(hash);
     userFiles[msg.sender].push(hash);
+    NewFile(hash, link);
   }
 
   function getLink(string hash) constant returns (string link) {
