@@ -27,6 +27,7 @@
     "web3": "^0.17.0-alpha"
   },
   "devDependencies": {
+    "babel-cli": "^6.16.0",
     "solc": "^0.4.2"
   }
 }
