@@ -25,5 +25,8 @@
     "node-fetch": "^1.5.3",
     "request": "^2.72.0",
     "web3": "^0.17.0-alpha"
+  },
+  "devDependencies": {
+    "solc": "^0.4.2"
   }
 }
