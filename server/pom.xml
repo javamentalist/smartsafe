@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>safebox</groupId>
-	<artifactId>safebox-server</artifactId>
+	<groupId>smartsafe</groupId>
+	<artifactId>smartsafe-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
@@ -13,8 +13,8 @@
 	</parent>
 	
 	<modules>
-		<module>safebox-rest-api</module>
-		<module>safebox-rest-service</module>
-		<module>safebox-rest-dao</module>
+		<module>smartsafe-rest-api</module>
+		<module>smartsafe-rest-service</module>
+		<module>smartsafe-rest-dao</module>
 	</modules>
 </project>
