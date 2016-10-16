@@ -19,6 +19,12 @@ local.properties
 .loadpath
 .recommenders
 
+#IDEA
+.idea/
+
+#truffle
+client/build/
+
 # Images
 *.jpg
 *.png

@@ -1,5 +1,5 @@
 {
-  "name": "lockbox",
+  "name": "smartsafe",
   "version": "0.0.1",
   "description": "Dropbox file syncing",
   "main": "index.js",
