@@ -11,9 +11,9 @@ export default class EthereumClient {
     try {
       web3.eth.defaultAccount = web3.eth.coinbase
     } catch(e) {
-      console.log('Failed to connect to etherium network')
+      console.log('Failed to connect to ethereum network')
     }
-    this.file = new Contract('FileSharing', 'file', web3)
+    this.file = new Contract('FileSharing', 'FileSharing', web3)
   }
 
   getFileContract () {

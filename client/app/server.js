@@ -8,7 +8,7 @@ import { writeFile } from 'fs'
 import authData from '../dropbox-auth.json'
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE
-const TEMP_DIR = `${HOME_DIR}/LockboxServer`
+const TEMP_DIR = `${HOME_DIR}/serverTemp`
 const ethereumClient = new EthereumClient()
 const dropboxClient = new DropboxClient(authData.key, authData.secret)
 
