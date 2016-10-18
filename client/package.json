@@ -1,6 +1,6 @@
 {
   "name": "smartsafe",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Dropbox file syncing",
   "main": "index.js",
   "scripts": {
@@ -16,18 +16,20 @@
   "author": "Jaan Lambert",
   "license": "MIT",
   "dependencies": {
-    "babel-preset-es2015": "^6.3.13",
-    "bluebird": "^3.3.3",
-    "chalk": "^1.1.3",
+    "bluebird": "^3.4.6",
     "chokidar": "^1.4.3",
-    "ethereumjs-testrpc": "^2.2.0",
     "lodash": "^4.13.1",
     "node-fetch": "^1.5.3",
     "request": "^2.72.0",
-    "web3": "^0.17.0-alpha"
+    "web3": "^0.17.0-beta"
   },
   "devDependencies": {
     "babel-cli": "^6.16.0",
-    "solc": "^0.4.2"
+    "babel-polyfill": "^6.16.0",
+    "babel-preset-es2015": "^6.16.0",
+    "bluebird": "^3.4.6",
+    "chalk": "^1.1.3",
+    "ethereumjs-testrpc": "^2.2.0",
+    "solc": "^0.4.2,"
   }
 }
