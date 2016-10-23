@@ -9,6 +9,8 @@ import EthereumClient from './api/ethereum/ethereumApi.js'
 import crypto from 'crypto'
 import contractAddresses from '../contracts.json'
 
+Promise.promisifyAll(fs)
+
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`
 const IGNORED_FILES = ['.DS_Store', 'temp']
@@ -18,12 +20,12 @@ const ethereumClient = new EthereumClient(contractAddresses)
 
 const syncFiles = (hashes, userFiles) => {
   const hashPromises = userFiles.map(filePath => {
-      fs.createReadStream(`${FILE_DIR}/${filePath}`)
-      .then(readStream => {
-        createHash(readStream)
-        .then(hash => filePath, hash)
+    return new Promise((resolve, reject) => {
+      const readStream = fs.createReadStream(`${FILE_DIR}/${filePath}`)
+      createHash(readStream).then((hash) => {
+        resolve({ filePath, hash })
       })
-      .catch(e => console.log(e))
+    })
   })
 
   Promise.all(hashPromises)
