@@ -15,7 +15,3 @@ logger.add(logger.transports.Console, {
 });
 
 module.exports = logger
-
-logger.debug('tick-tock')
-logger.warn('something\'s fish')
-logger.error('achtung!')
