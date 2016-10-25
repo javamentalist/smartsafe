@@ -21,7 +21,9 @@
     "lodash": "^4.13.1",
     "node-fetch": "^1.5.3",
     "request": "^2.72.0",
-    "web3": "^0.17.0-beta"
+    "web3": "^0.17.0-beta",
+    "open": "^0.0.5",
+    "winston": "^2.2.0"
   },
   "devDependencies": {
     "babel-cli": "^6.16.0",
