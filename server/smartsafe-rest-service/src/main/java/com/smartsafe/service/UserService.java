@@ -15,9 +15,9 @@ public class UserService {
 	@Autowired
 	private UserRepository userRepository;
 
-	public void createUser(String userId, String userPassword, String publicKey) {	
+	public User createUser(String userId, String userPassword, String publicKey) {	
 		User user = new User(userId, userPassword);
 		user.setPubKey(publicKey);
-		userRepository.save(user);
+		return userRepository.save(user);
 	}
 }
