@@ -1,4 +1,4 @@
-package helloworld;
+package com.smartsafe.domain;
 
 public class Greeting {
 
