@@ -1,11 +1,14 @@
 import Promise from 'bluebird'
 import { spawn } from 'child_process'
+import open from 'open'
 import _ from 'lodash'
 import http from 'http'
 import request from 'request'
 
+var logger = require('winston')
+
 const SERVER_PORT = 8912
-const REDIRECT_URL = 'http://localhost:8912/oauth_callback'
+const REDIRECT_URL = `http://localhost:${SERVER_PORT}/oauth_callback`
 const TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token'
 const isServer = process.argv.some(arg => arg === 'SERVER=true')
 
@@ -29,19 +32,30 @@ const listenForOAuthCallback = (id, secret) => {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       if (req.url.startsWith('/oauth_callback')) {
-        const [, paramsStr] = req.url.split('?')
-        // code=asd&bunnies=1 => ['code', 'asd', 'bunnies', '1']
-        const params = paramsStr.split(/=|&/)
-        // ['code', 'asd', 'bunnies', '1'] => [['code', 'asd'], ['bunnies', '1']] =>
-        // { code: 'asd', bunnies: '1' } => 'asd'
-        const code = _.chain(params).chunk(2).fromPairs().value()['code']
-        res.end('Success! Please close this window')
+        const code = parseCodeFromUrlParams(req.url, 'code')
+        logger.debug('oauth_callback code: %s', code)
+        if (code) {
+          res.end('Success! Please close this window.')
+        } else {
+          const error = parseCodeFromUrlParams(req.url, 'error')
+          const errDescription = parseCodeFromUrlParams(req.url, 'error_description').replace(/\+/g, ' ')
+          logger.error('Unable to parse OAuth code from %s')
+          res.end(`Error! Failed to get OAuth code!\nCause: (${error}) - ${errDescription}`)
+        }
         server.close()
         getToken(id, code, secret).then(resolve).catch(reject)
       }
     })
+    logger.info("Listening for OAuth token on port: %s", SERVER_PORT)
     server.listen(SERVER_PORT)
   })
+}
+
+const parseCodeFromUrlParams = (url, paramName) => {
+  const [, paramsStr] = url.split('?')
+  const params = paramsStr.split(/=|&/)
+  const code = _.chain(params).chunk(2).fromPairs().value()[paramName]
+  return code
 }
 
 const getToken = (id, code, secret) => {
@@ -59,7 +73,10 @@ const getToken = (id, code, secret) => {
     }
 
     request(options, (err, response, body) => {
-      if (err) return reject(err)
+      if (err) {
+        logger.error(err)
+        return reject(err)
+      }
       resolve(JSON.parse(body).access_token)
     })
   })
@@ -69,7 +86,8 @@ export const doAuthentication = (id, secret) => {
   return new Promise((resolve, reject) => {
     listenForOAuthCallback(id, secret).then(resolve).catch(reject)
 
-    const proc = spawn('open', ['-a', isServer ? 'Safari' : 'Google Chrome', getAuthenicationUrl(id)])
+    const url = getAuthenicationUrl(id)
+    logger.info('Opening authentication URL \'%s\' through browser', url)
+    open(url)
   })
 }
-
