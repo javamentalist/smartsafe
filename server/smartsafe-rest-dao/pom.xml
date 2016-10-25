@@ -7,7 +7,6 @@
 		<version>${global.version}</version>
 	</parent>
 
-	<groupId>smartsafe-rest-dao</groupId>
 	<artifactId>smartsafe-rest-dao</artifactId>
 
 	<dependencies>
@@ -21,7 +20,12 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>smartsafe</groupId>
+			<artifactId>smartsafe-config</artifactId>
+			<version>${global.version}</version>
+		</dependency>
+		
 		<!-- https://mvnrepository.com/artifact/org.hsqldb/hsqldb -->
 		<dependency>
 			<groupId>org.hsqldb</groupId>

@@ -19,6 +19,7 @@
 	
 	<modules>
 		<module>smartsafe-applauncher</module>
+		<module>smartsafe-config</module>
 		<module>smartsafe-rest-api</module>
 		<module>smartsafe-rest-service</module>
 		<module>smartsafe-rest-dao</module>

@@ -1,32 +1,31 @@
 package com.smartsafe.service;
 
-import org.junit.After;
-import org.junit.Before;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.smartsafe.TestConfiguration;
+import com.smartsafe.entity.User;
+
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@ContextConfiguration(classes = {TestConfiguration.class})
 public class UserServiceSTest {
+	
+	private static final String USER_ADDRESS = "testAddress";
+	private static final String USER_PASSWORD = "testPassword";
+	private static final String USER_KEY = "testKey";
 	
 	@Autowired
 	private UserService userService;
 	
-	@Before
-	public void setUp() {
-		
-	}
-
 	@Test
-	public void test() {
-		userService.createUser("testUser", "testPassword", "testKey");
-	}
-
-	@After
-	public void tearDown() {
+	public void shouldCreateOrUpdateUser() {
+		User user = userService.createUser(USER_ADDRESS, USER_PASSWORD, USER_KEY);
 		
+		assertThat(user.getEthAddress()).isEqualTo(USER_ADDRESS);
 	}
 }
