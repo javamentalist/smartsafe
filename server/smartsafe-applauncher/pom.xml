@@ -7,7 +7,6 @@
 		<version>${global.version}</version>
 	</parent>
 
-	<groupId>smartsafe-applauncher</groupId>
 	<artifactId>smartsafe-applauncher</artifactId>
 	<packaging>war</packaging>
 	
@@ -17,7 +16,7 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>smartsafe-rest-api</groupId>
+			<groupId>smartsafe</groupId>
 			<artifactId>smartsafe-rest-api</artifactId>
 			<version>${global.version}</version>
 		</dependency>
