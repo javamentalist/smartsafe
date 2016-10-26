@@ -16,10 +16,10 @@ const IGNORED_FILES = ['.DS_Store', 'temp'];
 const dropboxClient = new DropboxClient(authData.key, authData.secret);
 const ethereumClient = new EthereumClient(contractAddresses);
 
-const syncFiles = (hashes, userFilesLocations) => {
+const syncFiles = (filesHashes, userFilesLocations) => {
     const userFiles = getUserFiles(userFilesLocations);
-    const userFilesDataForUpload = generateHashesForUserFiles(userFiles);
-    const dropboxLinks = uploadUserFileData(userFilesDataForUpload, hashes);
+    const userFilesDataForUploadToDropbox = generateHashesForUserFiles(userFiles);
+    const dropboxLinks = uploadUserFileData(userFilesDataForUploadToDropbox, filesHashes);
     la(hashesOfFiles);
 };
 
@@ -39,7 +39,7 @@ const getUserFiles = function(userFilesLocations) {
 
 const generateHashesForUserFiles = function(userFiles) {
     try {
-        userFiles.map(userFileData => {
+        return userFiles.map(userFileData => {
             Promise.resolve(userFileData).then((filePath, readStream) => {
                 return new Promise((resolve, reject) => {
                     const fileHash = createHash(readStream);
@@ -53,16 +53,36 @@ const generateHashesForUserFiles = function(userFiles) {
     }
 };
 
-const uploadUserFileData = function(userFilesDataForUpload, hashes) {
+const uploadUserFileData = function(userFilesDataForUploadToDropbox, filesHashes) {
+    const userFilesDataForUploadToEth
+        = wrapPromisesFromResolvedPromises(userFilesDataForUploadToDropbox, filesHashes, uploadUserFileDataToDropbox);
+    return wrapPromisesFromResolvedPromises(userFilesDataForUploadToEth, filesHashes, uploadUserFileMetaDataToEth);
+};
+
+function fileHasBeenHashed (fileHash, filesHashes) {
+    if (filesHashes.indexOf(fileHash) === -1) {
+        throw new Error("Filehash " + fileHash + " cannot be found")
+    }
+}
+
+const uploadUserFileDataToDropbox = function(filePath, fileHash, filesHashes) {
+    if (fileHasBeenHashed(fileHash, filesHashes)) {
+        return dropboxClient.upload(`${FILE_DIR}/${filePath}`, `/${filePath}`);
+    }
+};
+
+const uploadUserFileMetaDataToEth = function(filePath, fileDropboxUploadMetaDeta, filesHashes) {
+    if (fileHasBeenHashed(fileDropboxUploadMetaDeta, filesHashes)) {
+        ethereumClient.addFile(fileDropboxUploadMetaDeta, fileDropboxUploadMetaDeta.url, filePath);
+    }
+};
+
+const wrapPromisesFromResolvedPromises = function(startingMap, filesHashes, syncFunction) {
     try {
-        userFilesDataForUpload.map(userFileData => {
-            Promise.resolve(userFileData).then((filePath, fileHash) => {
-                if (hashes.indexOf(fileHash) === -1) {
-                    throw new Error("Filehash " + fileHash + " cannot be found")
-                }
+        return startingMap.map(startingMapValues => {
+            Promise.resolve(startingMapValues).then((filePath, fileInfo) => {
                 return new Promise((resolve, reject) => {
-                    const dropboxLinks = dropboxClient.upload(`${FILE_DIR}/${filePath}`, `/${filePath}`);
-                    resolve(dropboxLinks);
+                    resolve(syncFunction(filePath, fileInfo, filesHashes));
                 })
             })
         }).catch(console.log.bind(console))
@@ -73,7 +93,7 @@ const uploadUserFileData = function(userFilesDataForUpload, hashes) {
 };
 
 const la = function (hashesOfFiles) {
-    ethereumClient.addFile(hash, data.url, filePath)
+
     resolve({filePath, fileHash})
     Promise.all(hashPromises).then(results => {
         results.forEach(fileData => {
