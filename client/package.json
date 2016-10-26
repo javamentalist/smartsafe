@@ -4,8 +4,8 @@
   "description": "Dropbox file syncing",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node app/index.js SERVER=false",
-    "startServer": "babel-node app/server.js SERVER=true",
+    "start": "babel-node src/index.js SERVER=false",
+    "startServer": "babel-node src/server.js SERVER=true",
     "testrpc": "babel-node testrpc.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -31,6 +31,7 @@
     "babel-preset-es2015": "^6.16.0",
     "bluebird": "^3.4.6",
     "chalk": "^1.1.3",
+    "electron": "^1.4.4",
     "ethereumjs-testrpc": "^2.2.0",
     "solc": "^0.4.2"
   }
