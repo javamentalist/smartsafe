@@ -6,8 +6,9 @@
 		<artifactId>smartsafe-server</artifactId>
 		<version>${global.version}</version>
 	</parent>
-	
-	<artifactId>smartsafe-rest-api</artifactId>
+
+	<artifactId>smartsafe-applauncher</artifactId>
+	<packaging>war</packaging>
 	
 	<dependencies>
 		<dependency>
@@ -15,25 +16,31 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.jayway.jsonpath</groupId>
-			<artifactId>json-path</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>smartsafe</groupId>
-			<artifactId>smartsafe-rest-service</artifactId>
-			<version>${global.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>smartsafe</groupId>
-			<artifactId>smartsafe-config</artifactId>
+			<artifactId>smartsafe-rest-api</artifactId>
 			<version>${global.version}</version>
 		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>spring-releases</id>
+			<url>https://repo.spring.io/libs-release</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-releases</id>
+			<url>https://repo.spring.io/libs-release</url>
+		</pluginRepository>
+	</pluginRepositories>
 </project>
