@@ -6,8 +6,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-
-import com.smartsafe.inversion.UserDetailsServiceProvider;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -16,7 +15,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	private static final String[] EXCLUSION_PATTERNS = new String[] {"/login", "/signup"};
 	
 	@Autowired
-	private UserDetailsServiceProvider userDetailsServiceProvider;
+	private UserDetailsService userDetailsServiceProvider;
 	
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
