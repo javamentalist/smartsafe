@@ -13,6 +13,8 @@ import com.smartsafe.inversion.UserDetailsServiceProvider;
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	
+	private static final String[] EXCLUSION_PATTERNS = new String[] {"/login", "/signup"};
+	
 	@Autowired
 	private UserDetailsServiceProvider userDetailsServiceProvider;
 	
@@ -23,8 +25,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().anyRequest().fullyAuthenticated();
-		http.httpBasic();
-		http.csrf().disable();
+		http
+			.httpBasic()
+				.and()
+	        .authorizeRequests()
+	            .antMatchers(EXCLUSION_PATTERNS).permitAll()
+	            .anyRequest().authenticated()
+	            .and()
+	        .requiresChannel()
+                .anyRequest().requiresSecure()
+                .and()
+	        .logout()
+	            .permitAll()
+	            .and()
+	        .csrf()
+	        	.disable();
 	}
 }
