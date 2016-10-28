@@ -6,9 +6,9 @@
 		<artifactId>smartsafe-server</artifactId>
 		<version>${global.version}</version>
 	</parent>
-	
+
 	<artifactId>smartsafe-rest-api</artifactId>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -33,6 +33,7 @@
 			<groupId>smartsafe</groupId>
 			<artifactId>smartsafe-config</artifactId>
 			<version>${global.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 

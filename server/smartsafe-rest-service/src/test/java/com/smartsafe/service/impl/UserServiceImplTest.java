@@ -1,4 +1,4 @@
-package com.smartsafe.service;
+package com.smartsafe.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -12,10 +12,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.smartsafe.dao.UserRepository;
-import com.smartsafe.entity.User;
+import com.smartsafe.entity.SmartsafeUser;
+import com.smartsafe.service.UserService;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UserServiceTest {
+public class UserServiceImplTest {
 	
 	private static final String USER_ADDRESS = "testAddress";
 	private static final String USER_PASSWORD = "testPassword";
@@ -27,11 +28,11 @@ public class UserServiceTest {
 	@Mock
 	private UserRepository userRepository;
 	
-	private ArgumentCaptor<User> userCaptor;
+	private ArgumentCaptor<SmartsafeUser> userCaptor;
 	
 	@Before
 	public void setUp() {
-		userCaptor = ArgumentCaptor.forClass(User.class);
+		userCaptor = ArgumentCaptor.forClass(SmartsafeUser.class);
 	}
 	
 	@Test

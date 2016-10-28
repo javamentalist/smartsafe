@@ -24,6 +24,7 @@
 			<groupId>smartsafe</groupId>
 			<artifactId>smartsafe-config</artifactId>
 			<version>${global.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 		
 		<!-- https://mvnrepository.com/artifact/org.hsqldb/hsqldb -->

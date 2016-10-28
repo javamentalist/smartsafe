@@ -5,9 +5,11 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
-public class User implements Serializable {
+@Table(name = "USER")
+public class SmartsafeUser implements Serializable {
 	
 	private static final long serialVersionUID = 5999372319856040119L;
 
@@ -21,9 +23,9 @@ public class User implements Serializable {
     @Column(name = "pubkey", nullable = false)
     private String pubKey;
     
-    protected User() {}
+    protected SmartsafeUser() {}
     
-    public User(String ethAddress, String dboxToken) {
+    public SmartsafeUser(String ethAddress, String dboxToken) {
     	this.ethAddress = ethAddress;
     	this.dboxToken = dboxToken;
     }

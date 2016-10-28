@@ -2,7 +2,7 @@ package com.smartsafe.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.smartsafe.entity.User;
+import com.smartsafe.entity.SmartsafeUser;
 
-public interface UserRepository extends JpaRepository<User, String> {	
+public interface UserRepository extends JpaRepository<SmartsafeUser, String> {	
 }
