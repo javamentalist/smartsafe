@@ -28,7 +28,7 @@ public class SmartsafeUser implements Serializable {
     @Column(name = "pubkey", nullable = false)
     private String pubKey;
     
-    protected SmartsafeUser() {}
+    public SmartsafeUser() {}
     
     public SmartsafeUser(String ethAddress) {
     	this.ethAddress = ethAddress;

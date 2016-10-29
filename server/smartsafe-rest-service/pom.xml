@@ -11,11 +11,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>smartsafe</groupId>
 			<artifactId>smartsafe-rest-dao</artifactId>
 			<version>${global.version}</version>
@@ -24,6 +19,16 @@
 			<groupId>smartsafe</groupId>
 			<artifactId>smartsafe-config</artifactId>
 			<version>${global.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>smartsafe</groupId>
+			<artifactId>smartsafe-rest-dao</artifactId>
+			<version>${global.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
