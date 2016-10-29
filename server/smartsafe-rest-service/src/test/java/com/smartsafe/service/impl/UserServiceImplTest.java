@@ -14,13 +14,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.smartsafe.dao.UserRepository;
 import com.smartsafe.entity.SmartsafeUser;
-import com.smartsafe.service.UserService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceImplTest {
 
 	@InjectMocks
-	private UserService userService;
+	private UserServiceImpl userService;
 	
 	@Mock
 	private UserRepository userRepository;
