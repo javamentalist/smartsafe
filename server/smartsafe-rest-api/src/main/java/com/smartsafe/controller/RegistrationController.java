@@ -21,10 +21,10 @@ public class RegistrationController {
     
     @Autowired
     private SmartsafeUserMapper userMapper;
-    
+        
     @RequestMapping(name = "/signup", method = { RequestMethod.POST })
     public void signup(@Valid @RequestBody SmartsafeUserDto userDto) {
-    	SmartsafeUser user = userMapper.userDtoToUser(userDto);
+    	SmartsafeUser user = userMapper.userDtoToUser(userDto);	
     	userService.createUser(user);
     }
 }
