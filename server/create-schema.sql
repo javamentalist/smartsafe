@@ -1,8 +1,8 @@
 create table user 
 (
 	ethaddress char(40) primary key, 
-	dboxtoken char (60) not null, 
-	pubkey char(1024) not null
+	dboxtoken char(64) not null, 
+	pubkey char(216) not null
 );
 
 create table file 

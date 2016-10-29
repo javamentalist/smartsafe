@@ -16,9 +16,7 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private UserRepository userRepository;
 
-	public SmartsafeUser createUser(String userId, String userPassword, String publicKey) {	
-		SmartsafeUser user = new SmartsafeUser(userId, userPassword);
-		user.setPubKey(publicKey);
+	public SmartsafeUser createUser(SmartsafeUser user)  {
 		return userRepository.save(user);
 	}
 

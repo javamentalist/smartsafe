@@ -7,8 +7,13 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "USER")
+@Getter
+@Setter
 public class SmartsafeUser implements Serializable {
 	
 	private static final long serialVersionUID = 5999372319856040119L;
@@ -25,32 +30,7 @@ public class SmartsafeUser implements Serializable {
     
     protected SmartsafeUser() {}
     
-    public SmartsafeUser(String ethAddress, String dboxToken) {
+    public SmartsafeUser(String ethAddress) {
     	this.ethAddress = ethAddress;
-    	this.dboxToken = dboxToken;
     }
-    
-    public String getEthAddress() {
-		return ethAddress;
-	}
-
-	public void setEthAddress(String ethAddress) {
-		this.ethAddress = ethAddress;
-	}
-
-	public String getDboxToken() {
-		return dboxToken;
-	}
-
-	public void setDboxToken(String dboxToken) {
-		this.dboxToken = dboxToken;
-	}
-
-	public String getPubKey() {
-		return pubKey;
-	}
-
-	public void setPubKey(String pubKey) {
-		this.pubKey = pubKey;
-	}
 }

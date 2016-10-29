@@ -1,5 +1,6 @@
 package com.smartsafe.service.impl;
 
+import static com.smartsafe.fixtures.SmartsafeUserFixture.testUser;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
@@ -16,17 +17,15 @@ import com.smartsafe.service.UserService;
 @ContextConfiguration(classes = {TestConfiguration.class})
 public class UserServiceImplSTest {
 	
-	private static final String USER_ADDRESS = "testAddress";
-	private static final String USER_PASSWORD = "testPassword";
-	private static final String USER_KEY = "testKey";
-	
 	@Autowired
 	private UserService userService;
 	
 	@Test
 	public void shouldCreateOrUpdateUser() {
-		SmartsafeUser user = userService.createUser(USER_ADDRESS, USER_PASSWORD, USER_KEY);
+		SmartsafeUser user = testUser();
+
+		SmartsafeUser createdUser = userService.createUser(user);
 		
-		assertThat(user.getEthAddress()).isEqualTo(USER_ADDRESS);
+		assertThat(createdUser.getEthAddress()).isEqualTo(user.getEthAddress());
 	}
 }
