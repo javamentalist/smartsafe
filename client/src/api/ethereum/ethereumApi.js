@@ -27,7 +27,7 @@ export default class EthereumClient {
   addFile (hash, link, name) {
     this.getFileContract().then((contract) => {
       contract.saveFile(hash, link, name, (error) => {
-        //console.log(contract.getLink.call(hash))
+        return contract.getLink.call(hash)
       })
     }).catch((e) => {
       console.log(e)
