@@ -7,7 +7,8 @@
     "start": "babel-node src/index.js SERVER=false",
     "startServer": "babel-node src/server.js SERVER=true",
     "testrpc": "babel-node testrpc.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "watchify src/app/screens/app/index.js -t babelify -o src/app/public/js/app-bundle.js --debug --verbose"
   },
   "keywords": [
     "node.js",
@@ -20,19 +21,26 @@
     "chokidar": "^1.4.3",
     "lodash": "^4.13.1",
     "node-fetch": "^1.5.3",
+    "open": "^0.0.5",
+    "react": "^15.3.2",
+    "react-dom": "^15.3.2",
+    "react-router": "^3.0.0",
     "request": "^2.72.0",
     "web3": "^0.17.0-beta",
-    "open": "^0.0.5",
     "winston": "^2.2.0"
   },
   "devDependencies": {
     "babel-cli": "^6.16.0",
     "babel-polyfill": "^6.16.0",
     "babel-preset-es2015": "^6.16.0",
+    "babel-preset-react": "^6.16.0",
+    "babelify": "^7.3.0",
     "bluebird": "^3.4.6",
     "chalk": "^1.1.3",
     "electron": "^1.4.4",
+    "electron-reload": "^1.0.2",
     "ethereumjs-testrpc": "^2.2.0",
-    "solc": "^0.4.2"
+    "solc": "^0.4.2",
+    "watchify": "^3.7.0"
   }
 }
