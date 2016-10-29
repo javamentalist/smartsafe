@@ -3,13 +3,11 @@ package com.smartsafe.controller;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.smartsafe.domain.Greeting;
-import com.smartsafe.service.UserService;
+import com.smartsafe.dto.GreetingDto;
 
 @RestController
 public class GreetingController {
@@ -17,13 +15,8 @@ public class GreetingController {
     private static final String template = "Hello, %s!";
     private final AtomicLong counter = new AtomicLong();
 
-    @Autowired
-    private UserService userService;
-    
     @RequestMapping("/greeting")
-    public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name) {
-    	userService.createUser(name, "testpwd", "ababa");
-    	
-        return new Greeting(counter.incrementAndGet(), String.format(template, name));
+    public GreetingDto greeting(@RequestParam(value="name", defaultValue="World") String name) {	
+        return new GreetingDto(counter.incrementAndGet(), String.format(template, name));
     }
 }

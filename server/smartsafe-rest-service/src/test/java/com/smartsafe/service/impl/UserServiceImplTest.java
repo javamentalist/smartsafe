@@ -1,5 +1,6 @@
 package com.smartsafe.service.impl;
 
+import static com.smartsafe.fixtures.SmartsafeUserFixture.testUser;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
@@ -17,10 +18,6 @@ import com.smartsafe.service.UserService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceImplTest {
-	
-	private static final String USER_ADDRESS = "testAddress";
-	private static final String USER_PASSWORD = "testPassword";
-	private static final String USER_KEY = "testKey";
 
 	@InjectMocks
 	private UserService userService;
@@ -37,9 +34,12 @@ public class UserServiceImplTest {
 	
 	@Test
 	public void shouldCallSaveWhenCreatingUser() {
-		userService.createUser(USER_ADDRESS, USER_PASSWORD, USER_KEY);
+		SmartsafeUser user = testUser();
+		String userEthAddress = user.getEthAddress();
+		
+		userService.createUser(user);
 	
 		verify(userRepository).save(userCaptor.capture());
-		assertThat(userCaptor.getValue().getEthAddress()).isEqualTo(USER_ADDRESS);
+		assertThat(userCaptor.getValue().getEthAddress()).isEqualTo(userEthAddress);
 	}
 }
