@@ -1,15 +1,24 @@
 package com.smartsafe.mapper;
 
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.MappingTarget;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.smartsafe.dto.SmartsafeUserDto;
 import com.smartsafe.entity.SmartsafeUser;
 
 @Mapper(componentModel = "spring")
-public interface SmartsafeUserMapper {
+public abstract class SmartsafeUserMapper {
 
-	SmartsafeUserMapper INSTANCE = Mappers.getMapper( SmartsafeUserMapper.class );
-
-	SmartsafeUser userDtoToUser(SmartsafeUserDto userDto); 
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+    
+	public abstract SmartsafeUser userDtoToUser(SmartsafeUserDto userDto);
+	
+    @AfterMapping
+    protected void hashToken(@MappingTarget SmartsafeUser result) {
+    	result.setDboxToken(passwordEncoder.encode(result.getDboxToken()));
+    }
 }	
