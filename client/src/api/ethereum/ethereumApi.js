@@ -99,7 +99,7 @@ export default class EthereumClient {
     })
   }
 
-  getFile (hash) {
+  findFileDropboxDataFromEthChain (hash) {
     return new Promise((resolve, reject) => {
       this.getFileContract().then((contract) => {
         console.log(hash)

@@ -26,6 +26,6 @@ public class UserServiceImplSTest {
 
 		SmartsafeUser createdUser = userService.createUser(user);
 		
-		assertThat(createdUser.getEthAddress()).isEqualTo(user.getEthAddress());
+		assertThat(userService.findByEthAddress(user.getEthAddress())).isEqualToComparingFieldByField(createdUser);
 	}
 }

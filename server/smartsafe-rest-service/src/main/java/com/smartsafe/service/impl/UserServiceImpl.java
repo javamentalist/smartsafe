@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
 
 	public SmartsafeUser createUser(SmartsafeUser user)  {
 		String ethAddress = user.getEthAddress();
-		SmartsafeUser existingUser = userRepository.findOne(ethAddress);
+		SmartsafeUser existingUser = findByEthAddress(ethAddress);
 		if (existingUser != null) {
 			log.info("Attempted to create user with already registered Ethereum address {}.", ethAddress);
 			throw new DuplicateUserException(ethAddress);
