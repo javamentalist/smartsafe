@@ -1,5 +1,7 @@
 import * as chai from 'chai'
 let should = chai.should()
+// or simply
+// chai.should()
 
 describe('Demotest with should style syntax', () => {
 
