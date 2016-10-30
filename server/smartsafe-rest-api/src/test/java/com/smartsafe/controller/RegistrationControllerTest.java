@@ -34,7 +34,7 @@ public class RegistrationControllerTest {
 
 	    @Before
 	    public void setup() {
-	        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+	        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 	    }
 
 	    @Test

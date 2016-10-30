@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.smartsafe.dao.UserRepository;
 import com.smartsafe.entity.SmartsafeUser;
 import com.smartsafe.exceptions.DuplicateUserException;
+import com.smartsafe.exceptions.NoSuchUserException;
 import com.smartsafe.service.UserService;
 
 
@@ -36,5 +37,16 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public SmartsafeUser findByEthAddress(String ethAddress) {
 		return userRepository.findOne(ethAddress);
+	}
+
+	@Override
+	public SmartsafeUser findExistingUserByEthAddress(String ethAddress) {
+		SmartsafeUser existingUser = findByEthAddress(ethAddress);
+		if (existingUser == null) {
+			log.info("Attempted to request details of non-existing user with Ethereum address {}.", ethAddress);
+			throw new NoSuchUserException(ethAddress);
+		}
+		
+		return existingUser;
 	}
 }

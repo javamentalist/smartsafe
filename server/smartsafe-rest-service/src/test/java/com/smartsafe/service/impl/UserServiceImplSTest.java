@@ -11,6 +11,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.smartsafe.TestConfiguration;
 import com.smartsafe.entity.SmartsafeUser;
+import com.smartsafe.exceptions.DuplicateUserException;
+import com.smartsafe.exceptions.NoSuchUserException;
 import com.smartsafe.service.UserService;
 
 @RunWith(SpringRunner.class)
@@ -21,11 +23,24 @@ public class UserServiceImplSTest {
 	private UserService userService;
 	
 	@Test
-	public void shouldCreateOrUpdateUser() {
+	public void shouldCreateNewUser() {
 		SmartsafeUser user = testUser();
 
 		SmartsafeUser createdUser = userService.createUser(user);
 		
-		assertThat(userService.findByEthAddress(user.getEthAddress())).isEqualToComparingFieldByField(createdUser);
+		assertThat(userService.findExistingUserByEthAddress(user.getEthAddress())).isEqualToComparingFieldByField(createdUser);
+	}
+	
+	@Test(expected = DuplicateUserException.class)
+	public void shouldNotCreateSecondUserWithSameEthAddress() {
+		SmartsafeUser user = testUser();
+		userService.createUser(user);
+		
+		userService.createUser(user);		
+	}
+	
+	@Test(expected = NoSuchUserException.class)
+	public void shouldNotFindNonExistingUser() {
+		userService.findExistingUserByEthAddress("non-existing-address");
 	}
 }

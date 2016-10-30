@@ -16,6 +16,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.smartsafe.dao.UserRepository;
 import com.smartsafe.entity.SmartsafeUser;
 import com.smartsafe.exceptions.DuplicateUserException;
+import com.smartsafe.exceptions.NoSuchUserException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceImplTest {
@@ -45,11 +46,30 @@ public class UserServiceImplTest {
 	}
 	
 	@Test(expected = DuplicateUserException.class)
-	public void shouldNotCallSaveWhenTryingToCreateUserWithAlreadyRegisteredAddress() {
+	public void shouldThrowExceptionWhenTryingToCreateUserWithAlreadyRegisteredAddress() {
 		SmartsafeUser user = testUser();
 		String userEthAddress = user.getEthAddress();
 		when(userRepository.findOne(userEthAddress)).thenReturn(user);
 		
 		userService.createUser(user);
+	}
+	
+	@Test
+	public void shouldReturnUserDetailsOfRegisteredUser() {
+		SmartsafeUser user = testUser();
+		String userEthAddress = user.getEthAddress();
+		when(userRepository.findOne(userEthAddress)).thenReturn(user);
+
+		SmartsafeUser foundUser = userService.findExistingUserByEthAddress(userEthAddress);
+		
+		assertThat(foundUser).isEqualToComparingFieldByField(user);
+	}
+	
+	@Test(expected = NoSuchUserException.class)
+	public void shouldThrowExceptionWhenTryingToObtainNonExistingUserDetails() {
+		SmartsafeUser user = testUser();
+		String userEthAddress = user.getEthAddress();
+		
+		userService.findExistingUserByEthAddress(userEthAddress);
 	}
 }
