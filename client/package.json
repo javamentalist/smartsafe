@@ -7,7 +7,7 @@
     "start": "babel-node src/index.js SERVER=false",
     "startServer": "babel-node src/server.js SERVER=true",
     "testrpc": "babel-node testrpc.js",
-    "test": "./node_modules/.bin/mocha --reporter spec",
+    "test": "./node_modules/.bin/mocha --reporter spec --compilers js:babel-core/register --recursive",
     "watch": "watchify src/app/screens/app/index.js -t babelify -o src/app/public/js/app-bundle.js --debug --verbose"
   },
   "keywords": [
@@ -34,6 +34,7 @@
     "babel-polyfill": "^6.16.0",
     "babel-preset-es2015": "^6.16.0",
     "babel-preset-react": "^6.16.0",
+    "babel-register": "^6.18.0",
     "babelify": "^7.3.0",
     "bluebird": "^3.4.6",
     "chai": "^3.5.0",
