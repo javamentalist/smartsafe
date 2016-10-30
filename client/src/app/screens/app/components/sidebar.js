@@ -7,18 +7,24 @@ class Sidebar extends React.Component {
   render() {
     return (
       <nav className="nav-group">
-        <span className="nav-group-item">
-          <Link to="/">
+        <Link to="/" className="nav-group-item">
+          <span className="icon icon-folder"></span>
+          Files
+        </Link>
+        <div className="nav-group-level-2">
+          <Link to="/files/mine" className="nav-group-item">
             <span className="icon icon-folder"></span>
-            Files
+            My files
           </Link>
-        </span>
-        <span className="nav-group-item">
-          <Link to="/settings">
-            <span className="icon icon-cog"></span>
-            Settings
+          <Link to="/files/mine" className="nav-group-item">
+            <span className="icon icon-folder"></span>
+            Shared with me
           </Link>
-        </span>
+        </div>
+        <Link to="/settings" className="nav-group-item">
+          <span className="icon icon-cog"></span>
+          Settings
+        </Link>
       </nav>
     );
   }
