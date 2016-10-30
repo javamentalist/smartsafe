@@ -8,7 +8,7 @@
     "startServer": "babel-node src/server.js SERVER=true",
     "testrpc": "babel-node testrpc.js",
     "test": "./node_modules/.bin/mocha --reporter spec --compilers js:babel-core/register --recursive",
-    "watch": "watchify src/app/screens/app/index.js -t babelify -o src/app/public/js/app-bundle.js --debug --verbose"
+    "watch": "watchify src/app/index.js -t babelify -o src/app/public/js/app-bundle.js --debug --verbose"
   },
   "keywords": [
     "node.js",
@@ -43,7 +43,12 @@
     "electron-reload": "^1.0.2",
     "ethereumjs-testrpc": "^2.2.0",
     "mocha": "^3.1.2",
+    "react-addons-test-utils": "^15.3.2",
     "solc": "^0.4.2",
+    "testdom": "^2.0.0",
     "watchify": "^3.7.0"
+  },
+  "browser": {
+    "jsdom": false
   }
 }
