@@ -1,6 +1,7 @@
 package com.smartsafe.dto;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,10 +15,10 @@ import lombok.Setter;
 public class SmartsafeUserDto {
 
 	@NotNull
-	@Size(min = 40, max = 40)
+	@Pattern(regexp = "^[0-9a-f]{40}$")
 	private String ethAddress;
 	@NotNull
-	@Size(min = 64, max = 64)
+	@Pattern(regexp = "\\S{64}")
 	@JsonProperty(access = Access.WRITE_ONLY)
     private String dboxToken;
 	@NotNull
