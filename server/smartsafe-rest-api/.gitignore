@@ -1,3 +1,4 @@
-/target/
+/target/*
+!/target/generated-sources/
 .settings/
 /.apt_generated/

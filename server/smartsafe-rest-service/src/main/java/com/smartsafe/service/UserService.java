@@ -7,4 +7,6 @@ public interface UserService {
 	 SmartsafeUser createUser(SmartsafeUser user);
 	 
 	 SmartsafeUser findByEthAddress(String ethAddress);
+	 
+	 SmartsafeUser findExistingUserByEthAddress(String ethAddress);
 }
