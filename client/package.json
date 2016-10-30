@@ -7,7 +7,8 @@
     "start": "babel-node src/index.js SERVER=false",
     "startServer": "babel-node src/server.js SERVER=true",
     "testrpc": "babel-node testrpc.js",
-    "test": "./node_modules/.bin/mocha --reporter spec --compilers js:babel-core/register --recursive",
+    "test": "./node_modules/.bin/mocha --reporter spec --require babel-register --recursive",
+    "test-debug": "./node_modules/.bin/mocha --reporter spec --require babel-register --recursive --debug-brk",
     "watch": "watchify src/app/index.js -t babelify -o src/app/public/js/app-bundle.js --debug --verbose"
   },
   "keywords": [
