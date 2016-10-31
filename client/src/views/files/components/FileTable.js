@@ -9,9 +9,7 @@ class FileTable extends React.Component {
     return this
       .props
       .items
-      .map(function (item) {
-        return <FileTableRow key={item.id} item={item}/>;
-      });
+      .map(item => <FileTableRow key={item.id} item={item}/>);
   }
 
   render() {

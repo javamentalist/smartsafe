@@ -1,9 +1,9 @@
 import React from 'react'
 import {Route, IndexRoute} from 'react-router'
 
-import App from './screens/app'
-import Files from './screens/app/screens/files'
-import Settings from './screens/app/screens/settings'
+import App from './views'
+import Files from './views/files'
+import Settings from './views/settings'
 
 export default(
   <Route path="/" component={App}>

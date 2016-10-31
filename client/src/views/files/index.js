@@ -1,9 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
+// import winston from 'winston'
+
 import FileTable from './components/FileTable'
+// import DropboxClient from '../../api/dropboxApi'
 
 class Files extends React.Component {
+
+  getFileList() {   DropboxClient.listFolder(); }
 
   render() {
     const files = [
@@ -25,6 +30,8 @@ class Files extends React.Component {
         name: 'File 4'
       }
     ]
+
+    // const files = this.getFileList();
 
     return (
       <div>
