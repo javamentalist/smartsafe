@@ -1,10 +1,10 @@
 import Web3 from 'web3'
 import Contract from './contract.js'
 import _ from 'lodash'
-var logger = require('winston');
+import winston from 'winston'
 
 function logError(err) {
-    logger.debug(err)
+    winston.log('debug', err);
 }
 
 export default class EthereumClient {

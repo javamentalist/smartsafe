@@ -1,9 +1,9 @@
 import path from 'path'
 import fs from 'fs'
-import logger from 'winston'
+import winston from 'winston'
 
 function logError(err) {
-    logger.log(err)
+    winston.log('debug', err);
 }
 
 export default class Contract {

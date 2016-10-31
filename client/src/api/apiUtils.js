@@ -2,10 +2,10 @@ import fetch from 'node-fetch'
 import chalk from 'chalk'
 import {isString} from 'lodash'
 import isStream from 'isstream'
-var logger = require('winston');
+import winston from 'winston'
 
 function logError(err) {
-    logger.debug(err)
+    winston.log('debug', err);
 }
 
 const formatErrorMessage = (url, status, msg) => {
