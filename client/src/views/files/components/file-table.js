@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import FileTableRow from './FileTableRow'
+import FileTableRow from './file-table-row'
 
 class FileTable extends React.Component {
 

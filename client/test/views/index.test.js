@@ -2,8 +2,8 @@ require('testdom')('<html><body></body></html>')
 
 import React from 'react'
 import ReactTestUtils from 'react-addons-test-utils'
-import App from '../../../src/app/screens/app'
-import Sidebar from '../../../src/app/screens/app/components/sidebar'
+import App from '../../src/views'
+import Sidebar from '../../src/views/components/sidebar'
 
 import * as chai from 'chai'
 chai.should()
