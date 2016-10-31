@@ -8,6 +8,7 @@ import {readDir, createHash} from './utils/fileUtils.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
 import crypto from 'crypto'
 import contractAddresses from '../contracts.json'
+import {logError} from './utils/log'
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
@@ -16,12 +17,12 @@ const IGNORED_FILES = ['.DS_Store', 'temp'];
 const dropboxClient = new DropboxClient(authData.key, authData.secret);
 const ethereumClient = new EthereumClient(contractAddresses);
 
-const synchronizeUserFiles = (filesHashes, userFilesLocations) => {
+function synchronizeUserFiles(filesHashes, userFilesLocations) {
     const userFiles = getUserFiles(userFilesLocations);
     const filesDataForUploadToDropbox = generateDropboxUploadDataForFiles(userFiles);
     uploadFileData(filesDataForUploadToDropbox, filesHashes);
     downloadMissingSharedFiles(filesDataForUploadToDropbox, filesHashes);
-};
+}
 
 function getUserFiles(userFilesLocations) {
     try {
@@ -31,11 +32,11 @@ function getUserFiles(userFilesLocations) {
                 resolve({filePath:filePath, fileInfo:readStream})
             })
         }).catch(err => {
-            console.log(err).bind(console);
+            logError(err);
             Promise.reject(err)
         })
     } catch (err) {
-        console.log(err).bind(console);
+        logError(err);
         return []
     }
 }
@@ -50,11 +51,11 @@ function generateDropboxUploadDataForFiles(userFiles) {
                 })
             })
         }).catch(err => {
-            console.log(err).bind(console);
+            logError(err);
             Promise.reject(err)
         })
     } catch (err) {
-        console.log(err).bind(console);
+        logError(err);
         return []
     }
 }
@@ -82,12 +83,12 @@ function prepareFileUploadToDropbox(userFilesDataForUploadToDropbox, filesHashes
                     }
                 })
             }).catch(err => {
-            console.log(err).bind(console);
+            logError(err);
             Promise.reject(err)
             })
         })
     } catch (err) {
-        console.log(err).bind(console);
+        logError(err);
         return []
     }
 }
@@ -107,11 +108,11 @@ function prepareFileDataUploadToEth(userFilesDataForUploadToEth, filesHashes) {
                 })
             })
         }).catch(err => {
-            console.log(err).bind(console);
+            logError(err);
             Promise.reject(err)
         })
     } catch (err) {
-        console.log(err).bind(console);
+        logError(err);
         return []
     }
 }
@@ -120,12 +121,12 @@ function uploadFileDataToEth(preparedFilesDataForUploadToEth) {
     try {
         preparedFilesDataForUploadToEth.map(preparedFileDataForEth => {
             preparedFileDataForEth.catch(err => {
-                console.log(err).bind(console);
+                logError(err);
                 Promise.reject(err)
             });
         });
     } catch (err) {
-        console.log(err).bind(console);
+        logError(err);
         return []
     }
 }
@@ -140,12 +141,12 @@ function downloadMissingSharedFiles(userFilesDataForUploadToDropbox, filesHashes
                     })
                 }
             }).catch(err => {
-                console.log(err).bind(console);
+                logError(err);
                 Promise.reject(err)
             });
         });
     } catch (err) {
-        console.log(err).bind(console);
+        logError(err);
         return []
     }
 }

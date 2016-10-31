@@ -2,6 +2,10 @@ import Promise from 'bluebird'
 import crypto from 'crypto'
 import fs from 'fs'
 
+import logger from 'winston'
+function logError(err) {
+  logger.log(err)
+}
 export const readDir = (directory) => {
   return new Promise((resolve, reject) => {
     fs.readdir(directory, (err, files) => {

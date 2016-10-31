@@ -6,12 +6,17 @@
 //
 // all other files need to use 1. to have winston configured
 
-var logger = require('winston');
+import logger from 'winston'
+
+export function logError(err) {
+    logger.log(err)
+}
+
 logger.remove(logger.transports.Console);
+
 logger.add(logger.transports.Console, {
   timestamp: true,
   level: 'debug',
   colorize: true
 });
 
-module.exports = logger
