@@ -1,12 +1,12 @@
 import crypto from 'crypto'
 import fs from 'fs'
-import logger from 'winston'
+var logger = require('winston');
 
 const algorithm = 'aes-256-ctr';
 const password = 'd6F3Efeq';
 
 function logError(err) {
-    logger.log(err)
+    logger.debug(err)
 }
 
 function transformFile(inputPath, outputPath, transformation) {

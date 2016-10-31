@@ -8,7 +8,8 @@ import {readDir, createHash} from './utils/fileUtils.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
 import crypto from 'crypto'
 import contractAddresses from '../contracts.json'
-import {logError} from './utils/log'
+
+var logger = require('./utils/log');
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
@@ -16,6 +17,10 @@ const IGNORED_FILES = ['.DS_Store', 'temp'];
 
 const dropboxClient = new DropboxClient(authData.key, authData.secret);
 const ethereumClient = new EthereumClient(contractAddresses);
+
+function logError(err) {
+   logger.debug(err)
+}
 
 function synchronizeUserFiles(filesHashes, userFilesLocations) {
     const userFiles = getUserFiles(userFilesLocations);

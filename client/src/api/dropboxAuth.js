@@ -4,15 +4,14 @@ import open from 'open'
 import _ from 'lodash'
 import http from 'http'
 import request from 'request'
-import logger from 'winston'
-
+var logger = require('winston');
 const SERVER_PORT = 8912;
 const REDIRECT_URL = `http://localhost:${SERVER_PORT}/oauth_callback`;
 const TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token';
 const isServer = process.argv.some(arg => arg === 'SERVER=true');
 
 function logError(err) {
-    logger.log(err)
+    logger.debug(err)
 }
 
 const getAuthenticationUrl = (id) => {
@@ -36,20 +35,20 @@ const listenForOAuthCallback = (id, secret) => {
         const server = http.createServer((req, res) => {
             if (req.url.startsWith('/oauth_callback')) {
                 const code = parseCodeFromUrlParams(req.url, 'code');
-                logger.debug('oauth_callback code: %s', code);
+                logError('oauth_callback code: %s', code);
                 if (code) {
                     res.end('Success! Please close this window.')
                 } else {
                     const error = parseCodeFromUrlParams(req.url, 'error');
                     const errDescription = parseCodeFromUrlParams(req.url, 'error_description').replace(/\+/g, ' ');
-                    logger.error('Unable to parse OAuth code from %s');
+                    logError('Unable to parse OAuth code from %s');
                     res.end(`Error! Failed to get OAuth code!\nCause: (${error}) - ${errDescription}`)
                 }
                 server.close();
                 getToken(id, code, secret).then(resolve).catch(reject)
             }
         });
-        logger.info("Listening for OAuth token on port: %s", SERVER_PORT);
+        logError("Listening for OAuth token on port: %s", SERVER_PORT);
         server.listen(SERVER_PORT)
     })
 };
@@ -57,8 +56,7 @@ const listenForOAuthCallback = (id, secret) => {
 const parseCodeFromUrlParams = (url, paramName) => {
     const [, paramsStr] = url.split('?');
     const params = paramsStr.split(/=|&/);
-    const code = _.chain(params).chunk(2).fromPairs().value()[paramName];
-    return code
+    return _.chain(params).chunk(2).fromPairs().value()[paramName]
 };
 
 const getToken = (id, code, secret) => {
@@ -77,7 +75,7 @@ const getToken = (id, code, secret) => {
 
         request(options, (err, response, body) => {
             if (err) {
-                logger.error(err);
+                logError(err);
                 return reject(err)
             }
             resolve(JSON.parse(body).access_token)
@@ -89,12 +87,12 @@ export const doAuthentication = (id, secret) => {
     return new Promise((resolve, reject) => {
         listenForOAuthCallback(id, secret).then(resolve)
             .catch(err => {
-                logError(err)
-                reject
+                logError(err);
+                reject()
             });
 
         const url = getAuthenticationUrl(id);
-        logger.info('Opening authentication URL \'%s\' through browser', url);
+        logError('Opening authentication URL \'%s\' through browser', url);
         open(url)
     })
 };
