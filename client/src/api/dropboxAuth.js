@@ -4,14 +4,18 @@ import open from 'open'
 import _ from 'lodash'
 import http from 'http'
 import request from 'request'
-var logger = require('winston');
+import winston from 'winston'
 const SERVER_PORT = 8912;
 const REDIRECT_URL = `http://localhost:${SERVER_PORT}/oauth_callback`;
 const TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token';
 const isServer = process.argv.some(arg => arg === 'SERVER=true');
 
 function logError(err) {
-    logger.debug(err)
+    winston.log('debug', err);
+}
+
+function logErrorF(err, format) {
+    winston.log('debug', err, format)
 }
 
 const getAuthenticationUrl = (id) => {
@@ -35,20 +39,20 @@ const listenForOAuthCallback = (id, secret) => {
         const server = http.createServer((req, res) => {
             if (req.url.startsWith('/oauth_callback')) {
                 const code = parseCodeFromUrlParams(req.url, 'code');
-                logError('oauth_callback code: %s', code);
+                logErrorF('oauth_callback code: %s', code);
                 if (code) {
                     res.end('Success! Please close this window.')
                 } else {
                     const error = parseCodeFromUrlParams(req.url, 'error');
                     const errDescription = parseCodeFromUrlParams(req.url, 'error_description').replace(/\+/g, ' ');
-                    logError('Unable to parse OAuth code from %s');
+                    logErrorF('Unable to parse OAuth code from %s', req.url);
                     res.end(`Error! Failed to get OAuth code!\nCause: (${error}) - ${errDescription}`)
                 }
                 server.close();
                 getToken(id, code, secret).then(resolve).catch(reject)
             }
         });
-        logError("Listening for OAuth token on port: %s", SERVER_PORT);
+        logErrorF("Listening for OAuth token on port: %s", SERVER_PORT);
         server.listen(SERVER_PORT)
     })
 };
@@ -92,7 +96,7 @@ export const doAuthentication = (id, secret) => {
             });
 
         const url = getAuthenticationUrl(id);
-        logError('Opening authentication URL \'%s\' through browser', url);
+        logErrorF('Opening authentication URL \'%s\' through browser', url);
         open(url)
     })
 };

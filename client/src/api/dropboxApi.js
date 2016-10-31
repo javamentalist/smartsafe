@@ -4,10 +4,10 @@ import {doAuthentication} from './dropboxAuth.js'
 import fetch from 'node-fetch'
 import fs from 'fs'
 import {post} from './apiUtils.js'
-var logger = require('winston');
+import winston from 'winston';
 
 function logError(err) {
-    logger.debug(err)
+    winston.log('debug', err);
 }
 
 export default class DropboxClient {
