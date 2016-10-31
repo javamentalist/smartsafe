@@ -1,4 +1,4 @@
-// Entry point
+// This is app entry point
 
 // !!!!!!!!!!!!!!
 // TODO move all this to index.js in client root

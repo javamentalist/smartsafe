@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom'
 
 // import winston from 'winston'
 
-import FileTable from './components/FileTable'
-// import DropboxClient from '../../api/dropboxApi'
+import FileTable from './components/file-table'
+import AddFileButton from './components/add-file-button'
+import DropboxClient from '../../api/dropboxApi'
 
 class Files extends React.Component {
 
@@ -37,10 +38,7 @@ class Files extends React.Component {
       <div>
         <h1>Files</h1>
         <FileTable items={files}/>
-        <button className="btn btn-large btn-primary">
-          <span className="icon icon-plus"></span>
-          Add new file
-        </button>
+        <AddFileButton/>
       </div>
     );
   }
