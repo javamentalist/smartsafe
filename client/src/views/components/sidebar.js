@@ -16,7 +16,7 @@ class Sidebar extends React.Component {
             <span className="icon icon-folder"></span>
             My files
           </Link>
-          <Link to="/files/mine" className="nav-group-item">
+          <Link to="/files/shared-with-me" className="nav-group-item">
             <span className="icon icon-folder"></span>
             Shared with me
           </Link>
