@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-class AddFileButton extends React.Component {
+export default class AddFileButton extends React.Component {
 
   render() {
     return (
@@ -12,5 +12,3 @@ class AddFileButton extends React.Component {
     )
   }
 }
-
-export default AddFileButton

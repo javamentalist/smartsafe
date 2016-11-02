@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import FileTableRow from './file-table-row'
+import FileTableRow from './file-table-row.jsx'
 
-class FileTable extends React.Component {
+export default class FileTable extends React.Component {
 
   getTableRows() {
     return this
@@ -22,5 +22,3 @@ class FileTable extends React.Component {
     );
   }
 }
-
-export default FileTable

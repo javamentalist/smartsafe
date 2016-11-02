@@ -3,11 +3,10 @@ import ReactDOM from 'react-dom'
 
 // import winston from 'winston'
 
-import FileTable from './components/file-table'
-import AddFileButton from './components/add-file-button'
+import { FileTable, AddFileButton } from '.'
 import DropboxClient from '../../api/dropboxApi'
 
-class MyFiles extends React.Component {
+export default class MyFiles extends React.Component {
 
   getFileList() {   DropboxClient.listFolder(); }
 
@@ -43,5 +42,3 @@ class MyFiles extends React.Component {
     );
   }
 }
-
-export default MyFiles
