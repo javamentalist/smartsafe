@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-class FileTableRow extends React.Component {
+export default class FileTableRow extends React.Component {
 
   render() {
     const item = this.props.item
@@ -16,5 +16,3 @@ class FileTableRow extends React.Component {
     );
   }
 }
-
-export default FileTableRow

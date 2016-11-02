@@ -1,9 +1,9 @@
 import React from 'react'
 import {render} from 'react-dom'
 
-import Sidebar from './components/sidebar'
+import {Sidebar} from '.'
 
-class App extends React.Component {
+export default class App extends React.Component {
 
   render() {
     return (
@@ -19,5 +19,3 @@ class App extends React.Component {
     );
   }
 }
-
-export default App

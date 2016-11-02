@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 
 // import winston from 'winston'
 
-class SharedFiles extends React.Component {
+export default class SharedFiles extends React.Component {
   render(){
     return (
       <div>
@@ -12,5 +12,3 @@ class SharedFiles extends React.Component {
     );
   }
 }
-
-export default SharedFiles

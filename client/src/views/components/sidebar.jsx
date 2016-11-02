@@ -2,7 +2,7 @@ import React from 'react'
 import {render} from 'react-dom'
 import {Link} from 'react-router'
 
-class Sidebar extends React.Component {
+export default class Sidebar extends React.Component {
 
   render() {
     return (
@@ -30,5 +30,3 @@ class Sidebar extends React.Component {
   }
 
 }
-
-export default Sidebar
