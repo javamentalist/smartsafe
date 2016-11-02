@@ -1,28 +1,31 @@
-/* eslint-disable */
-require('testdom')('<html><body></body></html>')
-
+import 'jsdom-global/register'
 import React from 'react'
-import ReactTestUtils from 'react-addons-test-utils'
-import {MyFiles, FileTable, AddFileButton} from '../../../src/views/files'
+import { shallow } from 'enzyme'
 
-import * as chai from 'chai'
-chai.should()
+import chai from 'chai'
+import chaiEnzyme from 'chai-enzyme'
+chai.use(chaiEnzyme())
+
+import { MyFiles, FileTable } from '../../../src/views/files'
+import { Button } from '../../../src/views'
+
 
 describe('MyFiles', () => {
+  let wrapper
+
+  beforeEach(() => {
+    wrapper = shallow(<MyFiles />)
+  });
 
   it('should render', () => {
-    const renderer = ReactTestUtils.createRenderer();
-    const component = renderer.render(<MyFiles/>);
-    (component.type)
-      .should
-      .equal('div')
+    wrapper.should.be.present()
+    wrapper.should.have.descendants('div')
   })
 
-  it('should have first level title (h1) with text "Files"', () => {
-    const component = ReactTestUtils.renderIntoDocument(<MyFiles/>);
-    const h1Array = ReactTestUtils.scryRenderedDOMComponentsWithTag(component, 'h1');
+  it('should have one first level title (h1) with text "Files"', () => {
+    wrapper.should.
 
-    h1Array
+      h1Array
       .should
       .have
       .lengthOf(1)
@@ -35,23 +38,10 @@ describe('MyFiles', () => {
   })
 
   it('should have a FileTable', () => {
-    const component = ReactTestUtils.renderIntoDocument(<MyFiles/>);
-    const fileTableArray = ReactTestUtils.scryRenderedComponentsWithType(component, FileTable);
-
-    (fileTableArray)
-      .should
-      .have
-      .lengthOf(1)
+    wrapper.should.have.descendants(FileTable)
   })
 
-  it('should have one AddFileButton', () => {
-    const component = ReactTestUtils.renderIntoDocument(<MyFiles/>);
-    const buttonArray = ReactTestUtils.scryRenderedComponentsWithType(component, AddFileButton);
-
-    (buttonArray)
-      .should
-      .have
-      .lengthOf(1)
+  it('should have one Button with onClick prop', () => {
+    wrapper.should.have.descendants(Button)
   })
-
 })
