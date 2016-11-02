@@ -1,30 +1,33 @@
-require('testdom')('<html><body></body></html>')
-
+import 'jsdom-global/register'
 import React from 'react'
-import ReactTestUtils from 'react-addons-test-utils'
-import {App, Sidebar} from '../../src/views'
+import { shallow } from 'enzyme'
 
-import * as chai from 'chai'
-chai.should()
+import chai from 'chai'
+import chaiEnzyme from 'chai-enzyme'
+chai.use(chaiEnzyme())
 
-describe('App', () => {
+import { App, Sidebar } from '../../src/views'
+
+
+describe('<App />', () => {
+
+  let wrapper
+
+  beforeEach(() => {
+    wrapper = shallow(<App />);
+  });
 
   it('should render', () => {
-    const renderer = ReactTestUtils.createRenderer();
-    const component = renderer.render(<App/>);
-    (component.type)
-      .should
-      .equal('div')
+    wrapper.should.be.present()
+    wrapper.should.have.descendants('div')
   })
 
-  it('should contain sidebar', () => {
-    const component = ReactTestUtils.renderIntoDocument(<App/>);
-    const sidebars = ReactTestUtils.scryRenderedComponentsWithType(component, Sidebar);
+  it('should have element with class .pane', () => {
+    wrapper.should.have.descendants('.pane')
+  });
 
-    (sidebars)
-      .should
-      .have
-      .lengthOf(1)
+  it('should contain sidebar', () => {
+    wrapper.should.have.descendants(Sidebar)
   })
 
 })

@@ -3,15 +3,15 @@ import ReactDOM from 'react-dom'
 
 // import winston from 'winston'
 
-import { FileTable, AddFileButton } from '.'
+import { FileTable } from '.'
+import { Button } from '../'
 import DropboxClient from '../../api/dropboxApi'
 
 export default class MyFiles extends React.Component {
 
-  getFileList() {   DropboxClient.listFolder(); }
-
-  render() {
-    const files = [
+  getFileList() {
+    //  DropboxClient.listFolder();
+    return [
       {
         id: 1,
         shared: 1,
@@ -30,14 +30,20 @@ export default class MyFiles extends React.Component {
         name: 'File 4'
       }
     ]
+  }
 
-    // const files = this.getFileList();
+  openFileDialog() {
+
+  }
+
+  render() {
+    const files = this.getFileList();
 
     return (
       <div>
         <h1>Files</h1>
-        <FileTable items={files}/>
-        <AddFileButton/>
+        <FileTable items={files} />
+        <Button text={'New file'} iconClass={'plus'} onClick={this.openFileDialog} />
       </div>
     );
   }
