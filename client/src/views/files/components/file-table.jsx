@@ -8,15 +8,18 @@ export default class FileTable extends React.Component {
   getTableRows() {
     return this
       .props
-      .items
-      .map(item => <FileTableRow key={item.id} item={item}/>);
+      .files
+      .map(file => <FileTableRow key={file.id} file={file} />);
   }
 
   render() {
     return (
       <table>
         <tbody>
-          {this.getTableRows()}
+          {this.props.files &&
+            this.props.files.length > 0 &&
+            this.getTableRows()
+          }
         </tbody>
       </table>
     );
