@@ -1,19 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-export default class Button extends React.Component {
 
-  render() {
-    return (
-      <button className={`btn btn-large ${this.props.buttonClass}`} onClick={this.props.onClick}>
-        {this.props.iconClass &&
-          <span className={`icon icon-${this.props.iconClass}`}></span>
-        }
-        {this.props.text}
-      </button>
-    )
-  }
-}
+const Button = ({buttonClass, iconClass, text, onClick}) => (
+  <button className={`btn btn-large ${buttonClass}`} onClick={onClick}>
+    {iconClass &&
+      <span className={`icon icon-${iconClass}`}></span>
+    }
+    {text}
+  </button>
+)
 
 Button.propTypes = {
   onClick: React.PropTypes.func.isRequired,
@@ -25,3 +21,5 @@ Button.propTypes = {
 Button.defaultProps = {
   buttonClass: 'btn-primary'
 }
+
+export default Button
