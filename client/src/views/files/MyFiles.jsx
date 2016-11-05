@@ -10,6 +10,7 @@ import { Button } from '../'
 import DropboxClient from '../../api/dropboxApi'
 
 import * as FileActions from '../../actions'
+// import { openFileDialog, addNewFile } from '../../actions'
 
 
 class MyFiles extends React.Component {
@@ -19,7 +20,7 @@ class MyFiles extends React.Component {
       <div>
         <h1>Files</h1>
         <FileTable files={this.props.files} />
-        <Button text={'Add file'} iconClass={'plus'} onClick={() => FileActions.openFileDialog()} />
+        <Button text={'Add file'} iconClass={'plus'} onClick={() => this.props.actions.openFileDialog()} />
       </div>
     );
   }
@@ -34,7 +35,7 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators(FileActions, dispatch);
+  return { actions: bindActionCreators(FileActions, dispatch) };
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MyFiles)
