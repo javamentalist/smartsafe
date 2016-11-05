@@ -8,14 +8,13 @@ import winston from 'winston'
 const SERVER_PORT = 8912;
 const REDIRECT_URL = `http://localhost:${SERVER_PORT}/oauth_callback`;
 const TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token';
-const isServer = process.argv.some(arg => arg === 'SERVER=true');
 
 function logError(err) {
     winston.log('debug', err);
 }
 
-function logErrorF(err, format) {
-    winston.log('debug', err, format)
+function logErrorF(format, err) {
+    winston.log('debug', format, err)
 }
 
 const getAuthenticationUrl = (id) => {
@@ -34,6 +33,21 @@ const getAuthenticationUrl = (id) => {
     return baseUrl + optionsString
 };
 
+export function doAuthentication(id, secret) {
+    return new Promise((resolve, reject) => {
+        listenForOAuthCallback(id, secret).then(resolve)
+            .catch(err => {
+                logError(err);
+                reject()
+            });
+
+        const url = getAuthenticationUrl(id);
+        logErrorF('Opening authentication URL \'%s\' through browser', url);
+        open(url)
+
+    })
+}
+
 const listenForOAuthCallback = (id, secret) => {
     return new Promise((resolve, reject) => {
         const server = http.createServer((req, res) => {
@@ -49,7 +63,7 @@ const listenForOAuthCallback = (id, secret) => {
                     res.end(`Error! Failed to get OAuth code!\nCause: (${error}) - ${errDescription}`)
                 }
                 server.close();
-                getToken(id, code, secret).then(resolve).catch(reject)
+                getToken(id, code, secret).then(resolve).catch(reject);
             }
         });
         logErrorF("Listening for OAuth token on port: %s", SERVER_PORT);
@@ -84,19 +98,5 @@ const getToken = (id, code, secret) => {
             }
             resolve(JSON.parse(body).access_token)
         })
-    })
-};
-
-export const doAuthentication = (id, secret) => {
-    return new Promise((resolve, reject) => {
-        listenForOAuthCallback(id, secret).then(resolve)
-            .catch(err => {
-                logError(err);
-                reject()
-            });
-
-        const url = getAuthenticationUrl(id);
-        logErrorF('Opening authentication URL \'%s\' through browser', url);
-        open(url)
     })
 };

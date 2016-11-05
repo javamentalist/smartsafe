@@ -1,10 +1,9 @@
 import Promise from 'bluebird'
-import request from 'request'
 import {doAuthentication} from './dropboxAuth.js'
-import fetch from 'node-fetch'
 import fs from 'fs'
 import {post} from './apiUtils.js'
 import winston from 'winston';
+import Dropbox from 'dropbox'
 
 function logError(err) {
     winston.log('debug', err);
@@ -13,7 +12,7 @@ function logError(err) {
 export default class DropboxClient {
     constructor(key, secret) {
         this.key = key;
-        this.secret = secret
+        this.secret = secret;
     }
 
     getDefaultHeaders() {
@@ -25,32 +24,25 @@ export default class DropboxClient {
 
     authenticate() {
         return new Promise((resolve, reject) => {
-            doAuthentication(this.key, this.secret).then((token) => {
-                this.token = token;
-                resolve()
-            }).catch(err => {
-                logError(err);
-                reject(err)
-            });
+            doAuthentication(this.key, this.secret)
+                .then((token) => {
+                    this.token = token;
+                    this.dbx = new Dropbox({ accessToken: token});
+                    resolve()
+                }).catch(err => {
+                    logError(err);
+                    reject(err)
+                });
         })
     }
 
-    listFolder(folder = '') {
-        const URL = 'https://api.dropboxapi.com/2/files/list_folder';
-
-        return fetch(URL, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                path: folder,
-                recursive: false
+    listFolder(folderPath = '') {
+        return new Promise((resolve, reject) => {
+            this.dbx.filesListFolder({path: folderPath, recursive: true})
+                .then(response => {
+                    resolve(response.entries);
             })
-        }).then((res) => {
-            return res.json()
-        })
+        });
     }
 
     upload(localPath, dropboxPath) {
@@ -63,8 +55,8 @@ export default class DropboxClient {
         };
         const stream = fs.createReadStream(localPath);
 
-        return post(url, headers, stream).then((json) => {
-            return this.createSharedLink(json.path_display)
+        return post(url, headers, stream).then((response_json) => {
+            return this.createSharedLink(response_json.path_display)
         })
     }
 
@@ -75,15 +67,15 @@ export default class DropboxClient {
         return post(url, this.getDefaultHeaders(), body)
     }
 
-    getDirectDownloadLink(url) {
+    static getDirectDownloadLink(url) {
         // Replace dl=0 with dl=1 to get direct downloadable link
         return url
-            .replace(/^https:\/\/www.dropbox.com/, 'https://dl.dropboxusercontent.com')
+            .replace(/^https:\/\/www\.dropbox\.com/, 'https://dl.dropboxusercontent.com')
             .replace(/0$/, '1')
     }
 
-    getFilePathFromUrl(url) {
-        const filePathRegex = /^https:\/\/dl.dropboxusercontent.com\/s\/[\w\d]+\/(.*)\?dl=1$/;
+    static getFilePathFromUrl(url) {
+        const filePathRegex = /^https:\/\/dl\.dropboxusercontent\.com\/s\/[\w\d]+\/(.*)\?dl=1$/;
         return filePathRegex.exec(url)[1]
     }
 }
