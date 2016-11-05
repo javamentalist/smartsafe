@@ -10,17 +10,53 @@ import { Button } from '../'
 import DropboxClient from '../../api/dropboxApi'
 
 import * as FileActions from '../../actions'
-// import { openFileDialog, addNewFile } from '../../actions'
+
+import authData from '../../../dropbox-auth.json'
 
 
 class MyFiles extends React.Component {
+
+
+  constructor(params) {
+    super(params)
+    this.dropboxClient = new DropboxClient(authData.key, authData.secret);
+
+  }
+
+  componentDidMount() {
+    this.getFileListFromDropbox().then((data) => {
+      console.log(data);
+    }, (reason) => {
+      console.log("whoops", reason);
+    })
+  }
+
+  getFileListFromDropbox() {
+    return this.dropboxClient.authenticate().then(() => {
+      this.dropboxClient.listFolder().then(result => {
+        let files = Array.from(result);
+        if (files.length !== 0) {
+          files.forEach(res => {
+            logError(res.name)
+          });
+        } else {
+
+        }
+        logError("oh" + result);
+        return files;
+      }).catch(e => logError(e));
+    });
+  }
 
   render() {
     return (
       <div>
         <h1>Files</h1>
         <FileTable files={this.props.files} />
-        <Button text={'Add file'} iconClass={'plus'} onClick={() => this.props.actions.openFileDialog()} />
+        <Button
+          text={'Add file'}
+          iconClass={'plus'}
+          onClick={() => this.props.actions.openFileDialog()} />
       </div>
     );
   }

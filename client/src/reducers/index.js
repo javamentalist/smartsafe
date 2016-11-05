@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux'
-
 import { OPEN_FILE_DIALOG, ADD_NEW_FILE, SET_FILES } from '../actions'
+
+// import { remote } from 'electron'
 
 
 const initialState = {
@@ -17,9 +18,13 @@ function fileReducer(state = initialState, action) {
       ]
       return newState
     case OPEN_FILE_DIALOG:
-      console.log(action)
-      const {dialog} = require('electron')
-      dialog.showOpenDialog({ properties: ['openFile', 'openDirectory', 'multiSelections'] })
+
+
+      // // remote.dialog.showOpenDialog(remote.getCurrentWindow(), );
+      // remote.dialog.showOpenDialog(remote.getCurrentWindow(),{ properties: ['openFile'] }, function (data) {
+      //   console.log("yee", data);
+      // })
+
       return state
     case SET_FILES:
       let newState2 = state
