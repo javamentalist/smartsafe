@@ -6,14 +6,16 @@
 //
 // all other files need to use 1. to have winston configured
 import winston from 'winston';
-export {winston} from './log';
+
+export default winston;
 
 winston.remove(winston.transports.Console);
 
 winston.add(winston.transports.Console, {
-    timestamp: true,
-    level: 'debug',
-    colorize: true
+timestamp: true,
+level: 'debug',
+colorize: true
 });
+
 
 
