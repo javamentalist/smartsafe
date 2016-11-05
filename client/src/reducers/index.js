@@ -17,8 +17,8 @@ function fileReducer(state = initialState, action) {
       ]
       return newState
     case OPEN_FILE_DIALOG:
+      console.log(action)
       const {dialog} = require('electron')
-      console.log("hello")
       dialog.showOpenDialog({ properties: ['openFile', 'openDirectory', 'multiSelections'] })
       return state
     case SET_FILES:
