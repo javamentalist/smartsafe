@@ -10,7 +10,9 @@ import * as FileActions from '../../actions'
 import DropboxClient from '../../api/dropboxApi'
 import authData from '../../../dropbox-auth.json'
 
-// import winston from 'winston'
+import {remote} from 'electron'
+const dialog = remote.dialog
+const winston = remote.getGlobal('winston')
 
 // named export. Useful for testing only component itself without store logic
 export class MyFiles extends React.Component {
@@ -36,10 +38,10 @@ export class MyFiles extends React.Component {
             let files = Array.from(result);
             if (files.length !== 0) {
               files.forEach(res => {
-                console.log('found file', res.name)
+                winston.log('debug', 'found file', res.name)
               });
             } else {
-              console.log('oh shit', result);
+              winston.log('debug', 'oh shit', result);
             }
 
             this
@@ -50,13 +52,22 @@ export class MyFiles extends React.Component {
             return files;
           })
           .catch((e) => {
-            console.log(e)
+            winston.log('debug', e)
           });
       });
   }
 
-  openFileDialog(){
-    console.log('open dialog')
+  openFileDialog() {
+    winston.log('debug', 'open dialog')
+    dialog.showOpenDialog({
+      properties: ['openFile']
+    }, function (fileNames) {
+      if (fileNames.length > 0) {
+        winston.log('debug', 'file chosen:', fileNames[0])
+      } else {
+        winston.log('debug', 'no file chosen')
+      }
+    })
   }
 
   render() {
@@ -71,6 +82,11 @@ export class MyFiles extends React.Component {
       </div>
     )
   }
+}
+
+MyFiles.propTypes = {
+  files: React.PropTypes.array.isRequired,
+  actions: React.PropTypes.object
 }
 
 const mapStateToProps = (state) => {
