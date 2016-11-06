@@ -12,7 +12,8 @@ import authData from '../../../dropbox-auth.json'
 
 // import winston from 'winston'
 
-class MyFiles extends React.Component {
+// named export. Useful for testing only component itself without store logic
+export class MyFiles extends React.Component {
 
   constructor(params) {
     super(params);
