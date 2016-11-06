@@ -3,6 +3,7 @@ import { OPEN_FILE_DIALOG, ADD_NEW_FILE, SET_FILES } from '../actions'
 
 // import { remote } from 'electron'
 
+import winston from 'winston'
 
 const initialState = {
   myFiles: []
@@ -17,15 +18,6 @@ function fileReducer(state = initialState, action) {
         action.payload// payload contains new file
       ]
       return newState
-    case OPEN_FILE_DIALOG:
-
-
-      // // remote.dialog.showOpenDialog(remote.getCurrentWindow(), );
-      // remote.dialog.showOpenDialog(remote.getCurrentWindow(),{ properties: ['openFile'] }, function (data) {
-      //   console.log("yee", data);
-      // })
-
-      return state
     case SET_FILES:
       let newState2 = state
       newState2.files = action.payload
