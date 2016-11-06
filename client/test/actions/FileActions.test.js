@@ -27,7 +27,7 @@ describe('File actions', () => {
 
 
   it('should create an action to add a file', () => {
-    const file = { id: 1, path: 'TODO' }
+    const file = { id: 1, path: '/path/to/file' }
     const expectedAction = {
       type: actions.ADD_NEW_FILE,
       payload: file
@@ -36,7 +36,5 @@ describe('File actions', () => {
     const action = actions.addNewFile(file)
 
     action.should.deep.equal(expectedAction)
-    // TODO remove this when action works with real file
-    action.payload.path.should.not.equal('TODO')
   })
 })
