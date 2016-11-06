@@ -10,6 +10,7 @@ import crypto from 'crypto'
 import contractAddresses from '../contracts.json'
 import winston from './utils/log';
 import {writeFile} from "fs";
+import cloneDeep from 'clone-deep';
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
@@ -30,8 +31,9 @@ function logError(err) {
 function synchronizeUserFiles(filesHashes, userFilesLocations) {
     const userFiles = prepareUserFilesReading(userFilesLocations);
     const filesDataForUploadToDropbox = prepareDropboxUploadDataForFiles(userFiles);
+    const filesDataForUploadToDropbox_deep_copy = cloneDeep(filesDataForUploadToDropbox);
     uploadFileData(filesDataForUploadToDropbox, filesHashes);
-    downloadMissingSharedFiles(filesDataForUploadToDropbox, filesHashes);
+    downloadMissingSharedFiles(filesDataForUploadToDropbox_deep_copy, filesHashes);
 }
 
 function prepareUserFilesReading(userFilesLocations) {
