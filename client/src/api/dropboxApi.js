@@ -30,12 +30,12 @@ export default class DropboxClient {
             doAuthentication(this.key, this.secret)
                 .then((token) => {
                     this.token = token;
-                    this.dbx = new Dropbox({ accessToken: token});
+                    this.dbx = new Dropbox({accessToken: token});
                     resolve()
                 }).catch(err => {
                     logError(err);
                     reject(err)
-                });
+            });
         })
     }
 
@@ -44,7 +44,7 @@ export default class DropboxClient {
             this.dbx.filesListFolder({path: folderPath, recursive: true})
                 .then(response => {
                     resolve(response.entries);
-            })
+                })
         });
     }
 

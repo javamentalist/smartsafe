@@ -119,9 +119,9 @@ export default class EthereumClient {
 
                     return resolve(hashes)
                 }).catch(err => {
-                    logError(err);
-                    Promise.reject(err)
-                })
+                logError(err);
+                Promise.reject(err)
+            })
         })
     }
 
