@@ -5,8 +5,11 @@ import {post} from './apiUtils.js'
 import winston from 'winston';
 import Dropbox from 'dropbox'
 
+function logDebug(err) {
+    winston.log('debug', err)
+}
 function logError(err) {
-    winston.log('debug', err);
+    winston.log('error', err);
 }
 
 export default class DropboxClient {

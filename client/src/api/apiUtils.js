@@ -2,11 +2,6 @@ import fetch from 'node-fetch'
 import chalk from 'chalk'
 import {isString} from 'lodash'
 import isStream from 'isstream'
-import winston from 'winston'
-
-function logError(err) {
-    winston.log('debug', err);
-}
 
 const formatErrorMessage = (url, status, msg) => {
     return chalk.red('ERROR: ') + `${url} failed with status: ${status}. Message: ${msg}`

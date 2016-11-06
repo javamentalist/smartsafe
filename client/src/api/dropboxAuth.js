@@ -9,8 +9,11 @@ const SERVER_PORT = 8912;
 const REDIRECT_URL = `http://localhost:${SERVER_PORT}/oauth_callback`;
 const TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token';
 
+function logDebug(err) {
+    winston.log('debug', err)
+}
 function logError(err) {
-    winston.log('debug', err);
+    winston.log('error', err);
 }
 
 function logErrorF(format, err) {

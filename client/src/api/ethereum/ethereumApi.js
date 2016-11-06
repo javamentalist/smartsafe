@@ -3,8 +3,11 @@ import Contract from './contract.js'
 import _ from 'lodash'
 import winston from 'winston'
 
+function logDebug(err) {
+    winston.log('debug', err)
+}
 function logError(err) {
-    winston.log('debug', err);
+    winston.log('error', err);
 }
 
 export default class EthereumClient {

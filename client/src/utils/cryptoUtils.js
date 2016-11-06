@@ -5,8 +5,11 @@ import winston from 'winston'
 const algorithm = 'aes-256-ctr';
 const password = 'd6F3Efeq';
 
+function logDebug(err) {
+    winston.log('debug', err)
+}
 function logError(err) {
-    winston.log('debug', err);
+    winston.log('error', err);
 }
 
 function transformFile(inputPath, outputPath, transformation) {
