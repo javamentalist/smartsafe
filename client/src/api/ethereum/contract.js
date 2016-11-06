@@ -46,21 +46,23 @@ export default class Contract {
     }
 
     getContract(address) {
-        if (this.loadPromise) return this.loadPromise;
-
         return new Promise((resolve, reject) => {
-            this.load(address).then(resolve).catch(err => {
-                logError(err);
-                reject(err)
+            if (this.loadPromise) resolve(this.loadPromise);
+
+            this.load(address)
+                    .then(resolve)
+                    .catch(err => {
+                        logError(err);
+                        reject(err)
             });
         })
     }
 
     getSource(contractName) {
-        const filePath = path.join(__dirname, `contracts/${contractName}.sol`);
         return new Promise((resolve, reject) => {
+            const filePath = path.join(__dirname, `contracts/${contractName}.sol`);
             fs.readFile(filePath, 'utf8', (err, data) => {
-                if (err) return reject(err);
+                if (err) reject(err);
                 resolve(data)
             })
         })

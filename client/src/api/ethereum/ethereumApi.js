@@ -25,11 +25,13 @@ export default class EthereumClient {
     }
 
     getFileContract() {
-        if (this.contractAddresses) {
-            return this.file.getContract(this.contractAddresses.file)
-        } else {
-            return this.file.getContract()
-        }
+        return new Promise((resolve, reject) => {
+            if (this.contractAddresses) {
+                resolve(this.file.getContract(this.contractAddresses.file))
+            } else {
+                resolve(this.file.getContract())
+            }
+        });
     }
 
     addFile(hash, link, name) {
@@ -39,7 +41,6 @@ export default class EthereumClient {
             })
         }).catch((e) => {
             logError(err);
-            console.log(e)
         })
     }
 
@@ -104,29 +105,32 @@ export default class EthereumClient {
 
     getUserFiles() {
         return new Promise((resolve, reject) => {
-            this.getFileContract().then((contract) => {
-                const fileCount = +contract.getUserFileCount.call();
-                if (!fileCount) return resolve([]);
-                const hashes = _.times(fileCount, i => {
-                    const result = contract.getUserFile.call(i);
-                    return result;
-                }).map(result => {
-                    return result
-                });
-                resolve(hashes)
-            }).catch(err => {
-                logError(err);
-                Promise.reject(err)
-            })
+            this.getFileContract()
+                .then((contract) => {
+                    const fileCount = +contract.getUserFileCount.call();
+
+                    if (!fileCount) return resolve([]);
+
+                    const hashes = _.times(fileCount, i => {
+                        return contract.getUserFile.call(i);
+                    }).map(result => {
+                        return result
+                    });
+
+                    resolve(hashes)
+                }).catch(err => {
+                    logError(err);
+                    Promise.reject(err)
+                })
         })
     }
 
     findFileDropboxDataFromEthChain(hash) {
         return new Promise((resolve, reject) => {
             this.getFileContract().then((contract) => {
-                console.log(hash);
+                logDebug(hash);
                 const result = contract.getFileByHash.call(hash);
-                console.log(result);
+                logDebug(result);
                 resolve({link: result[0], name: result[1]})
             }).catch(err => {
                 logError(err);
