@@ -1,5 +1,4 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 
 
 const FileTableRow = ({file}) => (
@@ -11,5 +10,9 @@ const FileTableRow = ({file}) => (
     <td>{file.name}</td>
   </tr>
 )
+
+FileTableRow.propTypes = {
+  file: React.PropTypes.object.isRequired
+}
 
 export default FileTableRow
