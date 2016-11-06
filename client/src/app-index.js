@@ -1,4 +1,4 @@
-// Main index file. This is referenced by watchify
+// Main index file (named app-index.js because index.js was taken)
 
 import React from 'react';
 import { render } from 'react-dom';
