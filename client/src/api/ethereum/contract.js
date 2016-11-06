@@ -24,14 +24,14 @@ export default class Contract {
 
                     if (address) {
                         this.contract = this.web3.eth.contract(abi).at(address);
-                        resolve(this.contract)
+                        return resolve(this.contract)
                     } else {
                         this.web3.eth.contract(abi).new({data: code}, (err, contract) => {
                             if (err) return reject(err);
 
                             if (contract.address) {
                                 this.contract = contract;
-                                resolve(this.contract)
+                                return resolve(this.contract)
                             }
                         })
                     }
@@ -47,7 +47,7 @@ export default class Contract {
 
     getContract(address) {
         return new Promise((resolve, reject) => {
-            if (this.loadPromise) resolve(this.loadPromise);
+            if (this.loadPromise) return resolve(this.loadPromise);
 
             this.load(address)
                     .then(resolve)
@@ -63,7 +63,7 @@ export default class Contract {
             const filePath = path.join(__dirname, `contracts/${contractName}.sol`);
             fs.readFile(filePath, 'utf8', (err, data) => {
                 if (err) reject(err);
-                resolve(data)
+                return resolve(data)
             })
         })
     }

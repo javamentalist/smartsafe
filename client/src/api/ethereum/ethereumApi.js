@@ -2,6 +2,7 @@ import Web3 from 'web3'
 import Contract from './contract.js'
 import _ from 'lodash'
 import winston from 'winston'
+import TestRPC from 'ethereumjs-testrpc'
 
 function logDebug(err) {
     winston.log('debug', err)
@@ -15,7 +16,6 @@ export default class EthereumClient {
         const web3 = this.web3 = new Web3();
         this.contractAddresses = contractAddresses;
         web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
-
         try {
             web3.eth.defaultAccount = web3.eth.coinbase
         } catch (e) {
@@ -47,7 +47,7 @@ export default class EthereumClient {
     loadContracts() {
         return new Promise((resolve, reject) => {
             this.getFileContract().then((contract) => {
-                resolve(contract.address)
+                return resolve(contract.address)
             }).catch(err => {
                 logError(err);
                 reject(err)
@@ -62,13 +62,13 @@ export default class EthereumClient {
         this.getFileContract().then((contract) => {
             contract.allEvents().watch((error, result) => {
                 if (error) {
-                    console.log('Error', error);
+                    logError('Error', error);
                     return
                 }
 
                 const url = result.args._link;
                 const hash = result.args._hash;
-                callback({url, hash})
+                return callback({url, hash})
             })
         }).catch(err => {
             logError(err);
@@ -77,12 +77,12 @@ export default class EthereumClient {
     }
 
     addPeer(hash, link) {
-        console.log('addPeer');
         return new Promise((resolve, reject) => {
+            logDebug('addPeer');
             this.getFileContract().then((contract) => {
                 contract.addPeer(hash, link, (error) => {
-                    if (error) reject(error);
-                    resolve()
+                    if (error) return reject(error);
+                    return resolve()
                 })
             }).catch(err => {
                 logError(err);
@@ -92,10 +92,10 @@ export default class EthereumClient {
     }
 
     getPeer(hash) {
-        console.log('getPeer');
         return new Promise((resolve, reject) => {
+            logDebug('getPeer');
             this.getFileContract().then((contract) => {
-                resolve(contract.getPeers.call(hash)[1])
+                return resolve(contract.getPeers.call(hash)[1])
             }).catch(err => {
                 logError(err);
                 Promise.reject(err)
@@ -103,7 +103,7 @@ export default class EthereumClient {
         })
     }
 
-    getUserFiles() {
+    getUserFilesHashes() {
         return new Promise((resolve, reject) => {
             this.getFileContract()
                 .then((contract) => {
@@ -117,7 +117,7 @@ export default class EthereumClient {
                         return result
                     });
 
-                    resolve(hashes)
+                    return resolve(hashes)
                 }).catch(err => {
                     logError(err);
                     Promise.reject(err)
@@ -131,7 +131,7 @@ export default class EthereumClient {
                 logDebug(hash);
                 const result = contract.getFileByHash.call(hash);
                 logDebug(result);
-                resolve({link: result[0], name: result[1]})
+                return resolve({link: result[0], name: result[1]})
             }).catch(err => {
                 logError(err);
                 Promise.reject(err)
