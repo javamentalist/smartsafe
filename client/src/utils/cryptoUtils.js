@@ -3,7 +3,6 @@ import fs from 'fs'
 import winston from 'winston'
 
 const algorithm = 'aes-256-ctr';
-const password = 'd6F3Efeq';
 
 function logDebug(err) {
     winston.log('debug', err)
@@ -26,7 +25,7 @@ function transformFile(inputPath, outputPath, transformation) {
     })
 }
 
-export function encrypt(filePath) {
+export function encrypt(filePath, password) {
     return new Promise((resolve, reject) => {
         const resultPath = `${filePath}.enc`;
         const encrypt = crypto.createCipher(algorithm, password);
@@ -40,7 +39,7 @@ export function encrypt(filePath) {
     })
 }
 
-export function decrypt(filePath) {
+export function decrypt(filePath, password) {
     return new Promise((resolve, reject) => {
         const resultPath = filePath.substring(0, filePath.length - 4);
         const decrypt = crypto.createDecipher(algorithm, password);
