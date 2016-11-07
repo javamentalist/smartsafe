@@ -53,6 +53,7 @@
     "jsdom-global": "2.1.0",
     "mocha": "^3.1.2",
     "react-addons-test-utils": "^15.3.2",
-    "solc": "^0.4.2"
+    "solc": "^0.4.2",
+    "fs-promise": "^0.5.0"
   }
 }
