@@ -1,10 +1,10 @@
 import Promise from 'bluebird'
 import {createHash} from 'crypto'
-import fs from 'fs'
+import nodedir from 'node-dir'
 
 export const readDir = (directory) => {
     return new Promise((resolve, reject) => {
-        fs.readdir(directory, (err, files) => {
+        nodedir.files(directory, (err, files) => {
             if (err) return reject(err);
             return resolve(files)
         })
