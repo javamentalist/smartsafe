@@ -10,7 +10,6 @@ import crypto from 'crypto'
 import contractAddresses from '../contracts.json'
 import winston from './utils/log';
 import {writeFile} from "fs";
-import cloneDeep from 'clone-deep';
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
@@ -36,6 +35,7 @@ function synchronizeUserFiles(filesHashesFromEth, userFilesLocationsFromEth) {
 function prepareDropboxUploadDataForFiles(userFilesLocationsFromEth) {
     try {
         return userFilesLocationsFromEth.map(filePath => {
+            filePath = removeFileDirFromFilePath(filePath);
             const readStream = fs.createReadStream(`${FILE_DIR}/${filePath}`);
             const fileHash = createHashForFile(readStream)
                 .then(result => {return result});
@@ -49,6 +49,10 @@ function prepareDropboxUploadDataForFiles(userFilesLocationsFromEth) {
     }
 }
 
+function removeFileDirFromFilePath (filePath) {
+    return filePath.substring(0, filePath.lastIndexOf(`${FILE_DIR}`));
+}
+
 function uploadFileData(userFilesDataForUploadToDropbox, filesHashesFromEth) {
     const userFilesDataForUploadToEth
         = syncWithDropbox(userFilesDataForUploadToDropbox, filesHashesFromEth);
@@ -56,7 +60,7 @@ function uploadFileData(userFilesDataForUploadToDropbox, filesHashesFromEth) {
     return uploadFileDataToEth(preparedFileDataForUploadToEth);
 }
 
-function fileHasNotBeenHashed(fileHash, filesHashesFromEth) {
+function fileHasNotBeenUploaded(fileHash, filesHashesFromEth) {
     return filesHashesFromEth.indexOf(fileHash) === -1;
 
 }
@@ -69,7 +73,7 @@ function syncWithDropbox(userFilesDataForUploadToDropbox, filesHashesFromEth) {
                     .then(fileData => {
                         let filePath = fileData.filePath;
                         let fileDropboxUploadHash = fileData.fileInfo;
-                        if (fileHasNotBeenHashed(fileDropboxUploadHash, filesHashesFromEth)) {
+                        if (fileHasNotBeenUploaded(fileDropboxUploadHash, filesHashesFromEth)) {
                             const sharedLink = dropboxClient.upload(`${FILE_DIR}/${filePath}`, `/${filePath}`);
                             return resolve({
                                 filePath: filePath,
@@ -149,7 +153,6 @@ dropboxClient.authenticate()
     })
     .then(files => {
         const userFiles = files.filter((file) => {
-            logError(file);
             return IGNORED_FILES.indexOf(file) === -1
         });
 
