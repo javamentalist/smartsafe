@@ -31,7 +31,7 @@ export function encrypt(filePath, password) {
         const encrypt = crypto.createCipher(algorithm, password);
 
         return transformFile(filePath, resultPath, encrypt).then(() => {
-            resolve(resultPath)
+            return resolve(resultPath)
         }).catch(err => {
                 logError(err);
                 reject(err)
@@ -45,7 +45,7 @@ export function decrypt(filePath, password) {
         const decrypt = crypto.createDecipher(algorithm, password);
 
         return transformFile(filePath, resultPath, decrypt).then(() => {
-            resolve(filePath)
+            return resolve(filePath)
         }).catch(err => {
                 logError(err);
                 reject(err)

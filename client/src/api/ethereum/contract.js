@@ -50,7 +50,7 @@ export default class Contract {
             if (this.loadPromise) return resolve(this.loadPromise);
 
             this.load(address)
-                .then(resolve)
+                .then(result => {return resolve(result)})
                 .catch(err => {
                     logError(err);
                     reject(err)
