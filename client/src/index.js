@@ -10,6 +10,7 @@ import crypto from 'crypto'
 import contractAddresses from '../contracts.json'
 import winston from './utils/log';
 import {writeFile} from "fs";
+import * as path from "path";
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
@@ -37,7 +38,6 @@ function synchronizeUserFiles(filesHashesFromEth, userFilesLocationsFromEth) {
         return Promise.all(filesDataToDropbox.map(fileDataToDropbox => {
             const fileName = fileDataToDropbox.fileName;
             const fileDropboxUploadHash = fileDataToDropbox.fileInfo;
-
             if (!fileHasBeenUploaded(fileDropboxUploadHash, filesHashesFromEth)) {
                 return uploadLocalFilesToDropbox(fileName).reflect();
             } else {
@@ -45,7 +45,7 @@ function synchronizeUserFiles(filesHashesFromEth, userFilesLocationsFromEth) {
             }
         })).filter(function(promise) {
             return !promise.isFulfilled();
-        })
+        });
     }).then(filesDataToEth => {
         return Promise.all(filesDataToEth.map(fileDataToEth => {
             return uploadLocalFileMetaDataToEth(fileDataToEth)
@@ -91,7 +91,7 @@ function prepareDropboxUploadDataForFiles(filePath) {
 }
 
 function removeFileDirFromFilePath(filePath) {
-    return filePath.substring(0, filePath.lastIndexOf(`${FILE_DIR}`));
+    return filePath.substring(filePath.lastIndexOf(FILE_DIR) + FILE_DIR.length + 1, filePath.length);
 }
 
 function fileHasBeenUploaded(fileHash, filesHashesFromEth) {
