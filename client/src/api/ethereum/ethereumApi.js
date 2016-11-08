@@ -2,7 +2,6 @@ import Web3 from 'web3'
 import Contract from './contract.js'
 import _ from 'lodash'
 import winston from 'winston'
-import TestRPC from 'ethereumjs-testrpc'
 
 function logDebug(err) {
     winston.log('debug', err)
@@ -34,12 +33,14 @@ export default class EthereumClient {
         });
     }
 
-    addFile(hash, link, name) {
-        this.getFileContract().then((contract) => {
-            contract.saveFile(hash, link, name, (error) => {
-                return contract.getLink.call(hash)
-            })
-        }).catch((e) => {
+    addFileMetaData(hash, link, name) {
+        this.getFileContract().then(contract => {
+            contract.saveFile.sendTransaction(hash, link, name, (error) => {
+                if (error) return Promise.reject(error);
+                return Promise.resolve()
+            });
+            // return contract.getLink.call(hash)
+        }).catch((err) => {
             logError(err);
         })
     }
@@ -76,11 +77,11 @@ export default class EthereumClient {
         })
     }
 
-    addPeer(hash, link) {
+    addAPeer(hash, link) {
         return new Promise((resolve, reject) => {
-            logDebug('addPeer');
+            logDebug('addAPeer');
             this.getFileContract().then((contract) => {
-                contract.addPeer(hash, link, (error) => {
+                contract.addPeer.sendTransaction(hash, link, (error) => {
                     if (error) return reject(error);
                     return resolve()
                 })
@@ -119,8 +120,8 @@ export default class EthereumClient {
 
                     return resolve(hashes)
                 }).catch(err => {
-                logError(err);
-                Promise.reject(err)
+                    logError(err);
+                    Promise.reject(err)
             })
         })
     }

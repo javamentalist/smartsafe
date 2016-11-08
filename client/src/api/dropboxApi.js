@@ -77,7 +77,7 @@ export default class DropboxClient {
             .replace(/0$/, '1')
     }
 
-    static getFilePathFromUrl(url) {
+    static getFileNameFromUrl(url) {
         const filePathRegex = /^https:\/\/dl\.dropboxusercontent\.com\/s\/[\w\d]+\/(.*)\?dl=1$/;
         return filePathRegex.exec(url)[1]
     }
