@@ -10,7 +10,6 @@ import crypto from 'crypto'
 import contractAddresses from '../contracts.json'
 import winston from './utils/log';
 import {writeFile} from "fs";
-import * as path from "path";
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
@@ -31,23 +30,25 @@ function logError(err) {
 function synchronizeUserFiles(filesHashesFromEth, userFilesLocationsFromEth) {
     /// Upload local files
     Promise.resolve(userFilesLocationsFromEth).then(userFilesFullPaths => {
-            return Promise.all(userFilesFullPaths.map(userFileFullPath => {
-                return prepareDropboxUploadDataForFiles(userFileFullPath);
-            }));
+        return Promise.all(userFilesFullPaths.map(userFileFullPath => {
+            return prepareDropboxUploadDataForFiles(userFileFullPath);
+        }));
     }).then(filesDataToDropbox => {
         return Promise.all(filesDataToDropbox.map(fileDataToDropbox => {
             const fileName = fileDataToDropbox.fileName;
             const fileDropboxUploadHash = fileDataToDropbox.fileInfo;
             if (!fileHasBeenUploaded(fileDropboxUploadHash, filesHashesFromEth)) {
-                return uploadLocalFilesToDropbox(fileName).reflect();
-            } else {
-                return Promise.resolve(undefined).reflect()
+                return uploadLocalFilesToDropbox(fileName, fileDropboxUploadHash)
             }
-        })).filter(function(promise) {
-            return !promise.isFulfilled();
-        });
+            return Promise.resolve(undefined)
+
+        }))
     }).then(filesDataToEth => {
+        if (filesDataToEth.length === -1) {
+            return Promise.resolve()
+        }
         return Promise.all(filesDataToEth.map(fileDataToEth => {
+            if(fileDataToEth == null) return;
             return uploadLocalFileMetaDataToEth(fileDataToEth)
         }));
     }).catch(err => {
@@ -64,15 +65,18 @@ function synchronizeUserFiles(filesHashesFromEth, userFilesLocationsFromEth) {
         return Promise.all(filesDataToDropbox.map(fileDataToDropbox => {
             const fileDropboxUploadHash = fileDataToDropbox.fileInfo;
             if (fileHasBeenUploaded(fileDropboxUploadHash, filesHashesFromEth)) {
-                return downloadMissingLocalFiles(fileDropboxUploadHash).reflect();
-            } else {
-                return Promise.resolve(undefined).reflect()
+                return downloadLocalFilesMetaDataFromEth(fileDropboxUploadHash)
             }
-        })).filter(function(promise) {
-            return !promise.isFulfilled();
-        })
+            return Promise.resolve(undefined)
+        }))
+
     }).then(missingLocalFiles => {
+        logError(missingLocalFiles)
+        if (missingLocalFiles.length === -1) {
+            return Promise.resolve()
+        }
         return Promise.all(missingLocalFiles.map(missingLocalFile => {
+            if(missingLocalFile == null) return;
             return Promise.resolve(downloadFileFromDropbox(missingLocalFile));
         }))
     }).catch(err => {
@@ -85,8 +89,9 @@ function prepareDropboxUploadDataForFiles(filePath) {
     return new Promise((resolve, reject) => {
         const fileName = removeFileDirFromFilePath(filePath);
         const readStream = fs.createReadStream(`${FILE_DIR}/${fileName}`);
-        const fileHash = createHashForFile(readStream);
-        resolve({fileName: fileName, fileInfo: fileHash})
+        return createHashForFile(readStream).then(fileHash => {
+            return resolve({fileName: fileName, fileInfo: fileHash})
+        })
     })
 }
 
@@ -98,39 +103,49 @@ function fileHasBeenUploaded(fileHash, filesHashesFromEth) {
     return filesHashesFromEth.indexOf(fileHash) !== -1;
 }
 
-function uploadLocalFilesToDropbox(fileName) {
+function uploadLocalFilesToDropbox(fileName, fileDropboxUploadHash) {
     return new Promise((resolve, reject) => {
-        const sharedLink = dropboxClient.upload(`${FILE_DIR}/${fileName}`, `/${fileName}`);
-        resolve({
-            fileName: fileName,
-            fileInfo: sharedLink
-        });
+        Promise.resolve(dropboxClient.upload(`${FILE_DIR}/${fileName}`, `/${fileName}`))
+            .then(responseJson => {
+                return resolve({
+                fileName: fileName,
+                fileHash: fileDropboxUploadHash,
+                fileSharedLink: responseJson.url
+            });
+        })
+
+
     })
 }
 
 function uploadLocalFileMetaDataToEth(fileData) {
     return new Promise((resolve, reject) => {
         const fileName = fileData.fileName;
-        const fileDropboxSharedLinkJSON = fileData.fileInfo;
+        const fileHash = fileData.fileHash;
+        const fileDropboxSharedLink = fileData.fileSharedLink;
+        ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName).then(()=> {
+            return resolve()
+        });
 
-        resolve(ethereumClient
-            .addFileMetaData(fileDropboxSharedLinkJSON, fileDropboxSharedLinkJSON.url, fileName));
     })
 }
 
-function downloadMissingLocalFiles(fileDropboxUploadHash) {
+function downloadLocalFilesMetaDataFromEth(fileDropboxUploadHash) {
     return new Promise((resolve, reject) => {
-        let fileMetaDataFromEth = ethereumClient.findFileDropboxDataFromEthChain(fileDropboxUploadHash);
-        resolve(fileMetaDataFromEth)
+        (ethereumClient.findFileDropboxDataFromEthChain(fileDropboxUploadHash))
+            .then(fileMetaDataFromEthf => {return resolve(fileMetaDataFromEth)})
     })
 }
 
-function downloadFileFromDropbox(file) {
-    const downloadUrl = DropboxClient.getDirectDownloadLink(file.link);
-    const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
-    const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
-    https.get(downloadUrl, fileToDownload => {
-        fileToDownload.pipe(fileStream)
+function downloadFileFromDropbox(fileMetaDataFromEth) {
+    return new Promise((resolve, reject) => {
+        const downloadUrl = DropboxClient.getDirectDownloadLink(fileMetaDataFromEth.link);
+        const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
+        const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
+        https.get(downloadUrl, fileToDownload => {
+            fileToDownload.pipe(fileStream)
+        });
+        return resolve()
     })
 }
 
