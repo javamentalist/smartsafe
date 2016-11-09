@@ -31,10 +31,10 @@ export default class DropboxClient {
                 .then((token) => {
                     this.token = token;
                     this.dbx = new Dropbox({accessToken: token});
-                    resolve()
+                    return resolve()
                 }).catch(err => {
                     logError(err);
-                    reject(err)
+                    return reject(err)
             });
         })
     }

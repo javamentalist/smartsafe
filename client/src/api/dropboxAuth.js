@@ -38,16 +38,16 @@ const getAuthenticationUrl = (id) => {
 
 export function doAuthentication(id, secret) {
     return new Promise((resolve, reject) => {
-        listenForOAuthCallback(id, secret).then(resolve)
-            .catch(err => {
-                logError(err);
-                reject()
-            });
+        listenForOAuthCallback(id, secret).then(result => {
+            return resolve(result)
+        }).catch(err => {
+            logError(err);
+            return reject()
+        });
 
         const url = getAuthenticationUrl(id);
         logErrorF('Opening authentication URL \'%s\' through browser', url);
         open(url)
-
     })
 }
 
@@ -66,7 +66,9 @@ const listenForOAuthCallback = (id, secret) => {
                     res.end(`Error! Failed to get OAuth code!\nCause: (${error}) - ${errDescription}`)
                 }
                 server.close();
-                getToken(id, code, secret).then(resolve).catch(reject);
+                getToken(id, code, secret).then(token => {
+                    return resolve(token)
+                });
             }
         });
         logErrorF("Listening for OAuth token on port: %s", SERVER_PORT);

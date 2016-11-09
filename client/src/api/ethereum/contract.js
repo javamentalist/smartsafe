@@ -36,10 +36,7 @@ export default class Contract {
                         })
                     }
                 })
-            }).catch(err => {
-                logError(err);
-                reject(err)
-            });
+            })
         });
 
         return this.loadPromise
@@ -47,14 +44,10 @@ export default class Contract {
 
     getContract(address) {
         return new Promise((resolve, reject) => {
-            if (this.loadPromise) return resolve(this.loadPromise);
+            if (this.loadPromise) resolve(this.loadPromise);
 
             this.load(address)
                 .then(result => {return resolve(result)})
-                .catch(err => {
-                    logError(err);
-                    reject(err)
-                });
         })
     }
 

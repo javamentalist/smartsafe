@@ -26,22 +26,21 @@ export default class EthereumClient {
     getFileContract() {
         return new Promise((resolve, reject) => {
             if (this.contractAddresses) {
-                resolve(this.file.getContract(this.contractAddresses.file))
-            } else {
-                resolve(this.file.getContract())
+                return resolve(this.file.getContract(this.contractAddresses.file))
             }
+            return resolve(this.file.getContract())
         });
     }
 
     addFileMetaData(hash, link, name) {
-        this.getFileContract().then(contract => {
-            contract.saveFile.sendTransaction(hash, link, name, (error) => {
-                if (error) return Promise.reject(error);
-                return Promise.resolve()
-            });
-            // return contract.getLink.call(hash)
-        }).catch((err) => {
-            logError(err);
+        return new Promise((resolve, reject) => {
+            this.getFileContract().then(contract => {
+                contract.saveFile(hash, link, name, (error) => {
+                    if (error) return reject(error);
+                    return resolve()
+                });
+                // return contract.getLink.call(hash)
+            })
         })
     }
 
@@ -49,9 +48,6 @@ export default class EthereumClient {
         return new Promise((resolve, reject) => {
             this.getFileContract().then((contract) => {
                 return resolve(contract.address)
-            }).catch(err => {
-                logError(err);
-                reject(err)
             })
         })
     }
@@ -119,10 +115,7 @@ export default class EthereumClient {
                     });
 
                     return resolve(hashes)
-                }).catch(err => {
-                    logError(err);
-                    Promise.reject(err)
-            })
+                })
         })
     }
 
