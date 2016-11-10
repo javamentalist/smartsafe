@@ -1,4 +1,4 @@
-import {fileReducer} from '../../src/reducers'
+import fileReducer from '../../src/reducers/fileReducer'
 import * as FileActions from '../../src/actions/FileActions'
 
 import * as chai from 'chai'
@@ -9,13 +9,13 @@ describe('fileReducer', () => {
     fileReducer(undefined, {})
       .should
       .deep
-      .equal({myFiles: []})
+      .equal({userFiles: []})
   });
 
   describe('SET_FILES', () => {
-    it('should set myFiles to empty array', () => {
+    it('should set userFiles to empty array', () => {
       const initialState = {
-        myFiles: [
+        userFiles: [
           {
             id: 1,
             name: 'file to be removed'
@@ -25,12 +25,12 @@ describe('fileReducer', () => {
 
       const state = fileReducer(initialState, FileActions.setFiles([]));
 
-      state.myFiles.should.be.empty;
+      state.userFiles.should.be.empty;
     });
 
-    it('should set myFiles to passed non-empty array', () => {
+    it('should set userFiles to passed non-empty array', () => {
       const initialState = {
-        myFiles: []
+        userFiles: []
       };
       const files = [
         {
@@ -45,12 +45,12 @@ describe('fileReducer', () => {
       const state = fileReducer(initialState, FileActions.setFiles(files));
 
       state
-        .myFiles
+        .userFiles
         .should
         .have
         .lengthOf(files.length);
       state
-        .myFiles
+        .userFiles
         .should
         .deep
         .equal(files);
@@ -60,7 +60,7 @@ describe('fileReducer', () => {
   describe('ADD_NEW_FILE', () => {
     it('should add new file to existing ones', () => {
       const initialState = {
-        myFiles: [
+        userFiles: [
           {
             id: 1,
             name: 'Existing file'
@@ -75,13 +75,13 @@ describe('fileReducer', () => {
       const state = fileReducer(initialState, FileActions.addNewFile(newFile));
 
       state
-        .myFiles
+        .userFiles
         .should
         .have
-        .lengthOf(initialState.myFiles.length + 1)
+        .lengthOf(initialState.userFiles.length + 1)
       // array should contain new file object
       state
-        .myFiles
+        .userFiles
         .should
         .deep
         .include

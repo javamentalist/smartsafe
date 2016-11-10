@@ -5,7 +5,7 @@ import {connect} from 'react-redux'
 
 import {FileTable} from '.'
 import {Button} from '../'
-import * as FileActions from '../../actions'
+import * as Actions from '../../actions'
 
 import DropboxClient from '../../api/dropboxApi'
 import authData from '../../../dropbox-auth.json'
@@ -31,30 +31,43 @@ export class MyFiles extends React.Component {
       .dropboxClient
       .authenticate()
       .then(() => {
+        winston.log('debug', 'Authentication successful');
+
+        this
+          .props
+          .actions
+          .setAuthStatus(true);
+
         this
           .dropboxClient
           .listFolder()
-          .then(result => {
+          .then((result) => {
             let files = Array.from(result);
-            if (files.length !== 0) {
-              files.forEach(res => {
-                winston.log('debug', 'found file', res.name)
-              });
-            } else {
-              winston.log('debug', 'oh shit', result);
-            }
-
-            this
-              .props
-              .actions
-              .setFiles(files);
-
+            this.handleListFolderResult(files);
             return files;
           })
-          .catch((e) => {
-            winston.log('debug', e)
+          .catch((reject) => {
+            winston.log('debug', reject.error)
           });
       });
+  }
+
+  handleListFolderResult(files) {
+
+    if (files.length !== 0) {
+      winston.log('debug', 'Found', files.length, 'files');
+      files.forEach(res => {
+        winston.log('debug', '- Name: ', res.name)
+        console.log(res)
+      });
+    } else {
+      winston.log('debug', 'Found no files in app folder');
+    }
+
+    this
+      .props
+      .actions
+      .setFiles(files);
   }
 
   openFileDialog() {
@@ -63,9 +76,10 @@ export class MyFiles extends React.Component {
       properties: ['openFile']
     }, function (fileNames) {
       if (fileNames.length > 0) {
-        winston.log('debug', 'file chosen:', fileNames[0])
+        let file = fileNames[0]
+        winston.log('debug', 'File chosen:', file)
       } else {
-        winston.log('debug', 'no file chosen')
+        winston.log('debug', 'No file chosen')
       }
     })
   }
@@ -79,6 +93,7 @@ export class MyFiles extends React.Component {
           text={'Add file'}
           iconClass={'plus'}
           onClick={() => this.openFileDialog()}/>
+        <input type="file"/>
       </div>
     )
   }
@@ -92,13 +107,13 @@ MyFiles.propTypes = {
 const mapStateToProps = (state) => {
   return {
     // key - props key value - which part of state to bind
-    files: state.files.myFiles
+    files: state.files.userFiles
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    actions: bindActionCreators(FileActions, dispatch)
+    actions: bindActionCreators(Actions, dispatch)
   }
 }
 
