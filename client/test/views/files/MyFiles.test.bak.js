@@ -6,14 +6,42 @@ import chai from 'chai'
 import chaiEnzyme from 'chai-enzyme'
 chai.use(chaiEnzyme())
 
+import mockery from 'mockery'
+
 import {MyFilesUndecorated, FileTable} from '../../../src/views/files'
 import {Button} from '../../../src/views'
 
 describe('<MyFiles />', () => {
   let wrapper
 
+  before(() => {
+    mockery.enable({useCleanCache: true});
+    let electronMock = {
+      // remote: {
+
+        getGlobal: function (globalName) {/* your mock code */
+          let global = {}
+          if (globalName == 'winston') {
+            global.log = function (type, str, ...opt) {
+              return str; //console.log(str, ...opt);
+            }
+          }
+        },
+        dialog: {
+          openFileDialog: function (options, cb) {
+            return cb();
+          }
+        }
+      // }
+    };
+    mockery.registerMock('electron/remote', electronMock);
+
+  });
+
   beforeEach(() => {
-    wrapper = shallow(<MyFilesUndecorated/>)
+    // Pass files as empty array, because we don't access it and don't care about
+    // its' contents
+    wrapper = shallow(<MyFilesUndecorated files={[]}/>)
   });
 
   it('should render', () => {
