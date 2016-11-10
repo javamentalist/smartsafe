@@ -122,9 +122,7 @@ export default class EthereumClient {
     findFileDropboxDataFromEthChain(hash) {
         return new Promise((resolve, reject) => {
             this.getFileContract().then((contract) => {
-                logDebug(hash);
                 const result = contract.getFileByHash.call(hash);
-                logDebug(result);
                 return resolve({link: result[0], name: result[1]})
             }).catch(err => {
                 logError(err);
