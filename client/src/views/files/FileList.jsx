@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux'
 
-import {FileTable} from '.'
+import {FileTable, FileDetail} from '.'
 import {Button} from '../'
 import * as Actions from '../../actions'
 
@@ -84,15 +84,30 @@ export class FileList extends React.Component {
     })
   }
 
+  openDetailView(fileId) {
+    this
+      .props
+      .actions
+      .setDetail(fileId);
+    this
+      .context
+      .router
+      .push(`/files/${fileId}`);
+  }
+
   render() {
     return (
       <div>
         <h1>Files</h1>
-        <FileTable files={this.props.files} onRowClick={this.props.actions.setDetail}/>
+        <FileTable
+          files={this.props.files}
+          onRowClick={this
+          .openDetailView
+          .bind(this)}/>
         <Button
           text={'Add file'}
           iconClass={'plus'}
-          onClick={() => this.openFileDialog()}/> {this.props.children}
+          onClick={() => this.openFileDialog()}/>
       </div>
     )
   }
@@ -100,7 +115,12 @@ export class FileList extends React.Component {
 
 FileList.propTypes = {
   files: React.PropTypes.array.isRequired,
-  actions: React.PropTypes.object
+  actions: React.PropTypes.object,
+  children: React.PropTypes.any // no idea what element this is
+}
+
+FileList.contextTypes = {
+  router: React.PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => {
