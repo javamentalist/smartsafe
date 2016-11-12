@@ -75,7 +75,7 @@ export class FileList extends React.Component {
     dialog.showOpenDialog({
       properties: ['openFile']
     }, function (fileNames) {
-      if (fileNames.length > 0) {
+      if (fileNames && fileNames.length > 0) {
         let file = fileNames[0]
         winston.log('debug', 'File chosen:', file)
       } else {
@@ -88,12 +88,11 @@ export class FileList extends React.Component {
     return (
       <div>
         <h1>Files</h1>
-        <FileTable files={this.props.files}/>
+        <FileTable files={this.props.files} onRowClick={this.props.actions.setDetail}/>
         <Button
           text={'Add file'}
           iconClass={'plus'}
-          onClick={() => this.openFileDialog()}/>
-        <input type="file"/>
+          onClick={() => this.openFileDialog()}/> {this.props.children}
       </div>
     )
   }

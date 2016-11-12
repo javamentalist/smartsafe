@@ -1,7 +1,10 @@
-import {ADD_NEW_FILE, SET_FILES} from '../actions'
+import {ADD_NEW_FILE, SET_FILES, SET_DETAIL} from '../actions'
+
+import _ from 'lodash'
 
 const initialState = {
-  userFiles: []
+  userFiles: [],
+  detailedFile: {}
 }
 
 function fileReducer(state = initialState, action) {
@@ -12,9 +15,17 @@ function fileReducer(state = initialState, action) {
           ...state.userFiles,
           action.payload // payload contains new file
         ]
-      })
+      });
     case SET_FILES:
-      return Object.assign({}, state, {userFiles: action.payload})
+      return Object.assign({}, state, {userFiles: action.payload});
+    case SET_DETAIL:
+      return Object.assign({}, state, {
+        detailedFile: _
+          .chain(state.userFiles)
+          .find({'id': action.payload})
+          .defaultTo({})
+          .value()
+      });
     default:
       return state
   }
