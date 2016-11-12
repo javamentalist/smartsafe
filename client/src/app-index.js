@@ -13,25 +13,7 @@ import rootReducer from './reducers'
 const initialState = {
   // files: name given to fileReducer in when combining reducers
   files: {
-    userFiles: [
-      {
-        id: 1,
-        shared: 1,
-        name: 'File 1'
-      }, {
-        id: 2,
-        shared: null,
-        name: 'File 2'
-      }, {
-        id: 3,
-        shared: 5,
-        name: 'File 3'
-      }, {
-        id: 4,
-        shared: 0,
-        name: 'File 4'
-      }
-    ]
+    userFiles: []
   },
   user: {
     isAuthenticated: false
@@ -48,7 +30,6 @@ const Root = ({store}) => (
 
 render(
   <Root store={store}/>, document.getElementById('root'));
-
 
 Root.propTypes = {
   store: React.PropTypes.object.isRequired
