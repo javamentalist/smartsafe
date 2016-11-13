@@ -4,10 +4,12 @@ import authData from '../dropbox-auth.json'
 import fs from 'fs'
 import _ from 'lodash'
 import https from 'https'
-import {readDir, createHash} from './utils/fileUtils.js'
+import {readDir, createHashForFile} from './utils/fileUtils.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
 import crypto from 'crypto'
 import contractAddresses from '../contracts.json'
+import winston from './utils/log';
+import {writeFile} from "fs";
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
@@ -83,15 +85,15 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
 }
 function getFilesOnEthNotLocallyPresent(localFileDatas, fileEthHash) {
     return new Promise((resolve, reject) => {
-            for (let localFileDataIndex = 0; localFileDataIndex < localFileDatas.length; ++localFileDataIndex) {
-                const localFileData = localFileDatas[localFileDataIndex];
+        for (let localFileDataIndex = 0; localFileDataIndex < localFileDatas.length; ++localFileDataIndex) {
+            const localFileData = localFileDatas[localFileDataIndex];
 
-                const localFileHash = localFileData.fileInfo;
-                if (localFileHash === fileEthHash) {
-                    return resolve()
-                }
+            const localFileHash = localFileData.fileInfo;
+            if (localFileHash === fileEthHash) {
+                return resolve()
             }
-            return resolve(downloadMetaDataFromEthWithHash(fileEthHash));
+        }
+        return resolve(downloadMetaDataFromEthWithHash(fileEthHash));
     });
 }
 
@@ -144,8 +146,6 @@ function uploadLocalFilesToDropbox(fileName, fileHash) {
                     fileSharedLink: responseJson.url
                 });
             })
-
-
     })
 }
 
@@ -169,82 +169,80 @@ function downloadFileFromDropbox(fileMetaDataFromEth) {
         https.get(downloadUrl, fileToDownload => {
             fileToDownload.pipe(fileStream)
         });
-    });
+        return resolve()
+    })
 }
 
-const fileHasBeenHashed = function(fileHash, filesHashes) {
-    return filesHashes.indexOf(fileHash) !== -1;
 
-};
+// contracts
+// ethereumClient.loadContracts().then((address) => {
+//     writeFile('contracts.json', JSON.stringify({file: address}), (err) => {
+//         if (err) console.log(err)
+//     });
+//     console.log('contracts loaded')
+// }).catch((e) => {
+//     console.log(e)
+// });
 
-const uploadUserFileToDropbox = function(userFilesDataForUploadToDropbox, filesHashes) {
-    try {
-        return userFilesDataForUploadToDropbox.map(userFileDataForDropbox => {
-            Promise.resolve(userFileDataForDropbox).then((filePath, fileDropboxUploadHash) => {
-                return new Promise((resolve, reject) => {
-                    if (fileHasBeenHashed(fileDropboxUploadHash, filesHashes)) {
-                        resolve({filePath: filePath,
-                                fileInfo: dropboxClient.upload(`${FILE_DIR}/${filePath}`, `/${filePath}`)})
-                    }
-                })
-            }).catch(err => {
-            console.log(err).bind(console);
-            Promise.reject(err)
-            })
-        })
-    } catch (err) {
-        console.log(err).bind(console);
-        return []
-    }
-};
-
-const uploadUserFileMetaDataToEth = function(userFilesDataForUploadToEth, filesHashes) {
-    try {
-        return userFilesDataForUploadToEth.map(userFileDataForEth => {
-            Promise.resolve(userFileDataForEth).then((filePath, fileDropboxSharedLinkJSON) => {
-                return new Promise((resolve, reject) => {
-                    if (fileHasBeenHashed(fileDropboxSharedLinkJSON, filesHashes)) {
-                        resolve({filePath: filePath,
-                                fileInfo: ethereumClient
-                                    .addFile(fileDropboxSharedLinkJSON, fileDropboxSharedLinkJSON.url, filePath)})
-                    } else {
-                        resolve()
-                    }
-                })
-            })
-        }).catch(err => {
-            console.log(err).bind(console);
-            Promise.reject(err)
-        })
-    } catch (err) {
-        console.log(err).bind(console);
-        return []
-    }
-};
-
-const downloadMissingSharedFiles = function (userFilesDataForUploadToDropbox, filesHashes) {
-    userFilesDataForUploadToDropbox.map(userFileDataForDropbox => {
-        Promise.resolve(userFileDataForDropbox).then((filePath, fileDropboxUploadHash) => {
-            if (!_.find(filesHashes, fileDropboxUploadHash)) {
-                ethereumClient.getFile(fileDropboxUploadHash).then(file => {
-                    const dlUrl = dropboxClient.getDirectDownloadLink(file.link);
-                    const filePath = dropboxClient.getFilePathFromUrl(dlUrl);
-                    const fileStream = fs.createWriteStream(`${FILE_DIR}/${filePath}`);
-                    https.get(dlUrl, res => {
-                        res.pipe(fileStream)
-                    })
-                })
-            }
-        })
+// folder synchronization
+dropboxClient.authenticate()
+    .then(() => {
+        return readDir(FILE_DIR)
+    }).then(files => {
+    const userFilesLocations = files.filter((file) => {
+        return IGNORED_FILES.indexOf(file) === -1
     });
-};
 
-dropboxClient.authenticate().then(() => {
-    return readDir(FILE_DIR)
-        }).then((files) => {
-            const userFiles = files.filter((file) => {
-                return IGNORED_FILES.indexOf(file) === -1
-            });
+    return ethereumClient.getUserFilesHashes()
+        .then(filesHashesFromEth => {
+            return synchronizeUserFiles(filesHashesFromEth, userFilesLocations)
+        })
+}).catch(err => logError(err));
 
-            ethereumClient.getUserFiles().then(hashes => syncFiles(hashes, userFiles))
-        }).catch(e => console.log(e));
+// new file upload
+// dropboxClient.authenticate().then(() => {
+//     ethereumClient.watchFileChanges(onNewFile)
+// });
+//
+//
+// function onNewFile({url, hash}) {
+//     // Replace dl=0 with dl=1 to get direct downloadable link
+//     const dlUrl = DropboxClient.getDirectDownloadLink(url);
+//     const fileName = DropboxClient.getFileNameFromUrl(dlUrl);
+//     const file = fs.createWriteStream(`${TEMP_DIR}/${fileName}`);
+//     https.get(dlUrl, (res) => {
+//         res.pipe(file);
+//         file.on('finish', () => {
+//             if (fileName) {
+//                 dropboxClient.upload(`${TEMP_DIR}/${fileName}`, `/${fileName}`)
+//                     .then((data) => {
+//                         ethereumClient.addAPeer(hash, data.url)
+//                             .then(() => {
+//                                 ethereumClient.getPeer(hash)
+//                                 .then((peerUrl) => {
+//                                     console.log('peerUrl', peerUrl)
+//                             })
+//                         }).catch((e) => {
+//                             console.log(e)
+//                         })
+//                     })
+//             }
+//         })
+//     }).on('error', (err) => console.log(err))
+// }
+
+// recursively list files user's Dropbox folder
+// dropboxClient.authenticate()
+//     .then(() => {
+//         dropboxClient.listFolder()
+//             .then(result => {
+//                 let files = Array.from(result);
+//                 if (files.length !== 0) {
+//                     files.forEach(res => {
+//                         logDebug(res.name)
+//                     });
+//                 } else {
+//                     logError("No files in user's folder")
+//                 }
+//             });
+//     }).catch(err => logError(err));
