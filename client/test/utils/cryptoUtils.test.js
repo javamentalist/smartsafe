@@ -1,6 +1,6 @@
 ﻿import * as chai from 'chai'
 import fs from 'fs-promise'
-import {encrypt, decrypt} from '../../src/utils/cryptoUtils.js'
+import {encrypt, decrypt, generatePassword} from '../../src/utils/cryptoUtils.js'
 
 let expect = chai.expect
 const password = 'd6F3Efeq';

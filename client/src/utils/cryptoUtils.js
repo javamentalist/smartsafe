@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import fs from 'fs'
+import passwordGenerator from 'generate-password'
 import winston from 'winston'
 
 const algorithm = 'aes-256-ctr';
@@ -25,6 +26,15 @@ function transformFile(inputPath, outputPath, transformation) {
     })
 }
 
+export function generatePassword() {
+    return new Promise((resolve) => {
+        resolve(passwordGenerator.generate({
+            length: 20,
+            numbers: true
+        }));
+    })
+}
+
 export function encrypt(filePath, password) {
     return new Promise((resolve, reject) => {
         const resultPath = `${filePath}.enc`;
@@ -45,7 +55,7 @@ export function decrypt(filePath, password) {
         const decrypt = crypto.createDecipher(algorithm, password);
 
         return transformFile(filePath, resultPath, decrypt).then(() => {
-            return resolve(filePath)
+            return resolve(resultPath)
         }).catch(err => {
                 logError(err);
                 reject(err)
