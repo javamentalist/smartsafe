@@ -1,11 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Link} from 'react-router'
+import FlatButton from 'material-ui/FlatButton'
+import ArrowBack from 'material-ui/svg-icons/navigation/arrow-back'
+
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux'
 
 import * as Actions from '../../actions'
-
 
 // named export. Useful for testing only component itself without store logic
 export class FileDetail extends React.Component {
@@ -14,17 +15,44 @@ export class FileDetail extends React.Component {
     super(params);
   }
 
-
   render() {
-    return <div>
-      <Link to="/files">Back</Link>
-      File details: {this.props.params.fileId}</div>
+    let file = this.props.file
+    return (
+      <div className="row">
+        <div className="col-xs-12">
+          <div className="row">
+            <div className="col-xs-2">
+              <FlatButton
+                label="Back"
+                icon={< ArrowBack />}
+                onClick={() => {
+                this
+                  .context
+                  .router
+                  .goBack();
+              }}/>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-xs-12">
+              {file
+                ? <h2>{file.name}</h2>
+                : <h2>No file</h2>}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 }
 
 FileDetail.propTypes = {
   file: React.PropTypes.object.isRequired,
   actions: React.PropTypes.object
+}
+
+FileDetail.contextTypes = {
+  router: React.PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => {

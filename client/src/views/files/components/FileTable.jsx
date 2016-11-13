@@ -10,10 +10,12 @@ import {
 
 import {formatBytes, formatDate} from '../../../utils/displayUtils'
 
-
 const FileTable = ({files, onRowClick}) => (
   <Table>
-    <TableHeader adjustForCheckBox={false} displaySelectAll={false} enableSelectAll={false}>
+    <TableHeader
+      adjustForCheckBox={false}
+      displaySelectAll={false}
+      enableSelectAll={false}>
       <TableRow>
         <TableHeaderColumn>Shares</TableHeaderColumn>
         <TableHeaderColumn>Type</TableHeaderColumn>
@@ -26,7 +28,12 @@ const FileTable = ({files, onRowClick}) => (
     <TableBody displayRowCheckbox={false} stripedRows={true}>
       {(files && files.length > 0)
         ? files.map((file) => (
-          <TableRow key={file.id} onClick={() => onRowClick(file.id)}>
+          <TableRow
+            key={file.id}
+            onMouseUp={() => {
+            onRowClick(file.id);
+          }}>
+            {/*onClick={() => onRowClick(file.id)}*/}
             <TableRowColumn>
               <span className="icon icon-share"></span>&nbsp; {file.shared || 0}</TableRowColumn>
             <TableRowColumn>{file['.tag']}</TableRowColumn>

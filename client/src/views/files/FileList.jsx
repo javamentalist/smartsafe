@@ -25,7 +25,9 @@ export class FileList extends React.Component {
   }
 
   componentDidMount() {
-    this.setFileListFromDropbox();
+    if (this.props.files.length <= 0) {
+      this.setFileListFromDropbox();
+    }
   }
 
   setFileListFromDropbox() {
@@ -60,7 +62,6 @@ export class FileList extends React.Component {
       winston.log('debug', 'Found', files.length, 'files');
       files.forEach(res => {
         winston.log('debug', '- Name: ', res.name)
-        console.log(res)
       });
     } else {
       winston.log('debug', 'Found no files in app folder');
@@ -87,10 +88,12 @@ export class FileList extends React.Component {
   }
 
   openDetailView(fileId) {
+
     this
       .props
       .actions
       .setDetail(fileId);
+    console.log(this.context);
     this
       .context
       .router
@@ -99,20 +102,32 @@ export class FileList extends React.Component {
 
   render() {
     return (
-      <div>
-        <h1>Files</h1>
-        <FileTable
-          files={this.props.files}
-          onRowClick={this
-          .openDetailView
-          .bind(this)}/>
-
-
-        <RaisedButton
-          label={'Add file'}
-          primary={true}
-          icon={<Add />}
-          onClick={() => this.openFileDialog()}/>
+      <div className="row">
+        <div className="col-xs-12">
+          <div className="row">
+            <div className="col-xs-12">
+              <h2>Files</h2>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-xs-12">
+              <FileTable
+                files={this.props.files}
+                onRowClick={this
+                .openDetailView
+                .bind(this)}/>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-xs-12">
+              <RaisedButton
+                label={'Add file'}
+                primary={true}
+                icon={< Add />}
+                onClick={() => this.openFileDialog()}/>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
