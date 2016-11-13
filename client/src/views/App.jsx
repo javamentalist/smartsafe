@@ -7,11 +7,11 @@ export default class App extends React.Component {
 
   render() {
     return (
-        <div className="pane-group">
-          <div className="pane pane-sm sidebar">
+        <div className="row">
+          <div className="col-xs-3 col-md-2 sidebar">
             <Sidebar/>
           </div>
-          <div className="pane">
+          <div className="col-xs-9 col-md-10">
             {/* Actual content */}
             {this.props.children}
           </div>

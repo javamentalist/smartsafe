@@ -27,13 +27,6 @@ describe('<App />', () => {
       .descendants('div');
   })
 
-  it('should have element with class .pane', () => {
-    wrapper
-      .should
-      .have
-      .descendants('.pane');
-  });
-
   it('should contain sidebar', () => {
     const mounterWrapper = mount(<App/>)
     mounterWrapper
