@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom'
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux'
 
-import {FileTable, FileDetail} from '.'
-import {Button} from '../'
+import {FileTable} from '.'
 import * as Actions from '../../actions'
+
+import RaisedButton from 'material-ui/RaisedButton';
+import Add from 'material-ui/svg-icons/content/add';
 
 import DropboxClient from '../../api/dropboxApi'
 import authData from '../../../dropbox-auth.json'
@@ -104,9 +106,12 @@ export class FileList extends React.Component {
           onRowClick={this
           .openDetailView
           .bind(this)}/>
-        <Button
-          text={'Add file'}
-          iconClass={'plus'}
+
+
+        <RaisedButton
+          label={'Add file'}
+          primary={true}
+          icon={<Add />}
           onClick={() => this.openFileDialog()}/>
       </div>
     )

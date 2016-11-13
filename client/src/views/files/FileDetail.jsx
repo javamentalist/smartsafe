@@ -14,6 +14,7 @@ export class FileDetail extends React.Component {
     super(params);
   }
 
+
   render() {
     return <div>
       <Link to="/files">Back</Link>

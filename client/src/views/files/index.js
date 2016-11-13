@@ -1,5 +1,5 @@
 // Export defaults as named exports
-export {default as FileTable} from './components/file-table.jsx'
+export {default as FileTable} from './components/FileTable.jsx'
 export {default as FileList} from './FileList.jsx'
 export {default as FileDetail} from './FileDetail.jsx'
 
