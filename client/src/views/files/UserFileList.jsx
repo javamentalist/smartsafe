@@ -17,7 +17,7 @@ const dialog = remote.dialog
 const winston = remote.getGlobal('winston')
 
 // named export. Useful for testing only component itself without store logic
-export class FileList extends React.Component {
+export class UserFileList extends React.Component {
 
   constructor(params) {
     super(params);
@@ -133,13 +133,13 @@ export class FileList extends React.Component {
   }
 }
 
-FileList.propTypes = {
+UserFileList.propTypes = {
   files: React.PropTypes.array.isRequired,
   actions: React.PropTypes.object,
   children: React.PropTypes.any // no idea what element this is
 }
 
-FileList.contextTypes = {
+UserFileList.contextTypes = {
   router: React.PropTypes.object.isRequired
 }
 
@@ -156,4 +156,4 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(FileList)
+export default connect(mapStateToProps, mapDispatchToProps)(UserFileList)

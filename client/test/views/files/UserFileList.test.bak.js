@@ -8,10 +8,10 @@ chai.use(chaiEnzyme())
 
 import mockery from 'mockery'
 
-import {FileListUndecorated, FileTable} from '../../../src/views/files'
+import {UserFileListUndecorated, FileTable} from '../../../src/views/files'
 import {Button} from '../../../src/views'
 
-describe('<FileList />', () => {
+describe('<UserFileList />', () => {
   let wrapper
 
   before(() => {
@@ -41,7 +41,7 @@ describe('<FileList />', () => {
   beforeEach(() => {
     // Pass files as empty array, because we don't access it and don't care about
     // its' contents
-    wrapper = shallow(<FileListUndecorated files={[]}/>)
+    wrapper = shallow(<UserFileListUndecorated files={[]}/>)
   });
 
   it('should render', () => {
