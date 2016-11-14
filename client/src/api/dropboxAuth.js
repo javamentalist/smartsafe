@@ -9,16 +9,7 @@ const SERVER_PORT = 8912;
 const REDIRECT_URL = `http://localhost:${SERVER_PORT}/oauth_callback`;
 const TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token';
 
-function logDebug(err) {
-    winston.log('debug', err)
-}
-function logError(err) {
-    winston.log('error', err);
-}
-
-function logErrorF(format, err) {
-    winston.log('debug', format, err)
-}
+var logger = require('winston')
 
 const getAuthenticationUrl = (id) => {
     const baseUrl = 'https://www.dropbox.com/oauth2/authorize?';
@@ -41,12 +32,12 @@ export function doAuthentication(id, secret) {
         listenForOAuthCallback(id, secret).then(result => {
             return resolve(result)
         }).catch(err => {
-            logError(err);
+            logger.error(err);
             return reject()
         });
 
         const url = getAuthenticationUrl(id);
-        logErrorF('Opening authentication URL \'%s\' through browser', url);
+        logger.info('Opening authentication URL \'%s\' through browser', url);
         open(url)
     })
 }
@@ -56,22 +47,23 @@ const listenForOAuthCallback = (id, secret) => {
         const server = http.createServer((req, res) => {
             if (req.url.startsWith('/oauth_callback')) {
                 const code = parseCodeFromUrlParams(req.url, 'code');
-                logErrorF('oauth_callback code: %s', code);
+                logger.debug('oauth_callback code: %s', code);
                 if (code) {
                     res.end('Success! Please close this window.')
                 } else {
                     const error = parseCodeFromUrlParams(req.url, 'error');
                     const errDescription = parseCodeFromUrlParams(req.url, 'error_description').replace(/\+/g, ' ');
-                    logErrorF('Unable to parse OAuth code from %s', req.url);
+                    logger.error('Unable to parse OAuth code from %s', req.url);
                     res.end(`Error! Failed to get OAuth code!\nCause: (${error}) - ${errDescription}`)
                 }
+                logger.info('Closing OAuth listener on port %s', SERVER_PORT)
                 server.close();
                 getToken(id, code, secret).then(token => {
                     return resolve(token)
                 });
             }
         });
-        logErrorF("Listening for OAuth token on port: %s", SERVER_PORT);
+        logger.info("Listening for OAuth token on port: %s", SERVER_PORT);
         server.listen(SERVER_PORT)
     })
 };
@@ -95,13 +87,14 @@ const getToken = (id, code, secret) => {
                 redirect_uri: REDIRECT_URL
             }
         };
-
         request(options, (err, response, body) => {
             if (err) {
-                logError(err);
+                logger.error(err);
                 return reject(err)
             }
-            resolve(JSON.parse(body).access_token)
+            let accessToken = JSON.parse(body).access_token
+            logger.debug('access_token: %s', accessToken)
+            resolve(accessToken)
         })
     })
 };
