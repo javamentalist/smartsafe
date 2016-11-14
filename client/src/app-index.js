@@ -11,7 +11,7 @@ import rootReducer from './reducers'
 
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import {deepOrange500, deepOrange700, blueA200} from 'material-ui/styles/colors';
+import {blue500, blue700, lightGreenA200} from 'material-ui/styles/colors';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 // Needed for onTouchTap http://stackoverflow.com/a/34015469/988941
@@ -34,9 +34,9 @@ let store = createStore(rootReducer, initialState)
 
 const muiTheme = getMuiTheme({
   palette: {
-    primary1Color: deepOrange500,
-    primary2Color: deepOrange700,
-    accent1Color: blueA200
+    primary1Color: blue500,
+    primary2Color: blue700,
+    accent1Color: lightGreenA200
   }
 });
 

@@ -7,12 +7,27 @@ import {
   TableRow,
   TableRowColumn
 } from 'material-ui/Table'
+import LinearProgress from 'material-ui/LinearProgress'
 import IconButton from 'material-ui/IconButton'
 import Clear from 'material-ui/svg-icons/content/clear'
 import CloudUpload from 'material-ui/svg-icons/file/cloud-upload'
 
 import path from 'path'
 import _ from 'lodash'
+
+const tableStyle = {
+  tableLayout: 'auto',
+  boxSizing: 'border-box'
+}
+const progressColStyle = {
+  width: '30%',
+  minWidth: '200px',
+  maxWidth: '300px'
+}
+const actionsColStyle = {
+  width: '100px',
+  padding: 0
+}
 
 //const UploadQueue = ({files}) => (
 class UploadQueue extends React.Component {
@@ -25,12 +40,15 @@ class UploadQueue extends React.Component {
         <TableRowColumn>{name}<br/>
           <small>{dir}</small>
         </TableRowColumn>
-        <TableRowColumn>progressbar will be here</TableRowColumn>
-        <TableRowColumn>
-          <IconButton onClick={() => console.log("Remove from queue")}>
+        <TableRowColumn style={progressColStyle}>
+          {/*<LinearProgress mode="determinate" value={this.state.completed} />*/}
+          <LinearProgress mode="indeterminate"/>
+        </TableRowColumn>
+        <TableRowColumn style={actionsColStyle}>
+          <IconButton onClick={() => this.props.onFileRemove(index)}>
             <Clear/>
           </IconButton>
-          <IconButton onClick={() => console.log("Send file to the clouds")}>
+          <IconButton onClick={() => this.props.onFileUpload(file)}>
             <CloudUpload/>
           </IconButton>
         </TableRowColumn>
@@ -42,37 +60,34 @@ class UploadQueue extends React.Component {
     const files = this.props.files;
     const showCheckbox = false;
 
-    if (files && files.length > 0) {
-      return (
-        <div>
-          <h3>Upload queue</h3>
-          <Table>
-            <TableHeader displaySelectAll={showCheckbox} adjustForCheckbox={showCheckbox}>
-              <TableRow>
-                <TableHeaderColumn>Name</TableHeaderColumn>
-                <TableHeaderColumn>Progress</TableHeaderColumn>
-                <TableHeaderColumn></TableHeaderColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody displayRowCheckbox={showCheckbox}>
-              {(files && files.length > 0) && files.map((file, index) => (this.renderRow(index, file)))}
-            </TableBody>
-          </Table>
-        </div>
-      )
-    } else {
-      return null
-    }
+    // if (files && files.length > 0) {
+    return (
+      <div>
+        <h3>Upload queue</h3>
+        {(files && files.length > 0)
+          ? <Table style={tableStyle}>
+              <TableHeader displaySelectAll={showCheckbox} adjustForCheckbox={showCheckbox}>
+                <TableRow>
+                  <TableHeaderColumn>Name</TableHeaderColumn>
+                  <TableHeaderColumn style={progressColStyle}>Progress</TableHeaderColumn>
+                  <TableHeaderColumn style={actionsColStyle}></TableHeaderColumn>
+                </TableRow>
+              </TableHeader>
+              <TableBody displayRowCheckbox={showCheckbox}>
+                {(files && files.length > 0) && files.map((file, index) => (this.renderRow(index, file)))}
+              </TableBody>
+            </Table>
+          : <p>Queue is empty</p>}
+      </div>
+    )
+
   }
 }
 
 UploadQueue.propTypes = {
-  // files: React.PropTypes.array.isRequired
   files: React
     .PropTypes
     .arrayOf(React.PropTypes.shape({
-      // id: React   .PropTypes   .oneOfType([React.PropTypes.string,
-      // React.PropTypes.number])   .isRequired, name: React.PropTypes.string,
       path: React.PropTypes.string.isRequired,
       progress: function (props, propName, componentName) {
         const value = props[propName];
@@ -84,7 +99,9 @@ UploadQueue.propTypes = {
         }
       }
     }))
-    .isRequired
+    .isRequired,
+  onFileRemove: React.PropTypes.func.isRequired,
+  onFileUpload: React.PropTypes.func.isRequired
 }
 
 export default UploadQueue

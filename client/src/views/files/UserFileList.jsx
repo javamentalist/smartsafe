@@ -105,6 +105,10 @@ export class UserFileList extends React.Component {
       .push(`/files/${fileId}`);
   }
 
+  handleFileUpload(file){
+    console.log("Send file to the clouds");
+  }
+
   render() {
     return (
       <div className="row">
@@ -125,7 +129,16 @@ export class UserFileList extends React.Component {
           </div>
           <div className="row">
             <div className="col-xs-12">
-              <UploadQueue files={this.props.uploadQueue}/>
+              <UploadQueue
+                files={this.props.uploadQueue}
+                onFileRemove={this
+                .props
+                .actions
+                .removeFileFromUploadQueue
+                .bind(this)}
+                onFileUpload={this
+                .handleFileUpload
+                .bind(this)}/>
             </div>
           </div>
           <div className="row">
