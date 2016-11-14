@@ -29,24 +29,6 @@ describe('File actions', () => {
 
   });
 
-  it('should create an action to add a file', () => {
-    const file = {
-      id: 1,
-      path: '/path/to/file'
-    }
-    const expectedAction = {
-      type: actions.ADD_NEW_FILE,
-      payload: file
-    }
-
-    const action = actions.addNewFile(file)
-
-    action
-      .should
-      .deep
-      .equal(expectedAction)
-  });
-
   it('should create an action to set one file as detailed', () => {
     const id = 1;
     const expectedAction = {
@@ -61,5 +43,39 @@ describe('File actions', () => {
       .deep
       .equal(expectedAction);
 
+  });
+
+  it('should create an action to add a file to upload queue', () => {
+    const file = {
+      path: '/path/to/file'
+    }
+    const expectedAction = {
+      type: actions.ADD_FILE_TO_UPLOAD_QUEUE,
+      payload: file
+    }
+
+    const action = actions.addFileToUploadQueue(file)
+
+    action
+      .should
+      .deep
+      .equal(expectedAction)
+  });
+
+  it('should create an action to remove file from upload queue', () => {
+    const file = {
+      path: '/path/to/file'
+    }
+    const expectedAction = {
+      type: actions.REMOVE_FILE_FROM_UPLOAD_QUEUE,
+      payload: file
+    }
+
+    const action = actions.removeFileFromUploadQueue(file)
+
+    action
+      .should
+      .deep
+      .equal(expectedAction)
   });
 })

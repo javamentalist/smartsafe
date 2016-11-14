@@ -81,6 +81,10 @@ export class UserFileList extends React.Component {
       if (fileNames && fileNames.length > 0) {
         let file = fileNames[0]
         winston.log('debug', 'File chosen:', file)
+        // this
+        //   .props
+        //   .actions
+        //   .addFileToUploadQueue(file);
       } else {
         winston.log('debug', 'No file chosen')
       }
@@ -135,6 +139,7 @@ export class UserFileList extends React.Component {
 
 UserFileList.propTypes = {
   files: React.PropTypes.array.isRequired,
+  uploadQueue: React.PropTypes.array.isRequired,
   actions: React.PropTypes.object,
   children: React.PropTypes.any // no idea what element this is
 }
@@ -146,7 +151,8 @@ UserFileList.contextTypes = {
 const mapStateToProps = (state) => {
   return {
     // key - props key value - which part of state to bind
-    files: state.files.userFiles
+    files: state.files.userFiles,
+    uploadQueue: state.files.uploadQueue
   }
 }
 

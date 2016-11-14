@@ -21,7 +21,9 @@ injectTapEventPlugin();
 const initialState = {
   // files: name given to fileReducer in when combining reducers
   files: {
-    userFiles: []
+    userFiles: [],
+    detailedFile: {},
+    uploadQueue: []
   },
   user: {
     isAuthenticated: false
@@ -35,9 +37,8 @@ const muiTheme = getMuiTheme({
     primary1Color: deepOrange500,
     primary2Color: deepOrange700,
     accent1Color: blueA200
-  },
+  }
 });
-
 
 const Root = ({store}) => (
   <Provider store={store}>
