@@ -4,8 +4,10 @@ import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux'
 
 import {FileTable} from '.'
-import {Button} from '../'
 import * as Actions from '../../actions'
+
+import RaisedButton from 'material-ui/RaisedButton';
+import Add from 'material-ui/svg-icons/content/add';
 
 import DropboxClient from '../../api/dropboxApi'
 import authData from '../../../dropbox-auth.json'
@@ -15,7 +17,7 @@ const dialog = remote.dialog
 const winston = remote.getGlobal('winston')
 
 // named export. Useful for testing only component itself without store logic
-export class MyFiles extends React.Component {
+export class UserFileList extends React.Component {
 
   constructor(params) {
     super(params);
@@ -23,7 +25,9 @@ export class MyFiles extends React.Component {
   }
 
   componentDidMount() {
-    this.setFileListFromDropbox();
+    if (this.props.files.length <= 0) {
+      this.setFileListFromDropbox();
+    }
   }
 
   setFileListFromDropbox() {
@@ -58,7 +62,6 @@ export class MyFiles extends React.Component {
       winston.log('debug', 'Found', files.length, 'files');
       files.forEach(res => {
         winston.log('debug', '- Name: ', res.name)
-        console.log(res)
       });
     } else {
       winston.log('debug', 'Found no files in app folder');
@@ -75,7 +78,7 @@ export class MyFiles extends React.Component {
     dialog.showOpenDialog({
       properties: ['openFile']
     }, function (fileNames) {
-      if (fileNames.length > 0) {
+      if (fileNames && fileNames.length > 0) {
         let file = fileNames[0]
         winston.log('debug', 'File chosen:', file)
       } else {
@@ -84,24 +87,60 @@ export class MyFiles extends React.Component {
     })
   }
 
+  openDetailView(fileId) {
+
+    this
+      .props
+      .actions
+      .setDetail(fileId);
+    console.log(this.context);
+    this
+      .context
+      .router
+      .push(`/files/${fileId}`);
+  }
+
   render() {
     return (
-      <div>
-        <h1>Files</h1>
-        <FileTable files={this.props.files}/>
-        <Button
-          text={'Add file'}
-          iconClass={'plus'}
-          onClick={() => this.openFileDialog()}/>
-        <input type="file"/>
+      <div className="row">
+        <div className="col-xs-12">
+          <div className="row">
+            <div className="col-xs-12">
+              <h2>Files</h2>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-xs-12">
+              <FileTable
+                files={this.props.files}
+                onRowClick={this
+                .openDetailView
+                .bind(this)}/>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-xs-12">
+              <RaisedButton
+                label={'Add file'}
+                primary={true}
+                icon={< Add />}
+                onClick={() => this.openFileDialog()}/>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 }
 
-MyFiles.propTypes = {
+UserFileList.propTypes = {
   files: React.PropTypes.array.isRequired,
-  actions: React.PropTypes.object
+  actions: React.PropTypes.object,
+  children: React.PropTypes.any // no idea what element this is
+}
+
+UserFileList.contextTypes = {
+  router: React.PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => {
@@ -117,4 +156,4 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(MyFiles)
+export default connect(mapStateToProps, mapDispatchToProps)(UserFileList)
