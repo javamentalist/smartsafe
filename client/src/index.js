@@ -2,7 +2,6 @@ import Promise from 'bluebird'
 import DropboxClient from './api/dropboxApi.js'
 import authData from '../dropbox-auth.json'
 import fs from 'fs'
-import _ from 'lodash'
 import https from 'https'
 import {readDir, createHashForFile} from './utils/fileUtils.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
@@ -14,6 +13,7 @@ import {writeFile} from "fs";
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
 const TEMP_DIR = `${HOME_DIR}/SmartsafeClient`;
+
 const IGNORED_FILES = ['.DS_Store', 'temp'];
 
 const dropboxClient = new DropboxClient(authData.key, authData.secret);
@@ -27,29 +27,31 @@ function logError(err) {
     winston.log('error', err)
 }
 
-function synchronizeUserFiles(filesDataFromEth, userFilesLocationsFromEth) {
+// filesHashesFromEth
+function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
-    Promise.resolve(userFilesLocationsFromEth).then(userFilesFullPaths => {
-        return Promise.all(userFilesFullPaths.map(userFileFullPath => {
-            return prepareDropboxUploadDataForFiles(userFileFullPath);
+    var filesHashesFromEth2 = Promise.resolve(filesHashesFromEth);
+
+    var localFilesFullPaths2 = Promise.resolve(localFilesFullPaths);
+    var preparedFileDataForFiles = localFilesFullPaths2.then(localFilesFullPaths21 => {
+        return Promise.all(localFilesFullPaths21.map(locafileFullPath => {
+            return prepareFileDataForFiles(locafileFullPath);
         }));
-    }).then(filesDataToDropbox => {
-        return Promise.all(filesDataToDropbox.map(fileDataToDropbox => {
-            const fileName = fileDataToDropbox.fileName;
-            const fileHash = fileDataToDropbox.fileInfo;
-            if (!fileDataUploadedEth(fileHash, filesDataFromEth)) {
-                return uploadLocalFilesToDropbox(fileName, fileHash)
+    });
+
+    Promise.join(preparedFileDataForFiles,filesHashesFromEth2, (localFilesData, filesHashesFromEth21) => {
+        return Promise.all(localFilesData.map(localFileData => {
+            const localFileName = localFileData.fileName;
+            const localFileHash = localFileData.fileInfo;
+            if (!fileMetaDataUploadedToEth(localFileHash, filesHashesFromEth21)) {
+                return uploadLocalFilesToDropbox(localFileName, localFileHash)
             }
-            return Promise.resolve(undefined)
+            return Promise.resolve()
 
         }))
     }).then(filesDataToEth => {
-        if (filesDataToEth.length === -1) {
-            return Promise.resolve()
-        }
-
         return Promise.all(filesDataToEth.map(fileDataToEth => {
-            if(fileDataToEth == null) return Promise.resolve();
+            if (fileDataToEth == null) return Promise.resolve();
             return uploadLocalFileMetaDataToEth(fileDataToEth)
         }));
     }).catch(err => {
@@ -57,50 +59,81 @@ function synchronizeUserFiles(filesDataFromEth, userFilesLocationsFromEth) {
     });
 
     /// Download missing local files
-    // Promise.resolve(userFilesLocationsFromEth).then(userFilesFullPaths => {
-    //     return Promise.all(userFilesFullPaths.map(userFileFullPath => {
-    //         return prepareDropboxUploadDataForFiles(userFileFullPath);
-    //     }));
-    // }).then((userFilesLocalData) => {
-    //     return removeLocallyPresentFilesData(filesDataFromEth, userFilesLocalData);
-    // }).then(missingLocalFiles => {
-    //     logError(missingLocalFiles);
-    //     if (missingLocalFiles.length === -1) {
-    //         return Promise.resolve()
-    //     }
-    //
-    //     return Promise.all(missingLocalFiles.map(missingLocalFile => {
-    //         if (missingLocalFile == null) return Promise.resolve();
-    //         return Promise.resolve(downloadFileFromDropbox(missingLocalFile));
-    //     }))
-    // }).catch(err => {
-    //     logError(err);
-    // })
+    var filesHashesFromEth3 = Promise.resolve(filesHashesFromEth);
+
+    var localFilesFullPaths3 = Promise.resolve(localFilesFullPaths);
+    var preparedFileDataForFiles2 = localFilesFullPaths3.then(localFilesFullPaths31 => {
+        return Promise.all(localFilesFullPaths31.map(localFileFullPath => {
+            return prepareFileDataForFiles(localFileFullPath);
+        }));
+    });
+
+    Promise.join(preparedFileDataForFiles2,filesHashesFromEth3, (localFilesData, filesHashesFromEth31) => {
+        return Promise.all(filesHashesFromEth31.map(filesHash => {
+            return getFilesOnEthNotLocallyPresent(localFilesData, filesHash);
+        }))
+    }).then(filesEthMetaData => {
+        // if (filesEthMetaData == null) return Promise.resolve();
+        // if (filesEthMetaData.length === -1) return Promise.resolve();
+
+        return Promise.all(filesEthMetaData.map(fileEthMetaData => {
+            if (fileEthMetaData == null) return Promise.resolve();
+            return Promise.resolve(downloadFileFromDropbox(fileEthMetaData));
+        }))
+    }).catch(err => {
+        logError(err);
+    })
 
 }
 
-// function removeLocallyPresentFilesData(filesDataFromEth, userFilesLocalData) {
-//     return Promise.resolve(filesDataFromEth).filter(fileDataFromEth => {
-//         return userFilesLocalData.indexOf(fileDataFromEth) !== -1;
-//     })
-// }
-
-function prepareDropboxUploadDataForFiles(filePath) {
+function getFilesOnEthNotLocallyPresent(localFilesData, fileEthHash) {
     return new Promise((resolve, reject) => {
-        const fileName = removeFileDirFromFilePath(filePath);
-        const readStream = fs.createReadStream(`${FILE_DIR}/${fileName}`);
+        for (let localFileDataIndex = 0; localFileDataIndex < localFilesData.length; localFileDataIndex++) {
+            const localFileData = localFilesData[localFileDataIndex];
+            const localFileHash = localFileData.fileInfo;
+            if (localFileHash === fileEthHash) {
+                return resolve()
+            }
+        }
+        downloadMetaDataFromEthWithHash(fileEthHash).then(fileMetaDataFromEth => {
+            return resolve(fileMetaDataFromEth);
+        })
+    });
+}
+
+function downloadMetaDataFromEthWithHash(fileHash) {
+    return new Promise((resolve, reject) => {
+        (ethereumClient.findFileMetaDataFromEthChain(fileHash)).then(fileMetaDataFromEth => {
+            return resolve(fileMetaDataFromEth)
+        })
+    })
+}
+
+function fileMetaDataUploadedToEth(hash, ethHashes) {
+    return ethHashes.indexOf(hash) !== -1;
+}
+
+function prepareFileDataForFiles(filePath) {
+    return new Promise((resolve, reject) => {
+        const fileName = getFileNameFromFilePath(filePath);
+        const readStream = fs.createReadStream(getFullPathForFileName(fileName));
+
+        readStream.on('error', (error) => {
+            throw error
+        });
+
         return createHashForFile(readStream).then(fileData => {
             return resolve({fileName: fileName, fileInfo: fileData})
         })
     })
 }
 
-function removeFileDirFromFilePath(filePath) {
-    return filePath.substring(filePath.lastIndexOf(FILE_DIR) + FILE_DIR.length + 1, filePath.length);
+function getFullPathForFileName(fileName) {
+    return `${FILE_DIR}/${fileName}`;
 }
 
-function fileDataUploadedEth(data, ethData) {
-    return ethData.indexOf(data) !== -1;
+function getFileNameFromFilePath(filePath) {
+    return filePath.substring(filePath.lastIndexOf(FILE_DIR) + FILE_DIR.length + 1, filePath.length);
 }
 
 function uploadLocalFilesToDropbox(fileName, fileHash) {
@@ -113,8 +146,6 @@ function uploadLocalFilesToDropbox(fileName, fileHash) {
                     fileSharedLink: responseJson.url
                 });
             })
-
-
     })
 }
 
@@ -130,15 +161,7 @@ function uploadLocalFileMetaDataToEth(fileData) {
     })
 }
 
-function downloadLocalFilesMetaDataFromEth(fileDropboxUploadHash) {
-    return new Promise((resolve, reject) => {
-        (ethereumClient.findFileDropboxDataFromEthChain(fileDropboxUploadHash))
-            .then(fileMetaDataFromEth => {
-                return resolve(fileMetaDataFromEth)
-            })
-    })
-}
-
+// TODO: if the file was in a dir, put it into a dir
 function downloadFileFromDropbox(fileMetaDataFromEth) {
     return new Promise((resolve, reject) => {
         const downloadUrl = DropboxClient.getDirectDownloadLink(fileMetaDataFromEth.link);
