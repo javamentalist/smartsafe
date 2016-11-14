@@ -37,7 +37,8 @@
     "request": "^2.72.0",
     "web3": "^0.17.0-beta",
     "winston": "^2.3.0",
-    "generate-password": "^1.2.0"
+    "generate-password": "^1.2.0",
+    "keypair": "^1.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.16.0",
