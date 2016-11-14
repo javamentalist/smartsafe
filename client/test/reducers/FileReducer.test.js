@@ -141,18 +141,14 @@ describe('fileReducer', () => {
     beforeEach(() => {
       initialState.uploadQueue = [
         {
-          id: 1,
-          name: 'Existing file',
-          path: 'path/to/file'
+          path: '/staryway/to/heaven'
         }
       ];
     });
 
     it('should add new file to existing ones in upload queue', () => {
       const newFile = {
-        id: 2,
-        name: 'New file',
-        path: 'path/to/new/file'
+        path: '/road/to/hell'
       };
 
       const state = fileReducer(initialState, FileActions.addFileToUploadQueue(newFile));

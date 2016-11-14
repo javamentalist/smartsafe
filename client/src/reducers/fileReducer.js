@@ -24,7 +24,7 @@ function fileReducer(state = initialState, action) {
       return Object.assign({}, state, {
         uploadQueue: [
           ...state.uploadQueue,
-          action.payload // payload contains new file
+          action.payload // payload contains {path: /path/to/file}
         ]
       });
     case REMOVE_FILE_FROM_UPLOAD_QUEUE:

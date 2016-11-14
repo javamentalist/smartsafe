@@ -10,14 +10,14 @@ import {
 
 import {formatBytes, formatDate} from '../../../utils/displayUtils'
 
+const showCheckbox = false;
 const FileTable = ({files, onRowClick}) => (
   <Table>
     <TableHeader
-      adjustForCheckBox={false}
-      displaySelectAll={false}
+      displaySelectAll={showCheckbox}
+      adjustForCheckbox={showCheckbox}
       enableSelectAll={false}>
       <TableRow>
-        <TableHeaderColumn>Shares</TableHeaderColumn>
         <TableHeaderColumn>Type</TableHeaderColumn>
         <TableHeaderColumn>Name</TableHeaderColumn>
         <TableHeaderColumn>Size</TableHeaderColumn>
@@ -25,7 +25,7 @@ const FileTable = ({files, onRowClick}) => (
         <TableHeaderColumn>Server modified</TableHeaderColumn>
       </TableRow>
     </TableHeader>
-    <TableBody displayRowCheckbox={false} stripedRows={true}>
+    <TableBody displayRowCheckbox={false}>
       {(files && files.length > 0)
         ? files.map((file) => (
           <TableRow
@@ -33,9 +33,9 @@ const FileTable = ({files, onRowClick}) => (
             onMouseUp={() => {
             onRowClick(file.id);
           }}>
-            {/*onClick={() => onRowClick(file.id)}*/}
-            <TableRowColumn>
-              <span className="icon icon-share"></span>&nbsp; {file.shared || 0}</TableRowColumn>
+            {/*<TableRowColumn>
+              <span className="icon icon-share"></span>&nbsp; {file.shared || 0}
+            </TableRowColumn>*/}
             <TableRowColumn>{file['.tag']}</TableRowColumn>
             <TableRowColumn>{file.name}</TableRowColumn>
             <TableRowColumn>{formatBytes(file.size)}</TableRowColumn>
