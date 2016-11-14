@@ -1,7 +1,7 @@
 import React from 'react'
 import {Route, IndexRedirect} from 'react-router'
 
-import App from './views'
+import {App} from './views'
 import {UserFileList, FileDetail} from './views/files'
 import {Settings} from './views/settings'
 

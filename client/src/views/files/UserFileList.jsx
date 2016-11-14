@@ -3,11 +3,11 @@ import ReactDOM from 'react-dom'
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux'
 
-import {FileTable} from '.'
+import {FileTable, UploadQueue} from '.'
 import * as Actions from '../../actions'
 
-import RaisedButton from 'material-ui/RaisedButton';
-import Add from 'material-ui/svg-icons/content/add';
+import RaisedButton from 'material-ui/RaisedButton'
+import Add from 'material-ui/svg-icons/content/add'
 
 import DropboxClient from '../../api/dropboxApi'
 import authData from '../../../dropbox-auth.json'
@@ -26,7 +26,7 @@ export class UserFileList extends React.Component {
 
   componentDidMount() {
     if (this.props.files.length <= 0) {
-      this.setFileListFromDropbox();
+      // this.setFileListFromDropbox();
     }
   }
 
@@ -74,13 +74,20 @@ export class UserFileList extends React.Component {
   }
 
   openFileDialog() {
+    // save refenrece to use in dialog callback
+    let actions = this.props.actions;
+
     winston.log('debug', 'open dialog')
+
     dialog.showOpenDialog({
       properties: ['openFile']
-    }, function (fileNames) {
-      if (fileNames && fileNames.length > 0) {
-        let file = fileNames[0]
-        winston.log('debug', 'File chosen:', file)
+    }, function (filePaths) {
+      if (filePaths && filePaths.length > 0) {
+
+        let filePath = filePaths[0]
+        winston.log('debug', 'File chosen:', filePath)
+
+        actions.addFileToUploadQueue({path: filePath});
       } else {
         winston.log('debug', 'No file chosen')
       }
@@ -88,12 +95,10 @@ export class UserFileList extends React.Component {
   }
 
   openDetailView(fileId) {
-
     this
       .props
       .actions
       .setDetail(fileId);
-    console.log(this.context);
     this
       .context
       .router
@@ -120,6 +125,11 @@ export class UserFileList extends React.Component {
           </div>
           <div className="row">
             <div className="col-xs-12">
+              <UploadQueue files={this.props.uploadQueue}/>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-xs-12">
               <RaisedButton
                 label={'Add file'}
                 primary={true}
@@ -135,6 +145,7 @@ export class UserFileList extends React.Component {
 
 UserFileList.propTypes = {
   files: React.PropTypes.array.isRequired,
+  uploadQueue: React.PropTypes.array.isRequired,
   actions: React.PropTypes.object,
   children: React.PropTypes.any // no idea what element this is
 }
@@ -146,7 +157,8 @@ UserFileList.contextTypes = {
 const mapStateToProps = (state) => {
   return {
     // key - props key value - which part of state to bind
-    files: state.files.userFiles
+    files: state.files.userFiles,
+    uploadQueue: state.files.uploadQueue
   }
 }
 
