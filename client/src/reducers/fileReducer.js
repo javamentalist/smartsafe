@@ -1,4 +1,4 @@
-import {SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE} from '../actions'
+import { SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE } from '../actions'
 
 import _ from 'lodash'
 
@@ -11,12 +11,16 @@ const initialState = {
 function fileReducer(state = initialState, action) {
   switch (action.type) {
     case SET_FILES:
-      return Object.assign({}, state, {userFiles: action.payload});
+      return Object.assign({}, state, {
+        userFiles: action.payload
+      });
     case SET_DETAIL:
       return Object.assign({}, state, {
         detailedFile: _
           .chain(state.userFiles)
-          .find({'id': action.payload})
+          .find({
+            'id': action.payload
+          })
           .defaultTo({})
           .value()
       });

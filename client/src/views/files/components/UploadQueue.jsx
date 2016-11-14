@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Table,
-  TableBody,
-  TableHeader,
-  TableHeaderColumn,
-  TableRow,
-  TableRowColumn
-} from 'material-ui/Table'
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 import LinearProgress from 'material-ui/LinearProgress'
 import IconButton from 'material-ui/IconButton'
 import Clear from 'material-ui/svg-icons/content/clear'
@@ -36,19 +29,21 @@ class UploadQueue extends React.Component {
     const name = path.basename(file.path);
     const dir = path.dirname(file.path);
     return (
-      <TableRow key={name} selectable={false}>
-        <TableRowColumn>{name}<br/>
-          <small>{dir}</small>
+      <TableRow key={ name } selectable={ false }>
+        <TableRowColumn>
+          { name }
+          <br/>
+          <small>{ dir }</small>
         </TableRowColumn>
-        <TableRowColumn style={progressColStyle}>
-          {/*<LinearProgress mode="determinate" value={this.state.completed} />*/}
-          <LinearProgress mode="indeterminate"/>
+        <TableRowColumn style={ progressColStyle }>
+          { /*<LinearProgress mode="determinate" value={this.state.completed} />*/ }
+          <LinearProgress mode="indeterminate" />
         </TableRowColumn>
-        <TableRowColumn style={actionsColStyle}>
-          <IconButton onClick={() => this.props.onFileRemove(index)}>
+        <TableRowColumn style={ actionsColStyle }>
+          <IconButton onClick={ () => this.props.onFileRemove(index) }>
             <Clear/>
           </IconButton>
-          <IconButton onClick={() => this.props.onFileUpload(file)}>
+          <IconButton onClick={ () => this.props.onFileUpload(file) }>
             <CloudUpload/>
           </IconButton>
         </TableRowColumn>
@@ -64,42 +59,38 @@ class UploadQueue extends React.Component {
     return (
       <div>
         <h3>Upload queue</h3>
-        {(files && files.length > 0)
-          ? <Table style={tableStyle}>
-              <TableHeader displaySelectAll={showCheckbox} adjustForCheckbox={showCheckbox}>
+        { (files && files.length > 0)
+          ? <Table style={ tableStyle }>
+              <TableHeader displaySelectAll={ showCheckbox } adjustForCheckbox={ showCheckbox }>
                 <TableRow>
                   <TableHeaderColumn>Name</TableHeaderColumn>
-                  <TableHeaderColumn style={progressColStyle}>Progress</TableHeaderColumn>
-                  <TableHeaderColumn style={actionsColStyle}></TableHeaderColumn>
+                  <TableHeaderColumn style={ progressColStyle }>Progress</TableHeaderColumn>
+                  <TableHeaderColumn style={ actionsColStyle }></TableHeaderColumn>
                 </TableRow>
               </TableHeader>
-              <TableBody displayRowCheckbox={showCheckbox}>
-                {(files && files.length > 0) && files.map((file, index) => (this.renderRow(index, file)))}
+              <TableBody displayRowCheckbox={ showCheckbox }>
+                { (files && files.length > 0) && files.map((file, index) => (this.renderRow(index, file))) }
               </TableBody>
             </Table>
-          : <p>Queue is empty</p>}
+          : <p>Queue is empty</p> }
       </div>
     )
-
   }
 }
 
 UploadQueue.propTypes = {
-  files: React
-    .PropTypes
-    .arrayOf(React.PropTypes.shape({
-      path: React.PropTypes.string.isRequired,
-      progress: function (props, propName, componentName) {
-        const value = props[propName];
-        if (!_.isUndefined(value) && !_.isNumber(value)) {
-          return new Error(`Invalid prop '${propName}' supplied to '${componentName}' (${value}). Should be number. Validation failed.`)
-        }
-        if (value < 0 || value > 100) {
-          return new Error('Invalid prop `' + propName + '` supplied to `' + componentName + '`. Should be between 0 and 100 (inclusive). Validation failed.')
-        }
+  files: React.PropTypes.arrayOf(React.PropTypes.shape({
+    path: React.PropTypes.string.isRequired,
+    progress: function(props, propName, componentName) {
+      const value = props[propName];
+      if (!_.isUndefined(value) && !_.isNumber(value)) {
+        return new Error(`Invalid prop '${propName}' supplied to '${componentName}' (${value}). Should be number. Validation failed.`)
       }
-    }))
-    .isRequired,
+      if (value < 0 || value > 100) {
+        return new Error('Invalid prop `' + propName + '` supplied to `' + componentName + '`. Should be between 0 and 100 (inclusive). Validation failed.')
+      }
+    }
+  })).isRequired,
   onFileRemove: React.PropTypes.func.isRequired,
   onFileUpload: React.PropTypes.func.isRequired
 }

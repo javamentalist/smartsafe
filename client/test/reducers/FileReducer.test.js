@@ -16,10 +16,7 @@ describe('fileReducer', () => {
   });
 
   it('should return the initial state if no state is passed', () => {
-    fileReducer(undefined, {})
-      .should
-      .deep
-      .equal(initialState)
+    fileReducer(undefined, {}).should.deep.equal(initialState)
   });
 
   describe('SET_FILES', () => {
@@ -81,59 +78,41 @@ describe('fileReducer', () => {
     it('should set file from userFiles with given id as detailedFile', () => {
       const state = fileReducer(initialState, FileActions.setDetail(1));
 
-      (state.detailedFile)
-        .should
-        .deep
-        .equal(initialState.userFiles[0]);
+      (state.detailedFile).should.deep.equal(initialState.userFiles[0]);
     });
 
     it('should not modify userFiles', () => {
       const state = fileReducer(initialState, FileActions.setDetail(1));
 
-      (state.userFiles)
-        .should
-        .deep
-        .equal(initialState.userFiles);
+      (state.userFiles).should.deep.equal(initialState.userFiles);
     });
 
     it('should set detailedFile to {} if no file with id is found', () => {
       const state = fileReducer(initialState, FileActions.setDetail(1234567));
 
       (state.detailedFile).should.be.empty;
-      (state.detailedFile)
-        .should
-        .be
-        .an('object');
+      (state.detailedFile).should.be.an('object');
     });
 
     it('should set detailedFile to {} if id is null', () => {
       const state = fileReducer(initialState, FileActions.setDetail(null));
 
       (state.detailedFile).should.be.empty;
-      (state.detailedFile)
-        .should
-        .be
-        .an('object');
+      (state.detailedFile).should.be.an('object');
     });
 
     it('should set detailedFile to {} if id is empty', () => {
       const state = fileReducer(initialState, FileActions.setDetail());
 
       (state.detailedFile).should.be.empty;
-      (state.detailedFile)
-        .should
-        .be
-        .an('object');
+      (state.detailedFile).should.be.an('object');
     });
 
     it('should set detailedFile to {} if id is undefined', () => {
       const state = fileReducer(initialState, FileActions.setDetail(undefined));
 
       (state.detailedFile).should.be.empty;
-      (state.detailedFile)
-        .should
-        .be
-        .an('object');
+      (state.detailedFile).should.be.an('object');
     });
   });
 
@@ -153,16 +132,9 @@ describe('fileReducer', () => {
 
       const state = fileReducer(initialState, FileActions.addFileToUploadQueue(newFile));
 
-      (state.uploadQueue)
-        .should
-        .have
-        .lengthOf(initialState.uploadQueue.length + 1);
+      (state.uploadQueue).should.have.lengthOf(initialState.uploadQueue.length + 1);
       // array should contain new file object
-      (state.uploadQueue)
-        .should
-        .deep
-        .include
-        .members([newFile]);
+      (state.uploadQueue).should.deep.include.members([newFile]);
     });
   });
 
@@ -181,25 +153,14 @@ describe('fileReducer', () => {
       const index = 0;
       const state = fileReducer(initialState, FileActions.removeFileFromUploadQueue(index));
 
-      (state.uploadQueue)
-        .should
-        .have
-        .lengthOf(initialState.uploadQueue.length - 1);
-      (state.uploadQueue)
-        .should
-        .not
-        .deep
-        .include
-        .members([initialState.uploadQueue[0]]);
+      (state.uploadQueue).should.have.lengthOf(initialState.uploadQueue.length - 1);
+      (state.uploadQueue).should.not.deep.include.members([initialState.uploadQueue[0]]);
     });
 
     it('should return upload queue unchanged if index was invalid', () => {
       const state = fileReducer(initialState, FileActions.removeFileFromUploadQueue(1000));
 
-      (state.uploadQueue)
-        .should
-        .deep
-        .equal(initialState.uploadQueue);
+      (state.uploadQueue).should.deep.equal(initialState.uploadQueue);
     });
   });
 });
