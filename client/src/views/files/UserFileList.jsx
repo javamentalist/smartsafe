@@ -15,6 +15,10 @@ import { remote } from 'electron'
 const dialog = remote.dialog
 const winston = remote.getGlobal('winston')
 
+// Sens messages to main process (and can listen too)
+import {ipcRenderer} from 'electron'
+
+
 // named export. Useful for testing only component itself without store logic
 export class UserFileList extends React.Component {
 
@@ -88,7 +92,11 @@ export class UserFileList extends React.Component {
   }
 
   handleFileUpload(file) {
-    console.log("Send file to the clouds");
+    console.log("Sending file to the clouds");
+    // ipcRenderer.on('asynchronous-reply', (event, arg) => {
+    //   console.log(arg) // prints "pong"
+    // })
+    ipcRenderer.send('upload-file-async', file);
   }
 
   render() {
