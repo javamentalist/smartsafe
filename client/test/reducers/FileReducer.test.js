@@ -2,7 +2,9 @@ import fileReducer from '../../src/reducers/fileReducer'
 import * as FileActions from '../../src/actions/FileActions'
 
 import * as chai from 'chai'
+import chaiSubset from 'chai-subset'
 chai.should()
+chai.use(chaiSubset)
 
 describe('fileReducer', () => {
   let initialState;
@@ -134,7 +136,22 @@ describe('fileReducer', () => {
 
       (state.uploadQueue).should.have.lengthOf(initialState.uploadQueue.length + 1);
       // array should contain new file object
-      (state.uploadQueue).should.deep.include.members([newFile]);
+      (state.uploadQueue).should.containSubset([newFile]);
+    });
+
+    it('should create new file in queue with default properties', () => {
+      const newFile = {
+        path: '/road/to/hell.mp3'
+      };
+
+      const state = fileReducer(initialState, FileActions.addFileToUploadQueue(newFile));
+      const addedFile = state.uploadQueue[1];
+
+      (addedFile).should.have.property('progress', 0);
+      (addedFile).should.have.property('isComplete', false);
+      (addedFile).should.have.property('isUploadInProgress', false);
+      (addedFile).should.have.property('name', 'hell.mp3');
+      (addedFile).should.have.property('dir', '/road/to');
     });
   });
 

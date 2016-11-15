@@ -66,4 +66,16 @@ describe('File actions', () => {
 
     action.should.deep.equal(expectedAction)
   });
+
+  it('should create action to start file upload', () => {
+    (0).should.equal(1);
+  });
+
+  it('should create action to set upload as finished', () => {
+    (0).should.equal(1);
+  });
+
+  it('should create action to update upload progress', () => {
+    (0).should.equal(1);
+  });
 })
