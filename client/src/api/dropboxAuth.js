@@ -5,6 +5,7 @@ import _ from 'lodash'
 import http from 'http'
 import request from 'request'
 import winston from 'winston'
+
 const SERVER_PORT = 8912;
 const REDIRECT_URL = `http://localhost:${SERVER_PORT}/oauth_callback`;
 const TOKEN_URL = 'https://api.dropboxapi.com/oauth2/token';

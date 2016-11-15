@@ -25,30 +25,30 @@ export class UserFileList extends React.Component {
 
   componentDidMount() {
     if (this.props.files.length <= 0) {
-      // this.setFileListFromDropbox();
+      this.setFileListFromDropbox();
     }
   }
 
   setFileListFromDropbox() {
     return this
       .dropboxClient.authenticate().then(() => {
-      winston.log('debug', 'Authentication successful');
+        winston.log('debug', 'Authentication successful');
 
-      this.props.actions.setAuthStatus(true);
+        this.props.actions.setAuthStatus(true);
 
-      this.dropboxClient.listFolder().then((result) => {
-        let files = Array.from(result);
-        this.handleListFolderResult(files);
-        return files;
-      }).catch((reject) => {
-        winston.log('debug', reject.error)
-      });
+        this.dropboxClient.listFolder().then((result) => {
+          let files = Array.from(result);
+          this.handleListFolderResult(files);
+          return files;
+        }).catch((reject) => {
+          winston.log('debug', reject.error)
+        });
     });
   }
 
   handleListFolderResult(files) {
     if (files.length !== 0) {
-      winston.log('debug', 'Found', files.length, 'files');
+      winston.log('debug', 'Found', files.length, 'file(s)');
       files.forEach(res => {
         winston.log('debug', '- Name: ', res.name)
       });
