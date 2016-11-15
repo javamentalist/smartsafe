@@ -2,7 +2,7 @@ import Promise from 'bluebird'
 import {doAuthentication} from './dropboxAuth.js'
 import fs from 'fs'
 import {post} from './apiUtils.js'
-import winston from 'winston';
+import winston from 'winston'
 import Dropbox from 'dropbox'
 
 function logDebug(err) {
