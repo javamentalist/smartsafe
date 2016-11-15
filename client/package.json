@@ -6,7 +6,7 @@
   "scripts": {
     "start": "babel-node src/index.js",
     "testrpc": "babel-node testrpc.js",
-    "electron": "./node_modules/.bin/electron src/main.js",
+    "electron": "./node_modules/.bin/electron src/main-babel.js",
     "test": "./node_modules/.bin/mocha --reporter spec --require babel-register --recursive \"test/**/*.test.js\"",
     "test-electron": "./node_modules/.bin/electron-mocha --reporter spec --require babel-register --recursive test/views/files/MyFiles.test.js",
     "test-debug": "./node_modules/.bin/mocha --reporter spec --require babel-register --recursive --debug-brk",
