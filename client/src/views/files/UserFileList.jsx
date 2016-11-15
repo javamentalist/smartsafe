@@ -8,15 +8,12 @@ import * as Actions from '../../actions'
 import RaisedButton from 'material-ui/RaisedButton'
 import Add from 'material-ui/svg-icons/content/add'
 
-import DropboxClient from '../../api/dropboxApi'
+// import DropboxClient from '../../api/dropboxApi'
 import authData from '../../../dropbox-auth.json'
 
-import { remote } from 'electron'
-const dialog = remote.dialog
-const winston = remote.getGlobal('winston')
 
 // Sens messages to main process (and can listen too)
-import {ipcRenderer} from 'electron'
+import { ipcRenderer } from 'electron'
 
 
 // named export. Useful for testing only component itself without store logic
@@ -24,65 +21,55 @@ export class UserFileList extends React.Component {
 
   constructor(params) {
     super(params);
-    this.dropboxClient = new DropboxClient(authData.key, authData.secret);
+    ipcRenderer.send('log-async', 'UserFileList created');
+    this.setUpListeners();
+  // this.dropboxClient = new DropboxClient(authData.key, authData.secret);
   }
 
   componentDidMount() {
     if (this.props.files.length <= 0) {
-      this.setFileListFromDropbox();
+      // this.setFileListFromDropbox();
     }
   }
 
   setFileListFromDropbox() {
     return this
       .dropboxClient.authenticate().then(() => {
-        winston.log('debug', 'Authentication successful');
+      ipcRenderer.send('log-async', 'debug', 'Authentication successful');
+      // winston.log('debug', 'Authentication successful');
 
-        this.props.actions.setAuthStatus(true);
+      this.props.actions.setAuthStatus(true);
 
-        this.dropboxClient.listFolder().then((result) => {
-          let files = Array.from(result);
-          this.handleListFolderResult(files);
-          return files;
-        }).catch((reject) => {
-          winston.log('debug', reject.error)
-        });
+      this.dropboxClient.listFolder().then((result) => {
+        let files = Array.from(result);
+        this.handleListFolderResult(files);
+        return files;
+      }).catch((reject) => {
+        ipcRenderer.send('log-async', 'debug', reject.error);
+      });
     });
   }
 
   handleListFolderResult(files) {
     if (files.length !== 0) {
-      winston.log('debug', 'Found', files.length, 'file(s)');
+      ipcRenderer.send('log-async', 'debug', `Found ${files.length} file(s)`);
       files.forEach(res => {
-        winston.log('debug', '- Name: ', res.name)
+        ipcRenderer.send('log-async', 'debug', `- Name: ${res.name}`);
       });
     } else {
-      winston.log('debug', 'Found no files in app folder');
+      ipcRenderer.send('log-async', 'debug', 'Found no files in app folder');
     }
 
     this.props.actions.setFiles(files);
   }
 
   openFileDialog() {
-    // save refenrece to use in dialog callback
-    let actions = this.props.actions;
+    ipcRenderer.send('open-file-dialog-async');
+  }
 
-    winston.log('debug', 'open dialog')
-
-    dialog.showOpenDialog({
-      properties: ['openFile']
-    }, function(filePaths) {
-      if (filePaths && filePaths.length > 0) {
-
-        let filePath = filePaths[0]
-        winston.log('debug', 'File chosen:', filePath)
-
-        actions.addFileToUploadQueue({
-          path: filePath
-        });
-      } else {
-        winston.log('debug', 'No file chosen')
-      }
+  setUpListeners() {
+    ipcRenderer.on('file-chosen-async', (event, filePath) => {
+      this.props.actions.addFileToUploadQueue({path:filePath});
     })
   }
 
@@ -92,7 +79,8 @@ export class UserFileList extends React.Component {
   }
 
   handleFileUpload(file) {
-    console.log("Sending file to the clouds");
+    console.log('Sending file to the clouds');
+    ipcRenderer.send('log-async', 'debug', 'Sending file to the clouds');
     // ipcRenderer.on('asynchronous-reply', (event, arg) => {
     //   console.log(arg) // prints "pong"
     // })

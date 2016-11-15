@@ -9,12 +9,14 @@ const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 // Listens to renderer process and sends messages to it
 const ipcMain = electron.ipcMain;
+const dialog = electron.dialog;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
-const winston = require('winston')
+const winston = require('winston');
+const _ = require('lodash');
 
 function createWindow() {
   // Create the browser window.
@@ -77,12 +79,44 @@ app.on('activate', function() {
 //   winston.log('info', arg)  // prints "ping"
 //   event.returnValue = 'pong'
 // })
+
+ipcMain.on('open-file-dialog-async', (event, arg) => {
+  dialog.showOpenDialog({
+    properties: ['openFile']
+  }, function(filePaths) {
+    if (filePaths && filePaths.length > 0) {
+      let filePath = filePaths[0];
+      logDebug(`File chosen: ${filePath}`);
+      // Alert renderer that file was chosen
+      event.sender.send('file-chosen-async', filePath);
+    } else {
+      logDebug('No file chosen');
+    }
+  })
+  logDebug('Dialog open called');
+})
+
 ipcMain.on('upload-file-async', (event, arg) => {
   let file = arg;
   winston.log('info', `Uploading file: ${file.name} from ${file.path}`)
 
-  // When done, send response
-  // event.sender.send('asynchronous-reply', 'contents')
+// When done, send response
+// event.sender.send('asynchronous-reply', 'contents')
 })
+
+ipcMain.on('log-async', (event, ...args) => {
+  if (args.length === 1) {
+    logDebug(args[0]);
+  } else if (args.length > 1) {
+    log(args[0], _.drop(args, 1));
+  }
+});
+
+function logDebug(logString) {
+  winston.log('debug', logString)
+}
+function log(level, args) {
+  winston.log(level, _.join(args, ' '));
+}
 
 require('electron-reload')(__dirname);
