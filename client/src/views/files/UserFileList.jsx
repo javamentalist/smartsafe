@@ -8,78 +8,38 @@ import * as Actions from '../../actions'
 import RaisedButton from 'material-ui/RaisedButton'
 import Add from 'material-ui/svg-icons/content/add'
 
-import DropboxClient from '../../api/dropboxApi'
-import authData from '../../../dropbox-auth.json'
-
-import { remote } from 'electron'
-const dialog = remote.dialog
-const winston = remote.getGlobal('winston')
+// Sends messages to main process (and can listen too)
+import { ipcRenderer } from 'electron'
 
 // named export. Useful for testing only component itself without store logic
 export class UserFileList extends React.Component {
 
   constructor(params) {
     super(params);
-    this.dropboxClient = new DropboxClient(authData.key, authData.secret);
+    this.setUpListeners();
   }
 
   componentDidMount() {
     if (this.props.files.length <= 0) {
-      this.setFileListFromDropbox();
+      // TODO wait for callback? But there is no callback...
+      ipcRenderer.send('get-files-from-dropbox-async');
     }
   }
 
-  setFileListFromDropbox() {
-    return this
-      .dropboxClient.authenticate().then(() => {
-        winston.log('debug', 'Authentication successful');
+  setUpListeners() {
+    ipcRenderer.on('file-chosen-async', (event, filePath) => {
+      this.props.actions.addFileToUploadQueue({
+        path: filePath
+      });
+    });
 
-        this.props.actions.setAuthStatus(true);
-
-        this.dropboxClient.listFolder().then((result) => {
-          let files = Array.from(result);
-          this.handleListFolderResult(files);
-          return files;
-        }).catch((reject) => {
-          winston.log('debug', reject.error)
-        });
+    ipcRenderer.on('set-dropbox-files-async', (event, files) => {
+      this.props.actions.setFiles(files);
     });
   }
 
-  handleListFolderResult(files) {
-    if (files.length !== 0) {
-      winston.log('debug', 'Found', files.length, 'file(s)');
-      files.forEach(res => {
-        winston.log('debug', '- Name: ', res.name)
-      });
-    } else {
-      winston.log('debug', 'Found no files in app folder');
-    }
-
-    this.props.actions.setFiles(files);
-  }
-
   openFileDialog() {
-    // save refenrece to use in dialog callback
-    let actions = this.props.actions;
-
-    winston.log('debug', 'open dialog')
-
-    dialog.showOpenDialog({
-      properties: ['openFile']
-    }, function(filePaths) {
-      if (filePaths && filePaths.length > 0) {
-
-        let filePath = filePaths[0]
-        winston.log('debug', 'File chosen:', filePath)
-
-        actions.addFileToUploadQueue({
-          path: filePath
-        });
-      } else {
-        winston.log('debug', 'No file chosen')
-      }
-    })
+    ipcRenderer.send('open-file-dialog-async');
   }
 
   openDetailView(fileId) {
@@ -88,7 +48,8 @@ export class UserFileList extends React.Component {
   }
 
   handleFileUpload(file) {
-    console.log("Send file to the clouds");
+    ipcRenderer.send('log-async', 'debug', 'Sending file to the clouds');
+    ipcRenderer.send('upload-file-async', file);
   }
 
   render() {
