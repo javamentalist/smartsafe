@@ -15,5 +15,8 @@ export const SET_AUTH_STATUS = 'SET_AUTH_STATUS'
  */
 
 export function setAuthStatus(isAuthenticated) {
-  return { type: SET_AUTH_STATUS, payload: isAuthenticated }
+  return {
+    type: SET_AUTH_STATUS,
+    payload: isAuthenticated
+  }
 }

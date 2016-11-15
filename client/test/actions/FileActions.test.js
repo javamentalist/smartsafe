@@ -22,10 +22,7 @@ describe('File actions', () => {
     }
 
     const action = actions.setFiles(files)
-    action
-      .should
-      .deep
-      .equal(expectedAction)
+    action.should.deep.equal(expectedAction)
 
   });
 
@@ -38,10 +35,7 @@ describe('File actions', () => {
 
     const action = actions.setDetail(id);
 
-    action
-      .should
-      .deep
-      .equal(expectedAction);
+    action.should.deep.equal(expectedAction);
 
   });
 
@@ -56,10 +50,7 @@ describe('File actions', () => {
 
     const action = actions.addFileToUploadQueue(file)
 
-    action
-      .should
-      .deep
-      .equal(expectedAction)
+    action.should.deep.equal(expectedAction)
   });
 
   it('should create an action to remove file from upload queue', () => {
@@ -73,9 +64,18 @@ describe('File actions', () => {
 
     const action = actions.removeFileFromUploadQueue(file)
 
-    action
-      .should
-      .deep
-      .equal(expectedAction)
+    action.should.deep.equal(expectedAction)
+  });
+
+  it('should create action to start file upload', () => {
+    (0).should.equal(1);
+  });
+
+  it('should create action to set upload as finished', () => {
+    (0).should.equal(1);
+  });
+
+  it('should create action to update upload progress', () => {
+    (0).should.equal(1);
   });
 })

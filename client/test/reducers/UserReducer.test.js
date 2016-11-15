@@ -8,10 +8,9 @@ describe('userReducer', () => {
   it('should return the initial state if no state is passed', () => {
     const state = userReducer(undefined, {});
 
-    state
-      .should
-      .deep
-      .equal({isAuthenticated: false})
+    state.should.deep.equal({
+      isAuthenticated: false
+    })
   });
 
   describe('SET_AUTH_STATUS', () => {

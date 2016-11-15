@@ -1,5 +1,7 @@
-import {SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE} from '../actions'
+import { SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE, START_UPLOAD, UPLOAD_FINISHED } from '../actions'
+import { uploadQueueObjectStructure } from '../actions'
 
+import path from 'path'
 import _ from 'lodash'
 
 const initialState = {
@@ -8,15 +10,20 @@ const initialState = {
   uploadQueue: []
 }
 
+
 function fileReducer(state = initialState, action) {
   switch (action.type) {
     case SET_FILES:
-      return Object.assign({}, state, {userFiles: action.payload});
+      return Object.assign({}, state, {
+        userFiles: action.payload
+      });
     case SET_DETAIL:
       return Object.assign({}, state, {
         detailedFile: _
           .chain(state.userFiles)
-          .find({'id': action.payload})
+          .find({
+            'id': action.payload
+          })
           .defaultTo({})
           .value()
       });
@@ -24,7 +31,10 @@ function fileReducer(state = initialState, action) {
       return Object.assign({}, state, {
         uploadQueue: [
           ...state.uploadQueue,
-          action.payload // payload contains {path: /path/to/file}
+          Object.assign({}, uploadQueueObjectStructure, action.payload, { // payload contains {path: /path/to/file}
+            name: path.basename(action.payload.path),
+            dir: path.dirname(action.payload.path)
+          })
         ]
       });
     case REMOVE_FILE_FROM_UPLOAD_QUEUE:
@@ -33,6 +43,8 @@ function fileReducer(state = initialState, action) {
           .uploadQueue
           .filter((item, index) => index !== action.payload)
       })
+    case START_UPLOAD:
+    case UPLOAD_FINISHED:
     default:
       return state
   }
