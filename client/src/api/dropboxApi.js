@@ -1,9 +1,11 @@
 import Promise from 'bluebird'
 import {doAuthentication} from './dropboxAuth.js'
+import {getOAuthToken, saveOAuthToken} from './oauthToken.js'
 import fs from 'fs'
 import {post} from './apiUtils.js'
 import winston from 'winston'
 import Dropbox from 'dropbox'
+
 
 function logDebug(err) {
     winston.log('debug', err)
@@ -25,17 +27,27 @@ export default class DropboxClient {
         }
     }
 
+    _init(token) {
+        this.token = token;
+        this.dbx = new Dropbox({accessToken: token});
+    }
+
     authenticate() {
         return new Promise((resolve, reject) => {
-            doAuthentication(this.key, this.secret)
-                .then((token) => {
-                    this.token = token;
-                    this.dbx = new Dropbox({accessToken: token});
-                    return resolve()
-                }).catch(err => {
-                    logError(err);
-                    return reject(err)
-            });
+            getOAuthToken('.').then((token) => {
+                this._init(token);
+                resolve()
+            }).catch(err => {
+                doAuthentication(this.key, this.secret)
+                    .then((token) => {
+                        this._init(token);
+                        saveOAuthToken('.', token)
+                        resolve()
+                    }).catch(err => {
+                        logError(err);
+                        return reject(err)
+                    });
+            })
         })
     }
 
