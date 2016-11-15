@@ -1,5 +1,4 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 
@@ -126,7 +125,7 @@ UserFileList.propTypes = {
   files: React.PropTypes.array.isRequired,
   uploadQueue: React.PropTypes.array.isRequired,
   actions: React.PropTypes.object,
-  children: React.PropTypes.any // no idea what element this is
+  children: React.PropTypes.node
 }
 
 UserFileList.contextTypes = {

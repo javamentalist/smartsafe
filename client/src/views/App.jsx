@@ -1,7 +1,6 @@
 import React from 'react'
-import { render } from 'react-dom'
-
 import { Sidebar } from '.'
+
 
 export default class App extends React.Component {
 
@@ -18,4 +17,8 @@ export default class App extends React.Component {
       </div>
     )
   }
+}
+
+App.propTypes = {
+  children: React.PropTypes.node
 }

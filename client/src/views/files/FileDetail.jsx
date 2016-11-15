@@ -1,5 +1,4 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 import FlatButton from 'material-ui/FlatButton'
 import ArrowBack from 'material-ui/svg-icons/navigation/arrow-back'
 
@@ -92,15 +91,13 @@ export class FileDetail extends React.Component {
 
   render() {
     let file = this.props.file;
-    console.log(file)
+    // console.log(file)
     return (
       <div className="row">
         <div className="col-xs-12">
           <div className="row">
             <div className="col-xs-2">
-              <FlatButton label="Back" icon={ < ArrowBack /> } onClick={ () => {
-                                                                           this.context.router.push('/files');
-                                                                         } } />
+              <FlatButton label="Back" icon={ < ArrowBack /> } onClick={ () => this.context.router.push('/files') } />
             </div>
           </div>
           { file

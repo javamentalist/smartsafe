@@ -5,7 +5,6 @@ import IconButton from 'material-ui/IconButton'
 import Clear from 'material-ui/svg-icons/content/clear'
 import CloudUpload from 'material-ui/svg-icons/file/cloud-upload'
 
-import path from 'path'
 import _ from 'lodash'
 
 const tableStyle = {
@@ -26,18 +25,16 @@ const actionsColStyle = {
 class UploadQueue extends React.Component {
 
   renderRow(index, file) {
-    const name = path.basename(file.path);
-    const dir = path.dirname(file.path);
     return (
-      <TableRow key={ name } selectable={ false }>
+      <TableRow key={ file.name } selectable={ false }>
         <TableRowColumn>
-          { name }
+          { file.name }
           <br/>
-          <small>{ dir }</small>
+          <small>{ file.dir }</small>
         </TableRowColumn>
         <TableRowColumn style={ progressColStyle }>
-          { /*<LinearProgress mode="determinate" value={this.state.completed} />*/ }
-          <LinearProgress mode="indeterminate" />
+          <LinearProgress mode={ !file.progress || file.progress === 0 ? 'indeterminate' : 'determinate' } value={ file.progress } />
+          { /*<LinearProgress mode="indeterminate" />*/ }
         </TableRowColumn>
         <TableRowColumn style={ actionsColStyle }>
           <IconButton onClick={ () => this.props.onFileRemove(index) }>
