@@ -1,0 +1,1 @@
+.\geth.exe --datadir .\chain\testnet init .\chain\testnet\CustomGenesis.json

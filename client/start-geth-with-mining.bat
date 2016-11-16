@@ -1,0 +1,1 @@
+.\geth.exe --datadir .\chain\testnet --ipcpath geth.ipc --nodiscover --networkid 45678 --port 30310 --rpcport 8110 --rpcapi "db,eth,net,web3" --rpccorsdomain="localhost" --maxpeers 0 --gasprice 0 --verbosity 5 --pprof --pprofport 6110 --mine --minerthreads 1 >> geth.log 2>&1 
