@@ -35,10 +35,7 @@ ipcMain.on('upload-file-async', (event, file) => {
     // TODO add hash - WHERE TO GET THE HASH???
     uploadEncryptedLocalFilesToDropbox(file.name, '').then(() => {
       logDebug('Upload done');
-      event.sender.send('file-upload-finished-async', file);
-      return getFilesFromDropbox()
-    }).then((files) => {
-      event.sender.send('set-dropbox-files-async', files);
+      return getFilesFromDropbox(event);
     }).then(() => {
       return synchronizeFolders()
     });
@@ -48,15 +45,19 @@ ipcMain.on('upload-file-async', (event, file) => {
   }
 })
 
-ipcMain.on('get-files-from-dropbox-async', (event) => {
-  event.sender.send('set-dropbox-loading-status-async', true);
-  getFilesFromDropbox().then((files) => {
-    event.sender.send('set-dropbox-loading-status-async', false);
-    event.sender.send('set-dropbox-files-async', files);
-  });
+ipcMain.on('delete-file-async', (event, file) => {
+  dropboxClient.delete(file.path_display).then(() => {
+    logDebug(`File ${file.name} deleted from ${file.path_display}`);
+  }).catch((error) => {
+  })
 });
 
-function getFilesFromDropbox() {
+ipcMain.on('get-files-from-dropbox-async', (event) => {
+  getFilesFromDropbox(event);
+});
+
+function getFilesFromDropbox(event) {
+  event.sender.send('set-dropbox-loading-status-async', true);
   return dropboxClient.listFolder()
     .then((result) => {
       let files = Array.from(result);
@@ -70,9 +71,14 @@ function getFilesFromDropbox() {
         logDebug('Found no files in app folder');
       }
       return files;
-    }).catch((reject) => {
-    logDebug(reject.error);
-  });
+    })
+    .then((files) => {
+      event.sender.send('set-dropbox-loading-status-async', false);
+      event.sender.send('set-dropbox-files-async', files);
+    })
+    .catch((reject) => {
+      logDebug(reject.error);
+    });
 }
 
 // Logging
