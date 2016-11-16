@@ -21,6 +21,7 @@ injectTapEventPlugin();
 const initialState = {
   // files: name given to fileReducer in when combining reducers
   files: {
+    isLoading: false,
     userFiles: [],
     detailedFile: {},
     uploadQueue: []

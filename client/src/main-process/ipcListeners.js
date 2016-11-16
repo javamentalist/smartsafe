@@ -3,7 +3,7 @@ import _ from 'lodash'
 import winston from '../utils/log'
 
 import { dropboxClient } from '../main'
-import { synchronizeFolders, uploadLocalFilesToDropbox } from './fileSynchronization'
+import { synchronizeFolders, uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox } from './fileSynchronization'
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
@@ -26,37 +26,54 @@ ipcMain.on('open-file-dialog-async', (event) => {
 })
 
 ipcMain.on('upload-file-async', (event, file) => {
-  winston.log('info', `Uploading file: ${file.name} from ${file.path}`)
-  // TODO this wont stay like this ?
-  uploadLocalFilesToDropbox(file.path, '').then(() => {
-    logDebug('Upload done')
-  }).then(()=>{
-    return synchronizeFolders()
-  });
+  winston.log('info', `Uploading file: ${file.name} from ${file.path}`);
+  event.sender.send('file-upload-started-async', file);
 
-// When done, send response
+  const willBeEncrypted = true;
+
+  if (willBeEncrypted) {
+    // TODO add hash - WHERE TO GET THE HASH???
+    uploadEncryptedLocalFilesToDropbox(file.name, '').then(() => {
+      logDebug('Upload done');
+      event.sender.send('file-upload-finished-async', file);
+      return getFilesFromDropbox()
+    }).then((files) => {
+      event.sender.send('set-dropbox-files-async', files);
+    }).then(() => {
+      return synchronizeFolders()
+    });
+
+  } else {
+    // upload without encyption. THIS WILL BE DONE LATER, RIGHT NOW USER CANNOT CHOOSE
+  }
 })
 
 ipcMain.on('get-files-from-dropbox-async', (event) => {
-
-  dropboxClient.listFolder().then((result) => {
-    let files = Array.from(result);
-
-    if (files.length !== 0) {
-      logDebug(`Found ${files.length} file(s)`);
-      files.forEach(res => {
-        logDebug(`- Name: ${res.name}`);
-      });
-    } else {
-      logDebug('Found no files in app folder');
-    }
+  event.sender.send('set-dropbox-loading-status-async', true);
+  getFilesFromDropbox().then((files) => {
+    event.sender.send('set-dropbox-loading-status-async', false);
     event.sender.send('set-dropbox-files-async', files);
-    return files;
-  }).catch((reject) => {
-    logDebug(reject.error);
   });
 });
 
+function getFilesFromDropbox() {
+  return dropboxClient.listFolder()
+    .then((result) => {
+      let files = Array.from(result);
+
+      if (files.length !== 0) {
+        logDebug(`Found ${files.length} file(s)`);
+        files.forEach(res => {
+          logDebug(`- Name: ${res.name}`);
+        });
+      } else {
+        logDebug('Found no files in app folder');
+      }
+      return files;
+    }).catch((reject) => {
+    logDebug(reject.error);
+  });
+}
 
 // Logging
 

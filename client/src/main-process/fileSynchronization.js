@@ -19,6 +19,8 @@ const IGNORED_FILES = ['.DS_Store', 'temp'];
 import { dropboxClient, ethereumClient } from '../main.js'
 
 
+// NOTE exports at the very end of file
+
 function logDebug(err) {
   winston.log('debug', err)
 }
@@ -27,8 +29,7 @@ function logError(err) {
   winston.log('error', err)
 }
 
-
-export function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
+function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
     const filesHashesFromEth2 = Promise.resolve(filesHashesFromEth);
 
@@ -140,7 +141,7 @@ function getFileNameFromFilePath(filePath) {
     return filePath.substring(filePath.lastIndexOf(FILE_DIR) + FILE_DIR.length + 1, filePath.length);
 }
 
-export function uploadLocalFilesToDropbox(fileName, fileHash) {
+function uploadLocalFilesToDropbox(fileName, fileHash) {
     return new Promise((resolve, reject) => {
         Promise.resolve(dropboxClient.upload(`${FILE_DIR}/${fileName}`, `/${fileName}`))
             .then(responseJson => {
@@ -154,7 +155,7 @@ export function uploadLocalFilesToDropbox(fileName, fileHash) {
 }
 
 // toDo: ??? delete encrypted file
-export function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
+function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
     return cryptoUtils.generatePassword().then(function (password) {
         saveEncryptedPasswordToDatabase(password);
         return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), SYMMETRIC_KEY);
@@ -261,20 +262,21 @@ function decryptFileIfEncrypted(fileName) {
 //     console.log(e)
 // });
 
+// commented out because it should no be run when this file is imported
 // folder synchronization
-dropboxClient.authenticate()
-    .then(() => {
-        return readDir(FILE_DIR)
-    }).then(files => {
-    const userfileslocations = files.filter((file) => {
-        return IGNORED_FILES.indexof(file) === -1
-    });
+// dropboxClient.authenticate()
+//     .then(() => {
+//         return readDir(FILE_DIR)
+//     }).then(files => {
+//     const userfileslocations = files.filter((file) => {
+//         return IGNORED_FILES.indexof(file) === -1
+//     });
 
-    return ethereumClient.getuserfileshashes()
-        .then(fileshashesfrometh => {
-            return synchronizeUserFiles(fileshashesfrometh, userfileslocations)
-        })
-}).catch(err => logError(err));
+//     return ethereumClient.getUserFilesHashes()
+//         .then(fileshashesfrometh => {
+//             return synchronizeUserFiles(fileshashesfrometh, userfileslocations)
+//         })
+// }).catch(err => logError(err));
 
  //new file upload
  //dropboxClient.authenticate().then(() => {
@@ -324,7 +326,7 @@ dropboxClient.authenticate()
 //             });
 //     }).catch(err => logError(err));
 
-export function synchronizeFolders() {
+function synchronizeFolders() {
   if (!fs.existsSync(FILE_DIR)) {
     fs.mkdirSync(FILE_DIR);
   }
@@ -341,3 +343,6 @@ export function synchronizeFolders() {
         })
     }).catch(err => logError(err));
 }
+
+
+export {uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, synchronizeUserFiles, synchronizeFolders}

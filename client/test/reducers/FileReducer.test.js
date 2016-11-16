@@ -11,6 +11,7 @@ describe('fileReducer', () => {
 
   beforeEach(() => {
     initialState = {
+      isLoading: false,
       userFiles: [],
       detailedFile: {},
       uploadQueue: []
@@ -159,25 +160,100 @@ describe('fileReducer', () => {
     beforeEach(() => {
       initialState.uploadQueue = [
         {
-          path: '/staryway/to/heaven'
+          path: '/staryway/to/heaven',
+          name: 'heaven'
         }, {
-          path: '/road/to/hell'
+          path: '/road/to/hell',
+          name: 'hell'
         }
       ]
     });
 
-    it('should remove file from upload queue at specified index', () => {
-      const index = 0;
-      const state = fileReducer(initialState, FileActions.removeFileFromUploadQueue(index));
+    it('should remove file from upload queue', () => {
+      const file = initialState.uploadQueue[0];
+      const state = fileReducer(initialState, FileActions.removeFileFromUploadQueue(file));
 
       (state.uploadQueue).should.have.lengthOf(initialState.uploadQueue.length - 1);
-      (state.uploadQueue).should.not.deep.include.members([initialState.uploadQueue[0]]);
+      (state.uploadQueue).should.not.deep.include.members([file]);
     });
 
-    it('should return upload queue unchanged if index was invalid', () => {
-      const state = fileReducer(initialState, FileActions.removeFileFromUploadQueue(1000));
+    it('should return upload queue unchanged if file with name was not found', () => {
+      const file = {
+        path: 'to/nonexistent',
+        name: 'nonexistent'
+      };
+      const state = fileReducer(initialState, FileActions.removeFileFromUploadQueue(file));
 
       (state.uploadQueue).should.deep.equal(initialState.uploadQueue);
+    });
+  });
+
+  describe('START_UPLOAD', () => {
+    beforeEach(() => {
+      initialState.uploadQueue = [
+        {
+          path: '/staryway/to/heaven',
+          name: 'heaven',
+          progress: 0,
+          isUploadInProgress: false,
+          isComplete: false
+        }, {
+          path: '/road/to/hell',
+          name: 'hell',
+          progress: 0,
+          isUploadInProgress: false,
+          isComplete: false
+        }
+      ]
+    });
+
+    it('should set isUploadInProgress to true for chosen file', () => {
+      const file = initialState.uploadQueue[1];
+      const state = fileReducer(initialState, FileActions.setStartUpload(file));
+
+      (state.uploadQueue[1].isUploadInProgress).should.be.true;
+    });
+
+    it('should not change isUploadInProgress status for other files', () => {
+      const file = initialState.uploadQueue[1];
+      const state = fileReducer(initialState, FileActions.setStartUpload(file));
+
+      (state.uploadQueue[0].isUploadInProgress).should.not.be.true;
+    });
+  });
+
+  describe('UPLOAD_FINISHED', () => {
+    beforeEach(() => {
+      initialState.uploadQueue = [
+        {
+          path: '/staryway/to/heaven',
+          name: 'heaven',
+          progress: 0,
+          isUploadInProgress: true,
+          isComplete: false
+        }, {
+          path: '/road/to/hell',
+          name: 'hell',
+          progress: 0,
+          isUploadInProgress: true,
+          isComplete: false
+        }
+      ]
+    });
+
+    it('should set isUploadInProgress to false for chosen file', () => {
+      const file = initialState.uploadQueue[1];
+      const state = fileReducer(initialState, FileActions.setUploadFinished(file));
+
+      (state.uploadQueue[1].isUploadInProgress).should.not.be.true;
+    });
+
+    it('should set isComplete to true and progress to 100 for chosen file', () => {
+      const file = initialState.uploadQueue[1];
+      const state = fileReducer(initialState, FileActions.setUploadFinished(file));
+
+      (state.uploadQueue[1].isComplete).should.be.true;
+      (state.uploadQueue[1].progress).should.equal(100);
     });
   });
 });
