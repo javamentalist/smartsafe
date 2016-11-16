@@ -43,6 +43,7 @@
     "winston": "^2.3.0"
   },
   "devDependencies": {
+    "ethereumjs-testrpc": "^3.0.1",
     "babel-cli": "^6.16.0",
     "babel-istanbul": "^0.11.0",
     "babel-polyfill": "^6.16.0",
