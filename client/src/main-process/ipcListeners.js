@@ -3,6 +3,7 @@ import _ from 'lodash'
 import winston from '../utils/log'
 
 import { dropboxClient } from '../main'
+import { synchronizeFolders, uploadLocalFilesToDropbox } from './fileSynchronization'
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
@@ -26,6 +27,13 @@ ipcMain.on('open-file-dialog-async', (event) => {
 
 ipcMain.on('upload-file-async', (event, file) => {
   winston.log('info', `Uploading file: ${file.name} from ${file.path}`)
+  // TODO this wont stay like this ?
+  uploadLocalFilesToDropbox(file.path, '').then(() => {
+    logDebug('Upload done')
+  }).then(()=>{
+    return synchronizeFolders()
+  });
+
 // When done, send response
 })
 

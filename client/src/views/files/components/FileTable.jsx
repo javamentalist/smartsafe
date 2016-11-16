@@ -1,5 +1,5 @@
 import React from 'react'
-import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table';
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 
 import { formatBytes, formatDate } from '../../../utils/displayUtils'
 
@@ -8,7 +8,6 @@ const FileTable = ({files, onRowClick}) => (
   <Table>
     <TableHeader displaySelectAll={ showCheckbox } adjustForCheckbox={ showCheckbox } enableSelectAll={ false }>
       <TableRow>
-        <TableHeaderColumn>Type</TableHeaderColumn>
         <TableHeaderColumn>Name</TableHeaderColumn>
         <TableHeaderColumn>Size</TableHeaderColumn>
         <TableHeaderColumn>Client modified</TableHeaderColumn>
@@ -18,12 +17,7 @@ const FileTable = ({files, onRowClick}) => (
     <TableBody displayRowCheckbox={ false }>
       { (files && files.length > 0)
         ? files.map((file) => (
-          <TableRow key={ file.id } onMouseUp={ () => {
-                                                onRowClick(file.id);
-                                              } }>
-            <TableRowColumn>
-              { file['.tag'] }
-            </TableRowColumn>
+          <TableRow key={ file.id } onMouseUp={ () => onRowClick(file.id) }>
             <TableRowColumn>
               { file.name }
             </TableRowColumn>
@@ -39,7 +33,7 @@ const FileTable = ({files, onRowClick}) => (
           </TableRow>
         ))
         : <TableRow>
-            <TableRowColumn colSpan="6" style={ {  textAlign: 'center'} }>No files</TableRowColumn>
+            <TableRowColumn colSpan="6" style={ { textAlign: 'center' } }>No files</TableRowColumn>
           </TableRow> }
     </TableBody>
   </Table>

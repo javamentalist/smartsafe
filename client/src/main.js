@@ -24,7 +24,7 @@ let mainWindow
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800,
+    width: 900,
     height: 600
   })
 
@@ -37,6 +37,7 @@ function createWindow() {
   dropboxClient.authenticate()
     .then(() => winston.log('info', 'Dropbox authenticated'))
     .catch((err) => winston.log('error', err));
+
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
@@ -74,4 +75,5 @@ require('./main-process/ipcListeners')
 require('./main-process/fileSynchronization')
 
 
-require('electron-reload')(__dirname);
+require('electron-reload')(__dirname)
+
