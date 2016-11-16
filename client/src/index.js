@@ -156,7 +156,7 @@ function uploadLocalFilesToDropbox(fileName, fileHash) {
 }
 
 // toDo: ??? delete encrypted file
-export function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
+function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
     return cryptoUtils.generatePassword().then(function (password) {
         saveEncryptedPasswordToDatabase(password);
         return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), password);
@@ -239,23 +239,23 @@ function downloadFileFromDropbox(fileMetaDataFromEth) {
 
 // folder synchronization
 dropboxClient.authenticate()
-//    .then(() => {
-//        return readDir(FILE_DIR)
-//    }).then(files => {
-//    const userFilesLocations = files.filter((file) => {
-//        return IGNORED_FILES.indexOf(file) === -1
-//    });
+    .then(() => {
+        return readDir(FILE_DIR)
+    }).then(files => {
+    const userFilesLocations = files.filter((file) => {
+        return IGNORED_FILES.indexOf(file) === -1
+    });
 
-//    return ethereumClient.getUserFilesHashes()
-//        .then(filesHashesFromEth => {
-//            return synchronizeUserFiles(filesHashesFromEth, userFilesLocations)
-//        })
-//}).catch(err => logError(err));
+    return ethereumClient.getUserFilesHashes()
+        .then(filesHashesFromEth => {
+            return synchronizeUserFiles(filesHashesFromEth, userFilesLocations)
+        })
+}).catch(err => logError(err));
 
-// new file upload
-// dropboxClient.authenticate().then(() => {
-//     ethereumClient.watchFileChanges(onNewFile)
-// });
+ new file upload
+ dropboxClient.authenticate().then(() => {
+     ethereumClient.watchFileChanges(onNewFile)
+ });
 
 
 // function onNewFile({url, hash}) {
