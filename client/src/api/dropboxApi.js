@@ -6,13 +6,7 @@ import {post} from './apiUtils.js'
 import winston from 'winston'
 import Dropbox from 'dropbox'
 
-
-function logDebug(err) {
-    winston.log('debug', err)
-}
-function logError(err) {
-    winston.log('error', err);
-}
+var logger = require('winston')
 
 export default class DropboxClient {
     constructor(key, secret) {
@@ -44,7 +38,7 @@ export default class DropboxClient {
                         saveOAuthToken('.', token)
                         resolve()
                     }).catch(err => {
-                        logError(err);
+                        logger.error('Failed to authenticate! %s,', err);
                         return reject(err)
                     });
             })
@@ -73,6 +67,16 @@ export default class DropboxClient {
         return post(url, headers, stream).then((response_json) => {
             return this.createSharedLink(response_json.path_display)
         })
+    }
+
+    delete(filePath) {
+        return new Promise((resolve, reject) => {
+            return this.dbx.filesDelete({path: filePath})}).then(response_json => {
+                return resolve(response_json)
+            }).catch(err => {
+                logger.error('Failed to delete file %s! Cause: %s', filePath, err)
+                return reject(err)
+            })
     }
 
     createSharedLink(path) {
