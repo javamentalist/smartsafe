@@ -252,10 +252,10 @@ dropboxClient.authenticate()
         })
 }).catch(err => logError(err));
 
- new file upload
- dropboxClient.authenticate().then(() => {
-     ethereumClient.watchFileChanges(onNewFile)
- });
+ //new file upload
+ //dropboxClient.authenticate().then(() => {
+ //    ethereumClient.watchFileChanges(onNewFile)
+ //});
 
 
 // function onNewFile({url, hash}) {
