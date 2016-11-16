@@ -37,6 +37,8 @@ ipcMain.on('upload-file-async', (event, file) => {
       logDebug('Upload done');
       event.sender.send('file-upload-finished-async', file);
       return getFilesFromDropbox()
+    }).then((files) => {
+      event.sender.send('set-dropbox-files-async', files);
     }).then(() => {
       return synchronizeFolders()
     });
@@ -44,29 +46,29 @@ ipcMain.on('upload-file-async', (event, file) => {
   } else {
     // upload without encyption. THIS WILL BE DONE LATER, RIGHT NOW USER CANNOT CHOOSE
   }
-
-// When done, send response
 })
 
 ipcMain.on('get-files-from-dropbox-async', (event) => {
-  getFilesFromDropbox();
+  getFilesFromDropbox().then((files) => {
+    event.sender.send('set-dropbox-files-async', files);
+  });
 });
 
 function getFilesFromDropbox() {
-  dropboxClient.listFolder().then((result) => {
-    let files = Array.from(result);
+  return dropboxClient.listFolder()
+    .then((result) => {
+      let files = Array.from(result);
 
-    if (files.length !== 0) {
-      logDebug(`Found ${files.length} file(s)`);
-      files.forEach(res => {
-        logDebug(`- Name: ${res.name}`);
-      });
-    } else {
-      logDebug('Found no files in app folder');
-    }
-    event.sender.send('set-dropbox-files-async', files);
-    return files;
-  }).catch((reject) => {
+      if (files.length !== 0) {
+        logDebug(`Found ${files.length} file(s)`);
+        files.forEach(res => {
+          logDebug(`- Name: ${res.name}`);
+        });
+      } else {
+        logDebug('Found no files in app folder');
+      }
+      return files;
+    }).catch((reject) => {
     logDebug(reject.error);
   });
 }
