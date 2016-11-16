@@ -6,9 +6,9 @@ import https from 'https'
 import {readDir, createHashForFile, checkExistence} from './utils/fileUtils.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
 import * as cryptoUtils from './utils/cryptoUtils.js'
-import contractAddresses from '../contracts.json'
 import winston from './utils/log';
 import {writeFile} from "fs";
+import contractAddresses from '../contracts.json'
 
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
@@ -30,7 +30,6 @@ function logError(err) {
     winston.log('error', err)
 }
 
-//TODO: If there is 17 in FILE_DIR/ and 17 in FILE_DIR/2/, it doesnt get it
 function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
     const filesHashesFromEth2 = Promise.resolve(filesHashesFromEth);
@@ -249,19 +248,19 @@ function downloadFileFromDropbox(fileMetaDataFromEth) {
 // });
 
 // folder synchronization
-dropboxclient.authenticate()
+dropboxClient.authenticate()
     .then(() => {
-        return readdir(file_dir)
+        return readDir(FILE_DIR)
     }).then(files => {
-    const userfileslocations = files.filter((file) => {
-        return ignored_files.indexof(file) === -1
+    const userFilesLocations = files.filter((file) => {
+        return IGNORED_FILES.indexOf(file) === -1
     });
 
-    return ethereumclient.getuserfileshashes()
-        .then(fileshashesfrometh => {
-            return synchronizeuserfiles(fileshashesfrometh, userfileslocations)
+    return ethereumClient.getUserFilesHashes()
+        .then(filesHashesFromEth => {
+            return synchronizeUserFiles(filesHashesFromEth, userFilesLocations)
         })
-}).catch(err => logerror(err));
+}).catch(err => logError(err));
 
  //new file upload
  //dropboxClient.authenticate().then(() => {
