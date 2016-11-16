@@ -3,6 +3,7 @@ import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowCol
 import FontIcon from 'material-ui/FontIcon'
 import IconButton from 'material-ui/IconButton'
 import Delete from 'material-ui/svg-icons/action/delete'
+import CloudDownload from 'material-ui/svg-icons/file/cloud-download'
 import { lightGreen300, green700, red300, red700, grey100 } from 'material-ui/styles/colors'
 
 import { formatBytes, formatDate } from '../../../utils/displayUtils'
@@ -11,9 +12,10 @@ import { formatBytes, formatDate } from '../../../utils/displayUtils'
 const tableStyle = {
   tableLayout: 'auto'
 }
-const deleteColStyle = {
-  width: '75px',
-  padding: 0
+const statusColStyle = {
+  width: '100px',
+  padding: 0,
+  textAlign: 'center'
 }
 const nameColStyle = {
 
@@ -26,10 +28,9 @@ const modColStyle = {
   width: '20%',
   maxWidth: '200px'
 }
-const statusColStyle = {
-  width: '100px',
-  padding: 0,
-  textAlign: 'center'
+const actionsColStyle = {
+  width: '125px',
+  padding: 0
 }
 
 class FileTable extends React.Component {
@@ -59,6 +60,7 @@ class FileTable extends React.Component {
     let files = this.props.files;
     let onRowClick = this.props.onRowClick;
     let onFileDelete = this.props.onFileDelete;
+    let onFileDownload = this.props.onFileDownload;
     let isLoading = this.props.isLoading;
 
     const showCheckbox = false;
@@ -67,12 +69,12 @@ class FileTable extends React.Component {
       <Table style={ tableStyle }>
         <TableHeader displaySelectAll={ showCheckbox } adjustForCheckbox={ showCheckbox } enableSelectAll={ false }>
           <TableRow>
-            <TableHeaderColumn style={ deleteColStyle }></TableHeaderColumn>
+            <TableHeaderColumn style={ statusColStyle }>Status</TableHeaderColumn>
             <TableHeaderColumn style={ nameColStyle }>Name</TableHeaderColumn>
             <TableHeaderColumn style={ sizeColStyle }>Size</TableHeaderColumn>
             <TableHeaderColumn style={ modColStyle }>Client modified</TableHeaderColumn>
             <TableHeaderColumn style={ modColStyle }>Server modified</TableHeaderColumn>
-            <TableHeaderColumn style={ statusColStyle }>Status</TableHeaderColumn>
+            <TableHeaderColumn style={ actionsColStyle }></TableHeaderColumn>
           </TableRow>
         </TableHeader>
         <TableBody displayRowCheckbox={ false }>
@@ -84,10 +86,8 @@ class FileTable extends React.Component {
           { (!isLoading && files && files.length > 0) &&
             files.map((file) => (
               <TableRow key={ file.id } selectable={ false } style={ { backgroundColor: (file.status == 'protected') ? lightGreen300 : ((file.status == 'faulty') ? red300 : grey100) } }>
-                <TableRowColumn style={ deleteColStyle }>
-                  <IconButton onClick={ () => onFileDelete(file) }>
-                    <Delete/>
-                  </IconButton>
+                <TableRowColumn style={ statusColStyle }>
+                  { this.renderStatusIcon(file) }
                 </TableRowColumn>
                 <TableRowColumn style={ nameColStyle }>
                   { file.name }
@@ -101,8 +101,13 @@ class FileTable extends React.Component {
                 <TableRowColumn style={ modColStyle }>
                   { formatDate(file.server_modified) }
                 </TableRowColumn>
-                <TableRowColumn style={ statusColStyle }>
-                  { this.renderStatusIcon(file) }
+                <TableRowColumn style={ actionsColStyle }>
+                  <IconButton onClick={ () => onFileDelete(file) }>
+                    <Delete color={ red700 } />
+                  </IconButton>
+                  <IconButton onClick={ () => onFileDownload(file) }>
+                    <CloudDownload/>
+                  </IconButton>
                 </TableRowColumn>
               </TableRow>
             )) }
@@ -120,6 +125,7 @@ FileTable.propTypes = {
   files: React.PropTypes.array.isRequired,
   onRowClick: React.PropTypes.func.isRequired,
   onFileDelete: React.PropTypes.func.isRequired,
+  onFileDownload: React.PropTypes.func.isRequired,
   isLoading: React.PropTypes.bool.isRequired
 }
 
