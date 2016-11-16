@@ -41,10 +41,38 @@ function fileReducer(state = initialState, action) {
       return Object.assign({}, state, {
         uploadQueue: state
           .uploadQueue
-          .filter((item, index) => index !== action.payload)
-      })
+          .filter((item) => item.name !== action.payload.name)
+      });
     case START_UPLOAD:
+      return Object.assign({}, state, {
+        uploadQueue: state.uploadQueue.map((item, index) => {
+          if (item.name !== action.payload.name) {
+            // This isn't the item we care about - keep it as-is
+            return item;
+          }
+
+          // Otherwise, this is the one we want - return an updated value
+          return Object.assign({}, item, {
+            isUploadInProgress: true
+          });
+        })
+      });
     case UPLOAD_FINISHED:
+      return Object.assign({}, state, {
+        uploadQueue: state.uploadQueue.map((item, index) => {
+          if (item.name !== action.payload.name) {
+            // This isn't the item we care about - keep it as-is
+            return item;
+          }
+
+          // Otherwise, this is the one we want - return an updated value
+          return Object.assign({}, item, {
+            isUploadInProgress: false,
+            isComplete: true,
+            progress: 100
+          });
+        })
+      });
     default:
       return state
   }

@@ -21,7 +21,7 @@ export class UserFileList extends React.Component {
 
   componentDidMount() {
     if (this.props.files.length <= 0) {
-      // TODO wait for callback? But there is no callback...
+      console.log('asking fo files')
       ipcRenderer.send('get-files-from-dropbox-async');
     }
   }
@@ -34,7 +34,15 @@ export class UserFileList extends React.Component {
     });
 
     ipcRenderer.on('set-dropbox-files-async', (event, files) => {
+      console.log(files);
       this.props.actions.setFiles(files);
+    });
+
+    ipcRenderer.on('file-upload-started-async', (event, file) => {
+      this.props.actions.setStartUpload(file);
+    });
+    ipcRenderer.on('file-upload-finished-async', (event, file) => {
+      this.props.actions.setUploadFinished(file);
     });
   }
 
@@ -42,9 +50,11 @@ export class UserFileList extends React.Component {
     ipcRenderer.send('open-file-dialog-async');
   }
 
+  // We don't currently want to show file details on row click
   openDetailView(fileId) {
-    this.props.actions.setDetail(fileId);
-    this.context.router.push(`/files/${fileId}`);
+    return false;
+  // this.props.actions.setDetail(fileId);
+  // this.context.router.push(`/files/${fileId}`);
   }
 
   handleFileUpload(file) {

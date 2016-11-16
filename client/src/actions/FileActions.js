@@ -44,23 +44,23 @@ export function addFileToUploadQueue(file) {
   }
 }
 
-export function removeFileFromUploadQueue(index) {
+export function removeFileFromUploadQueue(file) {
   return {
     type: REMOVE_FILE_FROM_UPLOAD_QUEUE,
-    payload: index
+    payload: file
   }
 }
 
-export function startUpload(file) {
+export function setStartUpload(file) {
   return {
     type: START_UPLOAD,
     payload: file
   }
 }
 
-export function uploadFinished(file) {
+export function setUploadFinished(file) {
   return {
-    type: START_UPLOAD,
+    type:UPLOAD_FINISHED,
     payload: file
   }
 }
