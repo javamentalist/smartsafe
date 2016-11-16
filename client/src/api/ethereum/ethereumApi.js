@@ -25,11 +25,13 @@ export default class EthereumClient {
 
     getFileContract() {
         return new Promise((resolve, reject) => {
-            if (this.contractAddresses) {
+            if (this.contractAddresses != null) {
                 return resolve(this.file.getContract(this.contractAddresses.file))
             }
-            return resolve(this.file.getContract())
-        });
+            reject()
+        }).catch(err => {
+            logError(err);
+        })
     }
 
     addFileMetaData(hash, link, name) {
@@ -95,7 +97,7 @@ export default class EthereumClient {
                 return resolve(contract.getPeers.call(hash)[1])
             }).catch(err => {
                 logError(err);
-                Promise.reject(err)
+                reject(err)
             })
         })
     }
@@ -115,6 +117,9 @@ export default class EthereumClient {
                     });
 
                     return resolve(hashes)
+                }).catch(err => {
+                    logError(err);
+                    reject(err)
                 })
         })
     }

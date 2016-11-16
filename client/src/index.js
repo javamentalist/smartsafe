@@ -27,6 +27,7 @@ function logError(err) {
     winston.log('error', err)
 }
 
+//TODO: If there is 17 in FILE_DIR/ and 17 in FILE_DIR/2/, it doesnt get it
 function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
     const filesHashesFromEth2 = Promise.resolve(filesHashesFromEth);
