@@ -5,7 +5,7 @@ import fs from 'fs'
 import https from 'https'
 import {readDir, createHashForFile} from './utils/fileUtils.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
-import crypto from 'crypto'
+import * as cryptoUtils from './utils/cryptoUtils.js'
 import contractAddresses from '../contracts.json'
 import winston from './utils/log';
 import {writeFile} from "fs";
@@ -116,20 +116,27 @@ function fileMetaDataUploadedToEth(hash, ethHashes) {
 function prepareFileDataForFiles(filePath) {
     return new Promise((resolve, reject) => {
         const fileName = getFileNameFromFilePath(filePath);
-        const readStream = fs.createReadStream(getFullPathForFileName(fileName));
+        const fileHash = getHashForFile(fileName);
 
-        readStream.on('error', (error) => {
-            throw error
-        });
-
-        return createHashForFile(readStream).then(fileData => {
-            return resolve({fileName: fileName, fileInfo: fileData})
-        })
+        return resolve({ fileName: fileName, fileInfo: fileData })
     })
 }
 
+function getHashForFile(fileName) {
+    const readStream = fs.createReadStream(getFullPathForFileName(fileName));
+    readStream.on('error', (error) => {
+        throw error
+    });
+    return createHashForFile(readStream);
+}
+
+
 function getFullPathForFileName(fileName) {
     return `${FILE_DIR}/${fileName}`;
+}
+
+function getLocalPathForFileName(fileName) {
+    return fileName.replace(`${FILE_DIR}/`, '');
 }
 
 function getFileNameFromFilePath(filePath) {
@@ -147,6 +154,26 @@ function uploadLocalFilesToDropbox(fileName, fileHash) {
                 });
             })
     })
+}
+
+// toDo: generate password -> encrypt file with that password -> upload to dropbox -> encrypt password -> save encrypted password to db -> ? delete encrypted file
+function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
+    return cryptoUtils.generatePassword().then(function (password) {
+        return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), password);
+    }).then(function (encryptedFileName) {
+        const encryptedFileLocalName = getLocalPathForFileName(encryptedFileName);
+        return Promise.all([encryptedFileLocalName, getHashForFile(encryptedFileLocalName)]);
+    }).then(function ([encryptedFileName, encryptedFileHash]) {
+        return uploadLocalFilesToDropbox(encryptedFileName, encryptedFileHash);
+    }).catch(function (err) {
+        logError(err);
+    })
+}
+
+function ecnryptPassword(password) {
+    // ensure public key
+    // use key to encrypt
+    // 
 }
 
 function uploadLocalFileMetaDataToEth(fileData) {
