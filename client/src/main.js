@@ -1,18 +1,25 @@
 // This is app entry point !!!!!!!!!!!!!!
 // TODO move all this to index.js in client root !!!!!!!!!!!!!!
 
-const electron = require('electron');
+// app - module to control application life.
+// BrowserWindow - module to create native browser window.
+// ipcMain - listens to renderer process and sends messages to it
+// dialog - native fail dialog
+import { app, BrowserWindow } from 'electron'
 
-// Module to control application life.
-const app = electron.app;
-// Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow;
+import winston from './utils/log'
+
+import authData from '../dropbox-auth.json'
+import contractAddresses from '../contracts.json'
+import DropboxClient from './api/dropboxApi.js'
+import EthereumClient from './api/ethereum/ethereumApi.js'
+
+export const dropboxClient = new DropboxClient(authData.key, authData.secret)
+export const ethereumClient = new EthereumClient(contractAddresses)
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
-
-const winston = require('winston')
+let mainWindow
 
 function createWindow() {
   // Create the browser window.
@@ -21,22 +28,15 @@ function createWindow() {
     height: 600
   })
 
-  // and load the index.html of the app.
+  // and instantiateContractAtAddress the index.html of the app.
   mainWindow.loadURL(`file://${__dirname}/index.html`)
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
 
-  // Set up winston to be used by electron renderer process
-  // TODO: find a way to use winston from utils/log.js
-  winston.remove(winston.transports.Console);
-  winston.add(winston.transports.Console, {
-    timestamp: true,
-    level: 'debug',
-    colorize: true
-  });
-
-  global.winston = winston;
+  dropboxClient.authenticate()
+    .then(() => winston.log('info', 'Dropbox authenticated'))
+    .catch((err) => winston.log('error', err));
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
@@ -70,5 +70,8 @@ app.on('activate', function() {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+require('./main-process/ipcListeners')
+require('./main-process/fileSynchronization')
+
 
 require('electron-reload')(__dirname);

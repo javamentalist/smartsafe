@@ -30,13 +30,12 @@ function logError(err) {
     winston.log('error', err)
 }
 
-// filesHashesFromEth
 function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
-    var filesHashesFromEth2 = Promise.resolve(filesHashesFromEth);
+    const filesHashesFromEth2 = Promise.resolve(filesHashesFromEth);
 
-    var localFilesFullPaths2 = Promise.resolve(localFilesFullPaths);
-    var preparedFileDataForFiles = localFilesFullPaths2.then(localFilesFullPaths21 => {
+    const localFilesFullPaths2 = Promise.resolve(localFilesFullPaths);
+    const preparedFileDataForFiles = localFilesFullPaths2.then(localFilesFullPaths21 => {
         return Promise.all(localFilesFullPaths21.map(locafileFullPath => {
             return prepareFileDataForFiles(locafileFullPath);
         }));
@@ -62,10 +61,10 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     });
 
     /// Download missing local files
-    var filesHashesFromEth3 = Promise.resolve(filesHashesFromEth);
+    const filesHashesFromEth3 = Promise.resolve(filesHashesFromEth);
 
-    var localFilesFullPaths3 = Promise.resolve(localFilesFullPaths);
-    var preparedFileDataForFiles2 = localFilesFullPaths3.then(localFilesFullPaths31 => {
+    const localFilesFullPaths3 = Promise.resolve(localFilesFullPaths);
+    const preparedFileDataForFiles2 = localFilesFullPaths3.then(localFilesFullPaths31 => {
         return Promise.all(localFilesFullPaths31.map(localFileFullPath => {
             return prepareFileDataForFiles(localFileFullPath);
         }));
@@ -76,9 +75,6 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
             return getFilesOnEthNotLocallyPresent(localFilesData, filesHash);
         }))
     }).then(filesEthMetaData => {
-        // if (filesEthMetaData == null) return Promise.resolve();
-        // if (filesEthMetaData.length === -1) return Promise.resolve();
-
         return Promise.all(filesEthMetaData.map(fileEthMetaData => {
             if (fileEthMetaData == null) return Promise.resolve();
             return Promise.resolve(downloadFileFromDropbox(fileEthMetaData));
@@ -91,8 +87,8 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
 
 function getFilesOnEthNotLocallyPresent(localFilesData, fileEthHash) {
     return new Promise((resolve, reject) => {
-        for (let localFileDataIndex = 0; localFileDataIndex < localFilesData.length; localFileDataIndex++) {
-            const localFileData = localFilesData[localFileDataIndex];
+        for (let localFileNo = 0; localFileNo < localFilesData.length; localFileNo++) {
+            const localFileData = localFilesData[localFileNo];
             const localFileHash = localFileData.fileInfo;
             if (localFileHash === fileEthHash) {
                 return resolve()
@@ -231,7 +227,7 @@ function downloadFileFromDropbox(fileMetaDataFromEth) {
 }
 
 
-// contracts
+// set the watcher for contracts.js
 // ethereumClient.loadContracts().then((address) => {
 //     writeFile('contracts.json', JSON.stringify({file: address}), (err) => {
 //         if (err) console.log(err)
@@ -260,8 +256,8 @@ dropboxClient.authenticate()
 // dropboxClient.authenticate().then(() => {
 //     ethereumClient.watchFileChanges(onNewFile)
 // });
-//
-//
+
+
 // function onNewFile({url, hash}) {
 //     // Replace dl=0 with dl=1 to get direct downloadable link
 //     const dlUrl = DropboxClient.getDirectDownloadLink(url);
