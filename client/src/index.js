@@ -3,7 +3,7 @@ import DropboxClient from './api/dropboxApi.js'
 import authData from '../dropbox-auth.json'
 import fs from 'fs'
 import https from 'https'
-import {readDir, createHashForFile} from './utils/fileUtils.js'
+import {readDir, createHashForFile, checkExistence} from './utils/fileUtils.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
 import * as cryptoUtils from './utils/cryptoUtils.js'
 import contractAddresses from '../contracts.json'
@@ -13,6 +13,9 @@ import {writeFile} from "fs";
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
 const TEMP_DIR = `${HOME_DIR}/SmartsafeClient`;
+const KEYS_DIR = `${HOME_DIR}/.smartsafeKeys`;
+const PUBLIC_KEY = `${KEYS_DIR}/rsa.pub`;
+const PRIVATE_KEY = `${KEYS_DIR}/rsa`;
 
 const IGNORED_FILES = ['.DS_Store', 'temp'];
 
@@ -156,9 +159,10 @@ function uploadLocalFilesToDropbox(fileName, fileHash) {
     })
 }
 
-// toDo: generate password -> encrypt file with that password -> upload to dropbox -> encrypt password -> save encrypted password to db -> ? delete encrypted file
-function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
+// toDo: ??? delete encrypted file
+export function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
     return cryptoUtils.generatePassword().then(function (password) {
+        saveEncryptedPasswordToDatabase(password);
         return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), password);
     }).then(function (encryptedFileName) {
         const encryptedFileLocalName = getLocalPathForFileName(encryptedFileName);
@@ -170,10 +174,35 @@ function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
     })
 }
 
-function ecnryptPassword(password) {
-    // ensure public key
-    // use key to encrypt
-    // 
+function saveEncryptedPasswordToDatabase(password) {
+    return ecnryptWithUserPublicKey(password)
+    // save to database
+}
+
+function ecnryptWithUserPublicKey(text) {
+    return ensureKeyPair().then(function () {
+        return Promise.resolve(fs.readFileSync(PUBLIC_KEY));
+    }).then(function (key) {
+        return cryptoUtils.encryptWithPublicKey(text, key);
+    }) 
+}
+
+function ensureKeyPair() {
+    return checkExistence(KEYS_DIR).catch(function () {
+        return Promise.resolve(fs.mkdirSync(KEYS_DIR));
+    }).then(function () {
+        return Promise.all([checkExistence(PUBLIC_KEY), checkExistence(PRIVATE_KEY)])
+    }).catch(function (err) {
+        return createKeyPair()
+    })
+}
+
+function createKeyPair() {
+    return cryptoUtils.generateRsaKeyPair().then(function (keys) {
+        return Promise.all([fs.writeFileSync(PUBLIC_KEY, keys.public), fs.writeFileSync(PRIVATE_KEY, keys.private)])
+    }).catch(function (err) {
+        logError(err);
+    })
 }
 
 function uploadLocalFileMetaDataToEth(fileData) {
@@ -214,18 +243,18 @@ function downloadFileFromDropbox(fileMetaDataFromEth) {
 
 // folder synchronization
 dropboxClient.authenticate()
-    .then(() => {
-        return readDir(FILE_DIR)
-    }).then(files => {
-    const userFilesLocations = files.filter((file) => {
-        return IGNORED_FILES.indexOf(file) === -1
-    });
+//    .then(() => {
+//        return readDir(FILE_DIR)
+//    }).then(files => {
+//    const userFilesLocations = files.filter((file) => {
+//        return IGNORED_FILES.indexOf(file) === -1
+//    });
 
-    return ethereumClient.getUserFilesHashes()
-        .then(filesHashesFromEth => {
-            return synchronizeUserFiles(filesHashesFromEth, userFilesLocations)
-        })
-}).catch(err => logError(err));
+//    return ethereumClient.getUserFilesHashes()
+//        .then(filesHashesFromEth => {
+//            return synchronizeUserFiles(filesHashesFromEth, userFilesLocations)
+//        })
+//}).catch(err => logError(err));
 
 // new file upload
 // dropboxClient.authenticate().then(() => {

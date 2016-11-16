@@ -1,6 +1,7 @@
 import Promise from 'bluebird'
 import {createHash} from 'crypto'
 import nodedir from 'node-dir'
+import fs from 'fs'
 
 export const readDir = (directory) => {
     return new Promise((resolve, reject) => {
@@ -21,3 +22,12 @@ export const createHashForFile = (readStream) => {
         })
     })
 };
+
+export const checkExistence = (path) => {
+    return new Promise((resolve, reject) => {
+        fs.access(path, fs.F_OK, function (err) {
+            if (err) reject(err);
+            else resolve();
+        })
+    })
+}
