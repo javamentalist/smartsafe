@@ -38,7 +38,8 @@
     "react-tap-event-plugin": "^1.0.0",
     "redux": "^3.6.0",
     "request": "^2.72.0",
-    "web3": "^0.17.0-beta",
+    "solc": "^0.4.4",
+    "web3": "^0.16.0",
     "winston": "^2.3.0"
   },
   "devDependencies": {
@@ -48,7 +49,6 @@
     "babel-preset-es2015": "^6.16.0",
     "babel-preset-react": "^6.16.0",
     "babel-register": "^6.18.0",
-    "bluebird": "^3.4.6",
     "chai": "^3.5.0",
     "chai-enzyme": "^0.5.2",
     "chai-subset": "^1.3.0",
@@ -63,7 +63,6 @@
     "jsdom-global": "2.1.0",
     "mocha": "^3.1.2",
     "mockery": "^2.0.0",
-    "react-addons-test-utils": "^15.3.2",
-    "solc": "^0.4.2"
+    "react-addons-test-utils": "^15.3.2"
   }
 }
