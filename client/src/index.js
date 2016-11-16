@@ -171,16 +171,24 @@ function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
 }
 
 function saveEncryptedPasswordToDatabase(password) {
-    return ecnryptWithUserPublicKey(password)
+    return encryptWithUserPublicKey(password)
     // save to database
 }
 
-function ecnryptWithUserPublicKey(text) {
+function encryptWithUserPublicKey(text) {
     return ensureKeyPair().then(function () {
         return Promise.resolve(fs.readFileSync(PUBLIC_KEY));
     }).then(function (key) {
         return cryptoUtils.encryptWithPublicKey(text, key);
     }) 
+}
+
+function decryptWithUserPrivateKey(text) {
+    return ensureKeyPair().then(function () {
+        return Promise.resolve(fs.readFileSync(PRIVATE_KEY));
+    }).then(function (key) {
+        return cryptoUtils.decryptWithPrivateKey(text, key);
+    })
 }
 
 function ensureKeyPair() {
@@ -205,7 +213,7 @@ function uploadLocalFileMetaDataToEth(fileData) {
     return new Promise((resolve, reject) => {
         const fileName = fileData.fileName;
         const fileHash = fileData.fileHash;
-        const fileDropboxSharedLink = fileData.fileSharedLink;
+        const fileDropboxSharedLink = encryptWithUserPublicKey(fileData.fileSharedLink);
         ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName).then(()=> {
             return resolve()
         });
@@ -238,19 +246,19 @@ function downloadFileFromDropbox(fileMetaDataFromEth) {
 // });
 
 // folder synchronization
-dropboxClient.authenticate()
+dropboxclient.authenticate()
     .then(() => {
-        return readDir(FILE_DIR)
+        return readdir(file_dir)
     }).then(files => {
-    const userFilesLocations = files.filter((file) => {
-        return IGNORED_FILES.indexOf(file) === -1
+    const userfileslocations = files.filter((file) => {
+        return ignored_files.indexof(file) === -1
     });
 
-    return ethereumClient.getUserFilesHashes()
-        .then(filesHashesFromEth => {
-            return synchronizeUserFiles(filesHashesFromEth, userFilesLocations)
+    return ethereumclient.getuserfileshashes()
+        .then(fileshashesfrometh => {
+            return synchronizeuserfiles(fileshashesfrometh, userfileslocations)
         })
-}).catch(err => logError(err));
+}).catch(err => logerror(err));
 
  //new file upload
  //dropboxClient.authenticate().then(() => {
