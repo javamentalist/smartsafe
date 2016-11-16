@@ -33,8 +33,7 @@ class UploadQueue extends React.Component {
           <small>{ file.dir }</small>
         </TableRowColumn>
         <TableRowColumn style={ progressColStyle }>
-          <LinearProgress mode={ !file.progress || file.progress === 0 ? 'indeterminate' : 'determinate' } value={ file.progress } />
-          { /*<LinearProgress mode="indeterminate" />*/ }
+          <LinearProgress mode={ file.isUploadInProgress ? ((!file.progress || file.progress === 0) ? "indeterminate" : "determinate") : "determinate" } value={ file.progress } />
         </TableRowColumn>
         <TableRowColumn style={ actionsColStyle }>
           <IconButton onClick={ () => this.props.onFileRemove(index) }>

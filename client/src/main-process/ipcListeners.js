@@ -3,7 +3,7 @@ import _ from 'lodash'
 import winston from '../utils/log'
 
 import { dropboxClient } from '../main'
-import { synchronizeFolders, uploadLocalFilesToDropbox } from './fileSynchronization'
+import { synchronizeFolders, uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox } from './fileSynchronization'
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
@@ -26,19 +26,33 @@ ipcMain.on('open-file-dialog-async', (event) => {
 })
 
 ipcMain.on('upload-file-async', (event, file) => {
-  winston.log('info', `Uploading file: ${file.name} from ${file.path}`)
-  // TODO this wont stay like this ?
-  uploadLocalFilesToDropbox(file.path, '').then(() => {
-    logDebug('Upload done')
-  }).then(()=>{
-    return synchronizeFolders()
-  });
+  winston.log('info', `Uploading file: ${file.name} from ${file.path}`);
+  event.sender.send('file-upload-started-async', file);
+
+  const willBeEncrypted = true;
+
+  if (willBeEncrypted) {
+    // TODO add hash - WHERE TO GET THE HASH???
+    uploadEncryptedLocalFilesToDropbox(file.name, '').then(() => {
+      logDebug('Upload done');
+      event.sender.send('file-upload-finished-async', file);
+      return getFilesFromDropbox()
+    }).then(() => {
+      return synchronizeFolders()
+    });
+
+  } else {
+    // upload without encyption. THIS WILL BE DONE LATER, RIGHT NOW USER CANNOT CHOOSE
+  }
 
 // When done, send response
 })
 
 ipcMain.on('get-files-from-dropbox-async', (event) => {
+  getFilesFromDropbox();
+});
 
+function getFilesFromDropbox() {
   dropboxClient.listFolder().then((result) => {
     let files = Array.from(result);
 
@@ -55,8 +69,7 @@ ipcMain.on('get-files-from-dropbox-async', (event) => {
   }).catch((reject) => {
     logDebug(reject.error);
   });
-});
-
+}
 
 // Logging
 

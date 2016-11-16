@@ -6,7 +6,7 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 
 import * as Actions from '../../actions'
-import { formatDate } from '../../utils/displayUtils'
+import { formatDate, formatBytes } from '../../utils/displayUtils'
 
 // named export. Useful for testing only component itself without store logic
 export class FileDetail extends React.Component {
@@ -50,6 +50,14 @@ export class FileDetail extends React.Component {
           </div>
           <div className="col-xs-9">
             { file.path_display }
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-xs-3">
+            <strong>Size</strong>
+          </div>
+          <div className="col-xs-9">
+            { formatBytes(file.size) }
           </div>
         </div>
         <div className="row">

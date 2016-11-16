@@ -68,14 +68,31 @@ describe('File actions', () => {
   });
 
   it('should create action to start file upload', () => {
-    (0).should.equal(1);
+    const file = {
+      path: '/path/to/file'
+    }
+    const expectedAction = {
+      type: actions.START_UPLOAD,
+      payload: file
+    }
+
+    const action = actions.setStartUpload(file)
+
+    action.should.deep.equal(expectedAction)
   });
 
   it('should create action to set upload as finished', () => {
-    (0).should.equal(1);
+    const file = {
+      path: '/path/to/file'
+    }
+    const expectedAction = {
+      type: actions.UPLOAD_FINISHED,
+      payload: file
+    }
+
+    const action = actions.setUploadFinished(file)
+
+    action.should.deep.equal(expectedAction)
   });
 
-  it('should create action to update upload progress', () => {
-    (0).should.equal(1);
-  });
 })

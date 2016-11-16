@@ -36,6 +36,13 @@ export class UserFileList extends React.Component {
     ipcRenderer.on('set-dropbox-files-async', (event, files) => {
       this.props.actions.setFiles(files);
     });
+
+    ipcRenderer.on('file-upload-started-async', (event, file) => {
+      this.props.actions.setStartUpload(file);
+    });
+    ipcRenderer.on('file-upload-finished-async', (event, file) => {
+      this.props.actions.setUploadFinished(file);
+    });
   }
 
   openFileDialog() {
