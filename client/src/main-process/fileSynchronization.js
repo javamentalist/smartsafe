@@ -11,7 +11,8 @@ const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
 const TEMP_DIR = `${HOME_DIR}/SmartsafeClient`;
 const KEYS_DIR = `${HOME_DIR}/.smartsafeKeys`;
 const PUBLIC_KEY = `${KEYS_DIR}/rsa.pub`;
-const PRIVATE_KEY = `${KEYS_DIR}/rsa`;
+const PRIVATE_KEY = ` $ { KEYS_DIR }/rsa`;
+const SYMMETRIC_KEY = 'fkdhf209uc5v5mnr5e3e2';
 
 const IGNORED_FILES = ['.DS_Store', 'temp'];
 
@@ -156,7 +157,7 @@ export function uploadLocalFilesToDropbox(fileName, fileHash) {
 export function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
     return cryptoUtils.generatePassword().then(function (password) {
         saveEncryptedPasswordToDatabase(password);
-        return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), password);
+        return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), SYMMETRIC_KEY);
     }).then(function (encryptedFileName) {
         const encryptedFileLocalName = getLocalPathForFileName(encryptedFileName);
         return Promise.all([encryptedFileLocalName, getHashForFile(encryptedFileLocalName)]);
@@ -210,25 +211,43 @@ function uploadLocalFileMetaDataToEth(fileData) {
     return new Promise((resolve, reject) => {
         const fileName = fileData.fileName;
         const fileHash = fileData.fileHash;
-        const fileDropboxSharedLink = encryptWithUserPublicKey(fileData.fileSharedLink);
-        ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName).then(()=> {
+        encryptWithUserPublicKey(fileData.fileSharedLink).then((fileDropboxSharedLink) => {
+            ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName)
+        }).then(()=> {
             return resolve()
         });
-
     })
 }
 
 // TODO: if the file was in a dir, put it into a dir
 function downloadFileFromDropbox(fileMetaDataFromEth) {
-    return new Promise((resolve, reject) => {
-        const downloadUrl = dropboxClient.getDirectDownloadLink(fileMetaDataFromEth.link);
-        const fileName = dropboxClient.getFileNameFromUrl(downloadUrl);
-        const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
-        https.get(downloadUrl, fileToDownload => {
-            fileToDownload.pipe(fileStream)
-        });
-        return resolve()
+    const encryptedDownloadUrl = fileMetaDataFromEth.link;
+    return decryptWithUserPrivateKey(encryptedDownloadUrl).then(function (dropboxLink) {
+        return new Promise((resolve, reject) => {
+            const downloadUrl = DropboxClient.getDirectDownloadLink(dropboxLink);
+            const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
+            const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
+            https.get(downloadUrl, (fileToDownload) => {
+                fileToDownload.pipe(fileStream)
+                return resolve(fileName)
+            }).on('error', (e) => {
+                logError
+                return reject(e);
+            });
+        })
+    }).then(function (fileName) {
+        return decryptFileIfEncrypted(fileName)
     })
+}
+
+function decryptFileIfEncrypted(fileName) {
+    const suffix = '.enc';
+    const fullName = `${FILE_DIR}/${fileName}`;
+    if (fileName.indexOf(suffix, fileName.length - suffix.length) !== -1) {
+        return cryptoUtils.decryptWithSymmetricKey(fullName, SYMMETRIC_KEY);
+    } else {
+        return Promise.resolve(fullName);
+    }
 }
 
 
