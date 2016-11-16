@@ -12,23 +12,24 @@ function logError(err) {
 
 export default class EthereumClient {
     constructor(contractAddresses) {
-        const web3 = this.web3 = new Web3();
         this.contractAddresses = contractAddresses;
-        web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'));
+
+        const web3 = this.web3 = new Web3();
+
+        web3.setProvider(new web3.providers.HttpProvider('http://localhost:8110'));
         try {
             web3.eth.defaultAccount = web3.eth.coinbase
+
         } catch (e) {
             logError('Failed to connect to ethereum network');
+            logError(e)
         }
         this.file = new Contract('FileSharing', 'FileSharing', web3)
     }
 
     getFileContract() {
         return new Promise((resolve, reject) => {
-            if (this.contractAddresses != null) {
-                return resolve(this.file.getContract(this.contractAddresses.file))
-            }
-            reject()
+            return resolve(this.file.getContract(this.contractAddresses.file))
         }).catch(err => {
             logError(err);
         })

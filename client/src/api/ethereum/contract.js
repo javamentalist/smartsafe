@@ -16,26 +16,25 @@ export default class Contract {
 
     }
 
-    getContract(address) {
+    getContract(contractAddress) {
         return new Promise((resolve, reject) => {
             if(this.contract == null) {
                 return this.deployContract().then(contract => {
                     return resolve(contract)
                 })
             }
-            this.instantiateContractAtAddress(address).then(contract => {
+            this.instantiateContractAtAddress(contractAddress).then(contract => {
                     return resolve(contract)
             }).catch(err => {
                 logError(err);
-                reject(err)
             })
         })
     }
 
-    instantiateContractAtAddress(address) {
-        new Promise((resolve, reject) => {
+    instantiateContractAtAddress(contractAddress) {
+        return new Promise((resolve, reject) => {
             if(this.abi != null) {
-                this.contract = this.web3.eth.contract(this.abi).at(address);
+                this.contract = this.web3.eth.contract(this.abi).at(contractAddress);
                 return resolve(this.contract)
             }
             reject("ABI is not set")
@@ -46,19 +45,17 @@ export default class Contract {
      New() gets called twice. The first time, contract.address does not exist, the second time it does
      */
     deployContract() {
-        new Promise((resolve, reject) => {
-            this.getContractSourceCode(this.fileName).then((source) => {
-                 this.web3.eth.compile.solidity(source, (err, compiledContract) => {
+        return new Promise((resolve, reject) => {
+            return this.getContractSourceCode(this.fileName).then((source) => {
+                 return this.web3.eth.compile.solidity(source, (err, compiledContract) => {
                     if (err) return reject(err);
 
-                    const compiledByteCode = compiledContract.code;
-                    this.abi = compiledContract.info.abiDefinition;
+                    const compiledByteCode = compiledContract.FileSharing.code;
+                    this.abi = compiledContract.FileSharing.info.abiDefinition;
 
                     this.web3.eth.contract(this.abi).new({
                         data: compiledByteCode,
-                        gas: 300000,
-                        from: mySenderAddress}, (err, contract) => {
-
+                        gas: 13421772}, (err, contract) => {
 
                         if (err) return reject(err);
 
