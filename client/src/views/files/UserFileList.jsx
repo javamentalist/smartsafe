@@ -72,6 +72,11 @@ export class UserFileList extends React.Component {
     ipcRenderer.send('upload-file-async', file);
   }
 
+  handleFileDelete(file){
+    ipcRenderer.send('log-async', 'debug', 'Deleting file from Dropbox');
+    ipcRenderer.send('delete-file-async', file)
+  }
+
   render() {
     return (
       <div className="row">
@@ -88,7 +93,7 @@ export class UserFileList extends React.Component {
           </div>
           <div className="row">
             <div className="col-xs-12">
-              <FileTable files={ this.props.files } onRowClick={ this.openDetailView.bind(this) } isLoading={ this.props.isLoading } />
+              <FileTable files={ this.props.files } onRowClick={ this.openDetailView.bind(this) } onFileDelete={ this.handleFileDelete.bind(this) } isLoading={ this.props.isLoading } />
             </div>
           </div>
           <div className="row">
