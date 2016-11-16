@@ -215,7 +215,9 @@ function uploadLocalFileMetaDataToEth(fileData) {
         const fileName = fileData.fileName;
         const fileHash = fileData.fileHash;
         const fileDropboxSharedLink = encryptWithUserPublicKey(fileData.fileSharedLink);
-        ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName).then(()=> {
+        encryptWithUserPublicKey(fileData.fileSharedLink).then((fileDropboxSharedLink) => {
+            ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName)
+        }).then(()=> {
             return resolve()
         });
 
