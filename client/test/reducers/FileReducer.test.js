@@ -11,6 +11,7 @@ describe('fileReducer', () => {
 
   beforeEach(() => {
     initialState = {
+      isLoading: false,
       userFiles: [],
       detailedFile: {},
       uploadQueue: []

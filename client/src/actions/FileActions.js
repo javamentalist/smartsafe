@@ -1,6 +1,7 @@
 /*
  * action types
  */
+export const SET_LOADING_STATUS = 'SET_LOADING_STATUS'
 export const SET_FILES = 'SET_FILES'
 export const SET_DETAIL = 'SET_DETAIL'
 export const ADD_FILE_TO_UPLOAD_QUEUE = 'ADD_FILE_TO_UPLOAD_QUEUE'
@@ -23,6 +24,12 @@ export const uploadQueueObjectStructure = {
 /*
  * action creators
  */
+export function setLoadingStatus(newStatus) {
+  return {
+    type: SET_LOADING_STATUS,
+    payload: newStatus
+  }
+}
 export function setFiles(files) {
   return {
     type: SET_FILES,
@@ -60,7 +67,7 @@ export function setStartUpload(file) {
 
 export function setUploadFinished(file) {
   return {
-    type:UPLOAD_FINISHED,
+    type: UPLOAD_FINISHED,
     payload: file
   }
 }

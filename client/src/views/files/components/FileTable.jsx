@@ -33,6 +33,7 @@ class FileTable extends React.Component {
   render() {
     let files = this.props.files;
     let onRowClick = this.props.onRowClick;
+    let isLoading = this.props.isLoading;
 
     const showCheckbox = false;
 
@@ -49,7 +50,11 @@ class FileTable extends React.Component {
         </TableHeader>
         <TableBody displayRowCheckbox={ false }>
           { /*onMouseUp={ () => onRowClick(file.id) }*/ }
-          { (files && files.length > 0)
+          { isLoading &&
+            <TableRow>
+              <TableRowColumn colSpan="5" style={ { textAlign: 'center' } }>Loading</TableRowColumn>
+            </TableRow> }
+          { (!isLoading && files && files.length > 0)
             ? files.map((file) => (
               <TableRow key={ file.id } selectable={ false } style={ { backgroundColor: (file.status == 'protected') ? lightGreen300 : ((file.status == 'faulty') ? red300 : grey100) } }>
                 <TableRowColumn>
@@ -80,7 +85,8 @@ class FileTable extends React.Component {
 
 FileTable.propTypes = {
   files: React.PropTypes.array.isRequired,
-  onRowClick: React.PropTypes.func.isRequired
+  onRowClick: React.PropTypes.func.isRequired,
+  isLoading: React.PropTypes.bool.isRequired
 }
 
 export default FileTable

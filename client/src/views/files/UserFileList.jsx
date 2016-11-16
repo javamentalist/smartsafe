@@ -6,7 +6,9 @@ import { FileTable, UploadQueue } from '.'
 import * as Actions from '../../actions'
 
 import RaisedButton from 'material-ui/RaisedButton'
+import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Add from 'material-ui/svg-icons/content/add'
+import Refresh from 'material-ui/svg-icons/navigation/refresh'
 
 // Sends messages to main process (and can listen too)
 import { ipcRenderer } from 'electron'
@@ -33,6 +35,10 @@ export class UserFileList extends React.Component {
       });
     });
 
+    ipcRenderer.on('set-dropbox-loading-status-async', (event, status) => {
+      this.props.actions.setLoadingStatus(status);
+    });
+
     ipcRenderer.on('set-dropbox-files-async', (event, files) => {
       console.log(files);
       this.props.actions.setFiles(files);
@@ -44,6 +50,10 @@ export class UserFileList extends React.Component {
     ipcRenderer.on('file-upload-finished-async', (event, file) => {
       this.props.actions.setUploadFinished(file);
     });
+  }
+
+  refreshDropbox() {
+    ipcRenderer.send('get-files-from-dropbox-async');
   }
 
   openFileDialog() {
@@ -66,14 +76,19 @@ export class UserFileList extends React.Component {
     return (
       <div className="row">
         <div className="col-xs-12">
-          <div className="row">
-            <div className="col-xs-12">
+          <div className="row bottom-xs">
+            <div className="col-xs-10">
               <h2>Files</h2>
+            </div>
+            <div className="col-xs-2 center-xs">
+              <FloatingActionButton onClick={ () => this.refreshDropbox() }>
+                <Refresh />
+              </FloatingActionButton>
             </div>
           </div>
           <div className="row">
             <div className="col-xs-12">
-              <FileTable files={ this.props.files } onRowClick={ this.openDetailView.bind(this) } />
+              <FileTable files={ this.props.files } onRowClick={ this.openDetailView.bind(this) } isLoading={ this.props.isLoading } />
             </div>
           </div>
           <div className="row">
@@ -93,6 +108,7 @@ export class UserFileList extends React.Component {
 }
 
 UserFileList.propTypes = {
+  isLoading: React.PropTypes.bool.isRequired,
   files: React.PropTypes.array.isRequired,
   uploadQueue: React.PropTypes.array.isRequired,
   actions: React.PropTypes.object,
@@ -106,6 +122,7 @@ UserFileList.contextTypes = {
 const mapStateToProps = (state) => {
   return {
     // key - props key value - which part of state to bind
+    isLoading: state.files.isLoading,
     files: state.files.userFiles,
     uploadQueue: state.files.uploadQueue
   }

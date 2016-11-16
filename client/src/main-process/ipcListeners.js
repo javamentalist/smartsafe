@@ -49,7 +49,9 @@ ipcMain.on('upload-file-async', (event, file) => {
 })
 
 ipcMain.on('get-files-from-dropbox-async', (event) => {
+  event.sender.send('set-dropbox-loading-status-async', true);
   getFilesFromDropbox().then((files) => {
+    event.sender.send('set-dropbox-loading-status-async', false);
     event.sender.send('set-dropbox-files-async', files);
   });
 });
