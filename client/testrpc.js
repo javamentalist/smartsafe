@@ -1,7 +1,7 @@
 import TestRPC from 'ethereumjs-testrpc'
 import accounts from './accounts.json'
 
-const PORT = 8545
+const PORT = 8110
 const server = TestRPC.server({ accounts })
 
 server.listen(PORT, (err, blockchain) => {
