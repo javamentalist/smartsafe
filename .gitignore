@@ -2,8 +2,9 @@ node_modules
 data
 npm-debug.log
 dropbox-auth.json
+coverage/
+chain/
 .DS_Store
-contracts.json
 .node-xmlhttprequest-sync-*
 /target/
 
