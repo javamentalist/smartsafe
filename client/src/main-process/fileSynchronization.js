@@ -11,7 +11,7 @@ const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
 const TEMP_DIR = `${HOME_DIR}/SmartsafeClient`;
 const KEYS_DIR = `${HOME_DIR}/.smartsafeKeys`;
 const PUBLIC_KEY = `${KEYS_DIR}/rsa.pub`;
-const PRIVATE_KEY = ` $ { KEYS_DIR }/rsa`;
+const PRIVATE_KEY = `${KEYS_DIR}/rsa`;
 const SYMMETRIC_KEY = 'fkdhf209uc5v5mnr5e3e2';
 
 const IGNORED_FILES = ['.DS_Store', 'temp'];
@@ -225,8 +225,8 @@ function downloadFileFromDropbox(fileMetaDataFromEth) {
     const encryptedDownloadUrl = fileMetaDataFromEth.link;
     return decryptWithUserPrivateKey(encryptedDownloadUrl).then(function (dropboxLink) {
         return new Promise((resolve, reject) => {
-            const downloadUrl = DropboxClient.getDirectDownloadLink(dropboxLink);
-            const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
+            const downloadUrl = dropboxClient.getDirectDownloadLink(dropboxLink);
+            const fileName = dropboxClient.getFileNameFromUrl(downloadUrl);
             const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
             https.get(downloadUrl, (fileToDownload) => {
                 fileToDownload.pipe(fileStream)

@@ -52,6 +52,10 @@ ipcMain.on('delete-file-async', (event, file) => {
   })
 });
 
+ipcMain.on('download-file-async',(event,file)=>{
+
+});
+
 ipcMain.on('get-files-from-dropbox-async', (event) => {
   getFilesFromDropbox(event);
 });
