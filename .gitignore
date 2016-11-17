@@ -3,7 +3,6 @@ data
 npm-debug.log
 dropbox-auth.json
 coverage/
-chain/
 .DS_Store
 .node-xmlhttprequest-sync-*
 /target/
