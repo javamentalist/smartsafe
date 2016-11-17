@@ -24,8 +24,8 @@ let mainWindow
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 900,
-    height: 600
+    width: 1100,
+    height: 700
   })
 
   // and instantiateContractAtAddress the index.html of the app.

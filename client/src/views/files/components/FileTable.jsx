@@ -105,7 +105,7 @@ class FileTable extends React.Component {
                   <IconButton onClick={ () => onFileDelete(file) }>
                     <Delete color={ red700 } />
                   </IconButton>
-                  <IconButton onClick={ () => onFileDownload(file) }>
+                  <IconButton onClick={ () => onFileDownload(file) } disabled={true}>
                     <CloudDownload/>
                   </IconButton>
                 </TableRowColumn>
