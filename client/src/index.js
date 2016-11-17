@@ -7,9 +7,9 @@ import {readDir, createHashForFile, checkExistence} from './utils/fileUtils.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
 import * as cryptoUtils from './utils/cryptoUtils.js'
 import winston from './utils/log';
-import {writeFile} from "fs";
-import contractAddresses from '../contracts.json'
+const readFile = Promise.promisify(require("fs").readFile);
 
+const CONTRACTS_FILE = '/../contracts.json';
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
 const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
 const TEMP_DIR = `${HOME_DIR}/SmartsafeClient`;
@@ -21,7 +21,8 @@ const SYMMETRIC_KEY = 'fkdhf209uc5v5mnr5e3e2';
 const IGNORED_FILES = ['.DS_Store', 'temp'];
 
 const dropboxClient = new DropboxClient(authData.key, authData.secret);
-const ethereumClient = new EthereumClient(contractAddresses);
+
+const ethereumClient = new EthereumClient();
 
 function logDebug(err) {
     winston.log('debug', err)
@@ -37,8 +38,8 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
 
     const localFilesFullPaths2 = Promise.resolve(localFilesFullPaths);
     const preparedFileDataForFiles = localFilesFullPaths2.then(localFilesFullPaths21 => {
-        return Promise.all(localFilesFullPaths21.map(locafileFullPath => {
-            return prepareFileDataForFiles(locafileFullPath);
+        return Promise.all(localFilesFullPaths21.map(localFileFullPath => {
+            return prepareFileDataForFiles(localFileFullPath);
         }));
     });
 
@@ -118,16 +119,18 @@ function prepareFileDataForFiles(filePath) {
         const fileName = getFileNameFromFilePath(filePath);
         const fileHash = getHashForFile(fileName);
 
-        return resolve({ fileName: fileName, fileInfo: fileData })
+        return resolve({ fileName: fileName, fileInfo: fileHash })
     })
 }
 
 function getHashForFile(fileName) {
-    const readStream = fs.createReadStream(getFullPathForFileName(fileName));
-    readStream.on('error', (error) => {
-        throw error
-    });
-    return createHashForFile(readStream);
+    return new Promise((resolve, reject) => {
+        const readStream = fs.createReadStream(getFullPathForFileName(fileName));
+        readStream.on('error', (error) => {
+            throw error
+        });
+        return resolve(createHashForFile(readStream));
+    })
 }
 
 
@@ -172,12 +175,13 @@ function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
 }
 
 function saveEncryptedPasswordToDatabase(password) {
-    return encryptWithUserPublicKey(password)
+    return encryptWithUserPublicKey(password);
     // save to database
 }
 
 function encryptWithUserPublicKey(text) {
     return ensureKeyPair().then(function () {
+        logError("dd    ")
         return Promise.resolve(fs.readFileSync(PUBLIC_KEY));
     }).then(function (key) {
         return cryptoUtils.encryptWithPublicKey(text, key);
@@ -214,7 +218,8 @@ function uploadLocalFileMetaDataToEth(fileData) {
     return new Promise((resolve, reject) => {
         const fileName = fileData.fileName;
         const fileHash = fileData.fileHash;
-        encryptWithUserPublicKey(fileData.fileSharedLink).then((fileDropboxSharedLink) => {
+        encryptWithUserPublicKey(fileData.fileSharedLink).then(fileDropboxSharedLink => {
+            logError(fileDropboxSharedLink)
             ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName)
         }).then(()=> {
             return resolve()
@@ -224,18 +229,20 @@ function uploadLocalFileMetaDataToEth(fileData) {
 
 // TODO: if the file was in a dir, put it into a dir
 function downloadFileFromDropbox(fileMetaDataFromEth) {
-    const encryptedDownloadUrl = fileMetaDataFromEth.link;
-    return decryptWithUserPrivateKey(encryptedDownloadUrl).then(function (dropboxLink) {
+    return Promise.resolve(fileMetaDataFromEth.link).then(encryptedDownloadUrl => {
+        return decryptWithUserPrivateKey(encryptedDownloadUrl)
+    }).then(function (dropboxLink) {
+        const encryptedDownloadUrl = fileMetaDataFromEth.link;
         return new Promise((resolve, reject) => {
             const downloadUrl = DropboxClient.getDirectDownloadLink(dropboxLink);
             const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
             const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
+
             https.get(downloadUrl, (fileToDownload) => {
-                fileToDownload.pipe(fileStream)
+                fileToDownload.pipe(fileStream);
                 return resolve(fileName)
-            }).on('error', (e) => {
-                logError
-                return reject(e);
+            }).on('error', (err) => {
+                logError(err);
             });
         })
     }).then(function (fileName) {
@@ -256,17 +263,20 @@ function decryptFileIfEncrypted(fileName) {
 
 // set the watcher for contracts.js
 // ethereumClient.loadContracts().then((address) => {
-//     writeFile('contracts.json', JSON.stringify({file: address}), (err) => {
-//         if (err) console.log(err)
-//     });
+//
 //     console.log('contracts loaded')
 // }).catch((e) => {
 //     console.log(e)
 // });
 
 // folder synchronization
-dropboxClient.authenticate()
-    .then(() => {
+readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
+        return JSON.parse(contracts)
+    }).then(parsedContracts => {
+        return ethereumClient.deployParsedContract(parsedContracts)
+    }).then(() => {
+        return dropboxClient.authenticate()
+    }).then(() => {
         return readDir(FILE_DIR)
     }).then(files => {
     const userFilesLocations = files.filter((file) => {

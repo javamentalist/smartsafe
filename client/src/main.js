@@ -28,7 +28,7 @@ function createWindow() {
     height: 700
   })
 
-  // and instantiateContractAtAddress the index.html of the app.
+  // and instantiateCompiledContractAtAddress the index.html of the app.
   mainWindow.loadURL(`file://${__dirname}/index.html`)
 
   // Open the DevTools.

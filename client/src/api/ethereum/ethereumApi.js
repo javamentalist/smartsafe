@@ -12,8 +12,8 @@ function logError(err) {
 
 export default class EthereumClient {
     constructor(contractAddresses) {
-        this.contractAddresses = contractAddresses;
-
+        this.contractAddress = null;
+        this.compiledContract = null;
         const web3 = this.web3 = new Web3();
 
         web3.setProvider(new web3.providers.HttpProvider('http://localhost:8110'));
@@ -24,12 +24,32 @@ export default class EthereumClient {
             logError('Failed to connect to ethereum network');
             logError(e)
         }
-        this.file = new Contract('FileSharing', 'FileSharing', web3)
+        this.contract = new Contract('FileSharing', 'FileSharing', web3)
+    }
+
+    deployParsedContract(parsedContracts) {
+        return new Promise((resolve, reject) => {
+            this.contract.compileContract().then(compiledContract => {
+
+                if (parsedContracts.contractAddress == null) {
+                    this.compiledContract = compiledContract;
+                    return this.contract.deployContract(compiledContract);
+                }
+
+                return this.compiledContract = parsedContracts.contractAddress;
+
+            }).then(contractAddressOnChain => {
+                this.contractAddress = contractAddressOnChain;
+                resolve()
+            })
+        })
     }
 
     getFileContract() {
         return new Promise((resolve, reject) => {
-            return resolve(this.file.getContract(this.contractAddresses.file))
+            return resolve(this.contract
+                .instantiateCompiledContractAtAddress(this.compiledContract, this.contractAddress))
+
         }).catch(err => {
             logError(err);
         })
@@ -119,9 +139,9 @@ export default class EthereumClient {
 
                     return resolve(hashes)
                 }).catch(err => {
-                    logError(err);
-                    reject(err)
-                })
+                logError(err);
+                reject(err)
+            })
         })
     }
 
