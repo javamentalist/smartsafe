@@ -18,6 +18,9 @@ const IGNORED_FILES = ['.DS_Store', 'temp'];
 
 import { dropboxClient, ethereumClient } from '../main.js'
 
+if (!fs.existsSync(FILE_DIR)) {
+  fs.mkdirSync(FILE_DIR);
+}
 
 // NOTE exports at the very end of file
 
@@ -327,10 +330,6 @@ function decryptFileIfEncrypted(fileName) {
 //     }).catch(err => logError(err));
 
 function synchronizeFolders() {
-  if (!fs.existsSync(FILE_DIR)) {
-    fs.mkdirSync(FILE_DIR);
-  }
-
   return readDir(FILE_DIR)
     .then(files => {
       const userFilesLocations = files.filter((file) => {
