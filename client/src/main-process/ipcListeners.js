@@ -35,6 +35,7 @@ ipcMain.on('upload-file-async', (event, file) => {
     // TODO add hash - WHERE TO GET THE HASH???
     uploadEncryptedLocalFilesToDropbox(file.name, '').then(() => {
       logDebug('Upload done');
+      event.sender.send('file-upload-finished-async', file);
       return getFilesFromDropbox(event);
     }).then(() => {
       return synchronizeFolders()
@@ -52,7 +53,7 @@ ipcMain.on('delete-file-async', (event, file) => {
   })
 });
 
-ipcMain.on('download-file-async',(event,file)=>{
+ipcMain.on('download-file-async', (event, file) => {
 
 });
 
