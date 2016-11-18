@@ -36,7 +36,8 @@ export default class EthereumClient {
                     return this.contract.deployContract(compiledContract);
                 }
 
-                return this.compiledContract = parsedContracts.contractAddress;
+                this.compiledContract = compiledContract;
+                return parsedContracts.contractAddress
 
             }).then(contractAddressOnChain => {
                 this.contractAddress = contractAddressOnChain;

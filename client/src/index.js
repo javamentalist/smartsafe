@@ -181,7 +181,6 @@ function saveEncryptedPasswordToDatabase(password) {
 
 function encryptWithUserPublicKey(text) {
     return ensureKeyPair().then(function () {
-        logError("dd    ")
         return Promise.resolve(fs.readFileSync(PUBLIC_KEY));
     }).then(function (key) {
         return cryptoUtils.encryptWithPublicKey(text, key);
@@ -219,7 +218,6 @@ function uploadLocalFileMetaDataToEth(fileData) {
         const fileName = fileData.fileName;
         const fileHash = fileData.fileHash;
         encryptWithUserPublicKey(fileData.fileSharedLink).then(fileDropboxSharedLink => {
-            logError(fileDropboxSharedLink)
             ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName)
         }).then(()=> {
             return resolve()
