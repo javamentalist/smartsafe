@@ -19,11 +19,17 @@ local.properties
 .loadpath
 .recommenders
 
+#project specific
+contracts.json
+
 #IDEA
 .idea/
 
 #truffle
 client/build/
+
+#geth
+client/chain/
 
 # Images
 *.jpg
