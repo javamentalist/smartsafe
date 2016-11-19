@@ -21,7 +21,9 @@ export default class Contract {
                     if (err) return reject(err);
                     return resolve(compiledContract);
                 })
-            });
+            }).catch(err => {
+                logError(err);
+            })
         })
     }
 

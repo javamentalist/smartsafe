@@ -42,6 +42,8 @@ export default class EthereumClient {
             }).then(contractAddressOnChain => {
                 this.contractAddress = contractAddressOnChain;
                 resolve()
+            }).catch(err => {
+                logError(err)
             })
         })
     }

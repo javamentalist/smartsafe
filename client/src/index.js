@@ -11,7 +11,7 @@ const readFile = Promise.promisify(require("fs").readFile);
 
 const CONTRACTS_FILE = '/../contracts.json';
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
-const FILE_DIR = `${HOME_DIR}/SmartsafeClient`;
+const FILE_DIR = `${HOME_DIR}/SmartsafeClient`.split("\\").join("/");
 const TEMP_DIR = `${HOME_DIR}/SmartsafeClient`;
 const KEYS_DIR = `${HOME_DIR}/.smartsafeKeys`;
 const PUBLIC_KEY = `${KEYS_DIR}/rsa.pub`;
@@ -138,24 +138,25 @@ function getFullPathForFileName(fileName) {
     return `${FILE_DIR}/${fileName}`;
 }
 
-function getLocalPathForFileName(fileName) {
-    return fileName.replace(`${FILE_DIR}/`, '');
-}
-
 function getFileNameFromFilePath(filePath) {
-    return filePath.substring(filePath.lastIndexOf(FILE_DIR) + FILE_DIR.length + 1, filePath.length);
+    const filePathReplaced = filePath.split("\\").join("/")
+    const fileName = filePathReplaced.substring(FILE_DIR.length + 1, filePathReplaced.length)
+    return fileName;
 }
 
 function uploadLocalFilesToDropbox(fileName, fileHash) {
     return new Promise((resolve, reject) => {
-        Promise.resolve(dropboxClient.upload(`${FILE_DIR}/${fileName}`, `/${fileName}`))
+        logError(`${FILE_DIR}/${fileName}`)
+         Promise.resolve(dropboxClient.upload(`${FILE_DIR}/${fileName}`, `/${fileName}`))
             .then(responseJson => {
                 return resolve({
                     fileName: fileName,
                     fileHash: fileHash,
                     fileSharedLink: responseJson.url
                 });
-            })
+            }).catch(err => {
+                logError(err)
+        })
     })
 }
 
@@ -165,7 +166,7 @@ function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
         saveEncryptedPasswordToDatabase(password);
         return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), SYMMETRIC_KEY);
     }).then(function (encryptedFileName) {
-        const encryptedFileLocalName = getLocalPathForFileName(encryptedFileName);
+        const encryptedFileLocalName = getFileNameFromFilePath(encryptedFileName);
         return Promise.all([encryptedFileLocalName, getHashForFile(encryptedFileLocalName)]);
     }).then(function ([encryptedFileName, encryptedFileHash]) {
         return uploadLocalFilesToDropbox(encryptedFileName, encryptedFileHash);
