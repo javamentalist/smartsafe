@@ -10,12 +10,11 @@ import { app, BrowserWindow } from 'electron'
 import winston from './utils/log'
 
 import authData from '../dropbox-auth.json'
-import contractAddresses from '../contracts.json'
 import DropboxClient from './api/dropboxApi.js'
 import EthereumClient from './api/ethereum/ethereumApi.js'
 
 export const dropboxClient = new DropboxClient(authData.key, authData.secret)
-export const ethereumClient = new EthereumClient(contractAddresses)
+export const ethereumClient = new EthereumClient()
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
