@@ -42,11 +42,9 @@ export function generateRsaKeyPair() {
     })
 }
 
-export function encryptWithSymmetricKey(filePath, password) {
+export function encryptWithSymmetricKey(filePath, password, resultPath = `${filePath}.enc`) {
     return new Promise((resolve, reject) => {
-        const resultPath = `${filePath}.enc`;
         const encrypt = crypto.createCipher(algorithm, password);
-
         return transformFile(filePath, resultPath, encrypt).then(() => {
             return resolve(resultPath)
         }).catch(err => {

@@ -1,5 +1,6 @@
 import Promise from 'bluebird'
 import fs from 'fs'
+import path from 'path'
 import https from 'https'
 import { readDir, createHashForFile, checkExistence } from '../utils/fileUtils.js'
 import * as cryptoUtils from '../utils/cryptoUtils.js'
@@ -127,11 +128,11 @@ function prepareFileDataForFiles(filePath) {
   })
 }
 
-function getHashForFile(fileName) {
+function getHashForFile(filePath) {
   return new Promise((resolve, reject) => {
-    const readStream = fs.createReadStream(getFullPathForFileName(fileName));
+    const readStream = fs.createReadStream(filePath);
     readStream.on('error', (error) => {
-      throw error
+      return reject(error);
     });
     return resolve(createHashForFile(readStream));
   })
@@ -160,7 +161,26 @@ function uploadLocalFilesToDropbox(fileName, fileHash) {
           fileSharedLink: responseJson.url
         });
       }).catch(err => {
-      logError(err)
+        logError(err)
+        return reject(err)
+    })
+  })
+}
+
+function uploadBrowsedFileToDropbox(filePath, fileHash) {
+  return new Promise((resolve, reject) => {
+    logError(filePath)
+    const fileName = path.basename(filePath)
+    Promise.resolve(dropboxClient.upload(filePath, `/${fileName}`))
+      .then(responseJson => {
+        return resolve({
+          fileName: fileName,
+          fileHash: fileHash,
+          fileSharedLink: responseJson.url
+        });
+      }).catch(err => {
+        logError(err)
+        return reject(err)
     })
   })
 }
@@ -175,6 +195,19 @@ function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
     return Promise.all([encryptedFileLocalName, getHashForFile(encryptedFileLocalName)]);
   }).then(function([encryptedFileName, encryptedFileHash]) {
     return uploadLocalFilesToDropbox(encryptedFileName, encryptedFileHash);
+  }).catch(function(err) {
+    logError(err);
+  })
+}
+
+function encryptAndUploadFileToDropbox(filePath, fileHash) {
+  return cryptoUtils.generatePassword().then(function(password) {
+    saveEncryptedPasswordToDatabase(password);
+    return cryptoUtils.encryptWithSymmetricKey(filePath, SYMMETRIC_KEY);
+  }).then(function(encryptedFilePath) {
+    return Promise.all([encryptedFilePath, getHashForFile(encryptedFilePath)]);
+  }).then(function([encryptedFilePath, encryptedFileHash]) {
+    return uploadBrowsedFileToDropbox(encryptedFilePath, encryptedFileHash);
   }).catch(function(err) {
     logError(err);
   })
@@ -349,4 +382,4 @@ function synchronizeFolders() {
 }
 
 
-export { uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, synchronizeUserFiles, synchronizeFolders }
+export { uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, synchronizeFolders }

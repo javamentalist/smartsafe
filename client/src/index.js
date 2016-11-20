@@ -117,17 +117,17 @@ function fileMetaDataUploadedToEth(hash, ethHashes) {
 function prepareFileDataForFiles(filePath) {
     return new Promise((resolve, reject) => {
         const fileName = getFileNameFromFilePath(filePath);
-        const fileHash = getHashForFile(fileName);
+        const fileHash = getHashForFile(filePath);
 
         return resolve({ fileName: fileName, fileInfo: fileHash })
     })
 }
 
-function getHashForFile(fileName) {
+function getHashForFile(filePath) {
     return new Promise((resolve, reject) => {
-        const readStream = fs.createReadStream(getFullPathForFileName(fileName));
+        const readStream = fs.createReadStream(filePath);
         readStream.on('error', (error) => {
-            throw error
+            reject(error)
         });
         return resolve(createHashForFile(readStream));
     })
@@ -167,7 +167,7 @@ function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
         return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), SYMMETRIC_KEY);
     }).then(function (encryptedFileName) {
         const encryptedFileLocalName = getFileNameFromFilePath(encryptedFileName);
-        return Promise.all([encryptedFileLocalName, getHashForFile(encryptedFileLocalName)]);
+        return new Promise([encryptedFileLocalName, getHashForFile(encryptedFileName)]);
     }).then(function ([encryptedFileName, encryptedFileHash]) {
         return uploadLocalFilesToDropbox(encryptedFileName, encryptedFileHash);
     }).catch(function (err) {
