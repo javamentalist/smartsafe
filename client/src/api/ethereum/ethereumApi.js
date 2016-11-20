@@ -17,21 +17,17 @@ export default class EthereumClient {
         this.compiledContract = null;
         const web3 = this.web3 = new Web3();
 
-
-        // web3.setProvider(new web3.providers.HttpProvider('http://localhost:8110'));
         const socket = new net.Socket();
         web3.setProvider(new web3.providers.IpcProvider('\\\\.\\pipe\\geth.ipc', socket));
 
         try {
-            web3.eth.getCoinbase(function(error, result) {
+            web3.eth.getCoinbase(function(error, coinbase) {
                 if (error) {
                     logError(error);
                 } else {
-                    web3.eth.defaultAccount = result;
+                    web3.eth.defaultAccount = coinbase;
                 }
             });
-            // web3.eth.defaultAccount = web3.eth.coinbase;
-
         } catch (e) {
             logError('Failed to connect to ethereum network');
             logError(e)
