@@ -1,37 +1,45 @@
-import React from 'react'
-import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
-import FontIcon from 'material-ui/FontIcon'
-import IconButton from 'material-ui/IconButton'
-import Delete from 'material-ui/svg-icons/action/delete'
-import CloudDownload from 'material-ui/svg-icons/file/cloud-download'
-import { lightGreen300, green700, red300, red700, grey100 } from 'material-ui/styles/colors'
+import React, { PropTypes } from 'react';
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
+import FontIcon from 'material-ui/FontIcon';
+import IconButton from 'material-ui/IconButton';
+import Delete from 'material-ui/svg-icons/action/delete';
+import CloudDownload from 'material-ui/svg-icons/file/cloud-download';
+import { lightGreen300, green700, red300, red700, grey100 } from 'material-ui/styles/colors';
 
-import { formatBytes, formatDate } from '../../../utils/displayUtils'
+import { formatBytes, formatDate } from '../../../utils/displayUtils';
 
 
 const tableStyle = {
   tableLayout: 'auto'
-}
+};
 const statusColStyle = {
   width: '100px',
   padding: 0,
   textAlign: 'center'
-}
+};
 const nameColStyle = {
 
-}
+};
 const sizeColStyle = {
   width: '10%',
   maxWidth: '100px'
-}
+};
 const modColStyle = {
   width: '20%',
   maxWidth: '200px'
-}
+};
 const actionsColStyle = {
   width: '125px',
   padding: 0
-}
+};
+
+const propTypes = {
+  files: PropTypes.array.isRequired,
+  onRowClick: PropTypes.func.isRequired,
+  onFileDelete: PropTypes.func.isRequired,
+  onFileDownload: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired
+};
 
 class FileTable extends React.Component {
   renderStatusIcon(file) {
@@ -40,19 +48,19 @@ class FileTable extends React.Component {
         <IconButton>
           <FontIcon className="fa fa-chain-broken" />
         </IconButton>
-      )
+        );
     } else if (file.status == 'protected') {
       return (
         <IconButton>
           <FontIcon className="fa fa-chain" color={ green700 } />
         </IconButton>
-      )
+        );
     } else if (file.status == 'faulty') {
       return (
         <IconButton>
           <FontIcon className="fa fa-warning" color={ red700 } />
         </IconButton>
-      )
+        );
     }
   }
 
@@ -105,7 +113,7 @@ class FileTable extends React.Component {
                   <IconButton onClick={ () => onFileDelete(file) }>
                     <Delete color={ red700 } />
                   </IconButton>
-                  <IconButton onClick={ () => onFileDownload(file) } disabled={true}>
+                  <IconButton onClick={ () => onFileDownload(file) } disabled>
                     <CloudDownload/>
                   </IconButton>
                 </TableRowColumn>
@@ -117,16 +125,10 @@ class FileTable extends React.Component {
             </TableRow> }
         </TableBody>
       </Table>
-    )
+      );
   }
 }
 
-FileTable.propTypes = {
-  files: React.PropTypes.array.isRequired,
-  onRowClick: React.PropTypes.func.isRequired,
-  onFileDelete: React.PropTypes.func.isRequired,
-  onFileDownload: React.PropTypes.func.isRequired,
-  isLoading: React.PropTypes.bool.isRequired
-}
+FileTable.propTypes = propTypes;
 
-export default FileTable
+export default FileTable;

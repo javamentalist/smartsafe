@@ -6,8 +6,8 @@ import { Router, hashHistory } from 'react-router';
 import routes from './routes';
 
 import { Provider } from 'react-redux';
-import { createStore } from 'redux'
-import rootReducer from './reducers'
+import { createStore } from 'redux';
+import rootReducer from './reducers';
 
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
@@ -29,9 +29,9 @@ const initialState = {
   user: {
     isAuthenticated: false
   }
-}
+};
 
-let store = createStore(rootReducer, initialState)
+let store = createStore(rootReducer, initialState);
 
 const muiTheme = getMuiTheme({
   palette: {
@@ -47,11 +47,12 @@ const Root = ({store}) => (
       <Router history={ hashHistory } routes={ routes } />
     </MuiThemeProvider>
   </Provider>
-)
+);
 
 render(
-  <Root store={ store } />, document.getElementById('root'));
+  <Root store={ store } />, document.getElementById('root')
+);
 
 Root.propTypes = {
   store: React.PropTypes.object.isRequired
-}
+};
