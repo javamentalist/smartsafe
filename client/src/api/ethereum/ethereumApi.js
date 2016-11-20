@@ -2,6 +2,7 @@ import Web3 from 'web3'
 import Contract from './contract.js'
 import _ from 'lodash'
 import winston from 'winston'
+import net from 'net'
 
 function logDebug(err) {
     winston.log('debug', err)
@@ -16,9 +17,20 @@ export default class EthereumClient {
         this.compiledContract = null;
         const web3 = this.web3 = new Web3();
 
-        web3.setProvider(new web3.providers.HttpProvider('http://localhost:8110'));
+
+        // web3.setProvider(new web3.providers.HttpProvider('http://localhost:8110'));
+        const socket = new net.Socket();
+        web3.setProvider(new web3.providers.IpcProvider('\\\\.\\pipe\\geth.ipc', socket));
+
         try {
-            web3.eth.defaultAccount = web3.eth.coinbase
+            web3.eth.getCoinbase(function(error, result) {
+                if (error) {
+                    logError(error);
+                } else {
+                    web3.eth.defaultAccount = result;
+                }
+            });
+            // web3.eth.defaultAccount = web3.eth.coinbase;
 
         } catch (e) {
             logError('Failed to connect to ethereum network');
