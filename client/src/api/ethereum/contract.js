@@ -42,21 +42,32 @@ export default class Contract {
         return new Promise((resolve, reject) => {
             const compiledByteCode = compiledContract.FileSharing.code;
             const abi = compiledContract.FileSharing.info.abiDefinition;
-
-            this.web3.eth.contract(abi).new({
-                data: compiledByteCode,
-                gas: 13421772,
-                // from is the default account by default, anyway
-                from: this.web3.eth.accounts[0]}, (err, contractOnChain) => {
-                if (err) return reject(err);
-                if (contractOnChain.address) {
-                    writeFile('contracts.json',
-                        JSON.stringify({contractAddress: contractOnChain.address}),
-                        (err) => {
-                        if (err) reject(err)
-                    });
-                    return resolve(contractOnChain.address)
+            
+            this.web3.eth.getAccounts((error, accounts) => {
+                if (error) {
+                    logError(error);
+                    reject(error);
                 }
+                const defaultAccount = accounts[0];
+
+                this.web3.eth.contract(abi).new({
+                    data: compiledByteCode,
+                    gas: 13421772,
+                    // from is the default account by default, anyway
+                    from: defaultAccount }, (err, contractOnChain) => {
+                        if (err) return reject(err);
+                        if (contractOnChain.address) {
+                            writeFile('contracts.json',
+                                JSON.stringify({contractAddress: contractOnChain.address}),
+                                (err) => {
+                                if (err) {
+                                    logError(err);
+                                    reject(err);
+                                }
+                            });
+                            return resolve(contractOnChain.address)
+                        }
+                })
             })
         })
     }
