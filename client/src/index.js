@@ -8,8 +8,8 @@ import EthereumClient from './api/ethereum/ethereumApi.js'
 import * as cryptoUtils from './utils/cryptoUtils.js'
 import winston from './utils/log';
 const readFile = Promise.promisify(require("fs").readFile);
-import { type as osType } from 'os';
-import { join as pathJoin } from 'path';
+import {type as osType} from 'os';
+import {join as pathJoin} from 'path';
 
 const CONTRACTS_FILE = '/../contracts.json';
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
@@ -75,7 +75,7 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
         }));
     });
 
-    Promise.join(preparedFileDataForFiles,filesHashesFromEth2, (localFilesData, filesHashesFromEth21) => {
+    Promise.join(preparedFileDataForFiles, filesHashesFromEth2, (localFilesData, filesHashesFromEth21) => {
         return Promise.all(localFilesData.map(localFileData => {
             const localFileName = localFileData.fileName;
             const localFileHash = localFileData.fileInfo;
@@ -104,7 +104,7 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
         }));
     });
 
-    Promise.join(preparedFileDataForFiles2,filesHashesFromEth3, (localFilesData, filesHashesFromEth31) => {
+    Promise.join(preparedFileDataForFiles2, filesHashesFromEth3, (localFilesData, filesHashesFromEth31) => {
         return Promise.all(filesHashesFromEth31.map(filesHash => {
             return getFilesOnEthNotLocallyPresent(localFilesData, filesHash);
         }))
@@ -151,7 +151,7 @@ function prepareFileDataForFiles(filePath) {
         const fileName = getFileNameFromFilePath(filePath);
         const fileHash = getHashForFile(filePath);
 
-        return resolve({ fileName: fileName, fileInfo: fileHash })
+        return resolve({fileName: fileName, fileInfo: fileHash})
     })
 }
 
@@ -179,7 +179,7 @@ function getFileNameFromFilePath(filePath) {
 function uploadLocalFilesToDropbox(fileName, fileHash) {
     return new Promise((resolve, reject) => {
         logError(`${FILE_DIR}/${fileName}`)
-         Promise.resolve(dropboxClient.upload(`${FILE_DIR}/${fileName}`, `/${fileName}`))
+        Promise.resolve(dropboxClient.upload(`${FILE_DIR}/${fileName}`, `/${fileName}`))
             .then(responseJson => {
                 return resolve({
                     fileName: fileName,
@@ -187,7 +187,7 @@ function uploadLocalFilesToDropbox(fileName, fileHash) {
                     fileSharedLink: responseJson.url
                 });
             }).catch(err => {
-                logError(err)
+            logError(err)
         })
     })
 }
@@ -217,7 +217,7 @@ function encryptWithUserPublicKey(text) {
         return Promise.resolve(fs.readFileSync(PUBLIC_KEY));
     }).then(function (key) {
         return cryptoUtils.encryptWithPublicKey(text, key);
-    }) 
+    })
 }
 
 function decryptWithUserPrivateKey(text) {
@@ -252,7 +252,7 @@ function uploadLocalFileMetaDataToEth(fileData) {
         const fileHash = fileData.fileHash;
         encryptWithUserPublicKey(fileData.fileSharedLink).then(fileDropboxSharedLink => {
             ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName)
-        }).then(()=> {
+        }).then(() => {
             return resolve()
         });
     })
@@ -302,14 +302,14 @@ function decryptFileIfEncrypted(fileName) {
 
 // folder synchronization
 readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
-        return JSON.parse(contracts)
-    }).then(parsedContracts => {
-        return ethereumClient.deployParsedContract(parsedContracts)
-    }).then(() => {
-        return dropboxClient.authenticate()
-    }).then(() => {
-        return readDir(FILE_DIR)
-    }).then(files => {
+    return JSON.parse(contracts)
+}).then(parsedContracts => {
+    return ethereumClient.deployParsedContract(parsedContracts)
+}).then(() => {
+    return dropboxClient.authenticate()
+}).then(() => {
+    return readDir(FILE_DIR)
+}).then(files => {
     const userFilesLocations = files.filter((file) => {
         return IGNORED_FILES.indexOf(file) === -1
     });
@@ -320,10 +320,10 @@ readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
         })
 }).catch(err => logError(err));
 
- //new file upload
- //dropboxClient.authenticate().then(() => {
- //    ethereumClient.watchFileChanges(onNewFile)
- //});
+//new file upload
+//dropboxClient.authenticate().then(() => {
+//    ethereumClient.watchFileChanges(onNewFile)
+//});
 
 
 // function onNewFile({url, hash}) {
