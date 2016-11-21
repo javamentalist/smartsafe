@@ -8,6 +8,8 @@ import EthereumClient from './api/ethereum/ethereumApi.js'
 import * as cryptoUtils from './utils/cryptoUtils.js'
 import winston from './utils/log';
 const readFile = Promise.promisify(require("fs").readFile);
+import { type as osType } from 'os';
+import { join } from 'path';
 
 const CONTRACTS_FILE = '/../contracts.json';
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
@@ -22,7 +24,7 @@ const IGNORED_FILES = ['.DS_Store', 'temp'];
 
 const dropboxClient = new DropboxClient(authData.key, authData.secret);
 
-const ethereumClient = new EthereumClient();
+const ethereumClient = new EthereumClient(getDefaultIpcPath());
 
 function logDebug(err) {
     winston.log('debug', err)
@@ -30,6 +32,36 @@ function logDebug(err) {
 
 function logError(err) {
     winston.log('error', err)
+}
+
+function getDefaultIpcPath() {
+    let ipcPath;
+    const dataDirPath = getDefaultDatadir();
+    switch (osType()) {
+        case 'Windows_NT':
+            ipcPath = '\\\\.\\pipe\\geth.ipc';
+            break;
+        default:
+            ipcPath = join(dataDirPath, 'geth.ipc');
+            break;
+    }
+    return ipcPath;
+}
+
+function getDefaultDatadir() {
+    let dataDir;
+    switch (osType()) {
+        case 'Linux':
+            dataDir = '../chain/datadir';
+            break;
+        case 'Darwin':
+            break;
+        case 'Windows_NT':
+            break;
+        default:
+            throw new Error('osType not supported');
+    }
+    return dataDir;
 }
 
 function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {

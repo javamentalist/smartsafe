@@ -12,13 +12,14 @@ function logError(err) {
 }
 
 export default class EthereumClient {
-    constructor(contractAddresses) {
+
+    constructor(ipcProvider) {
         this.contractAddress = null;
         this.compiledContract = null;
         const web3 = this.web3 = new Web3();
 
         const socket = new net.Socket();
-        web3.setProvider(new web3.providers.IpcProvider('\\\\.\\pipe\\geth.ipc', socket));
+        web3.setProvider(new web3.providers.IpcProvider(ipcProvider, socket));
 
         try {
             web3.eth.getCoinbase(function(error, coinbase) {
