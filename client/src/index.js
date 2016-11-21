@@ -13,8 +13,7 @@ import {join as pathJoin} from 'path';
 
 const CONTRACTS_FILE = '/../contracts.json';
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
-const FILE_DIR = `${HOME_DIR}/SmartsafeClient`.split("\\").join("/");
-const TEMP_DIR = `${HOME_DIR}/SmartsafeClient`;
+const FILE_DIR = replaceBwdWithFwdSlash(`${HOME_DIR}/SmartsafeClient`);
 const KEYS_DIR = `${HOME_DIR}/.smartsafeKeys`;
 const PUBLIC_KEY = `${KEYS_DIR}/rsa.pub`;
 const PRIVATE_KEY = `${KEYS_DIR}/rsa`;
@@ -57,7 +56,7 @@ function getDefaultDatadir() {
         case 'Darwin':
             break;
         case 'Windows_NT':
-            dataDir = pathJoin(__dirname, '\\..\\chain\\testnet')
+            dataDir = pathJoin(__dirname, '\\..\\chain\\testnet');
             break;
         default:
             throw new Error('osType not supported');
@@ -68,17 +67,17 @@ function getDefaultDatadir() {
 function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
 
-    const preparedFileDataForFiles = Promise.resolve(localFilesFullPaths).then(localFilesFullPaths21 => {
-        return Promise.all(localFilesFullPaths21.map(localFileFullPath => {
+    const preparedFileDataForFiles = Promise.resolve(localFilesFullPaths).then(localFilesFullPaths => {
+        return Promise.all(localFilesFullPaths.map(localFileFullPath => {
             return prepareFileDataForFiles(localFileFullPath);
         }));
     });
 
-    Promise.join(preparedFileDataForFiles, filesHashesFromEth, (localFilesData, filesHashesFromEth21) => {
+    Promise.join(preparedFileDataForFiles, filesHashesFromEth, (localFilesData, filesHashesFromEth) => {
         return Promise.all(localFilesData.map(localFileData => {
             const localFileName = localFileData.fileName;
             const localFileHash = localFileData.fileInfo;
-            if (!fileMetaDataUploadedToEth(localFileHash, filesHashesFromEth21)) {
+            if (!fileMetaDataUploadedToEth(localFileHash, filesHashesFromEth)) {
                 return uploadLocalFilesToDropbox(localFileName, localFileHash)
             }
             return Promise.resolve()
@@ -103,7 +102,7 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     // }).then(filesEthMetaData => {
     //     return Promise.all(filesEthMetaData.map(fileEthMetaData => {
     //         if (fileEthMetaData == null) return Promise.resolve();
-    //         return Promise.resolve(downloadFileFromDropbox(fileEthMetaData));
+    //         return Promise.resolve(getFileFromDropboxToFileDir(fileEthMetaData));
     //     }))
     // }).catch(err => {
     //     logError(err);
@@ -162,10 +161,12 @@ function getFullPathForFileName(fileName) {
     return `${FILE_DIR}/${fileName}`;
 }
 
+function replaceBwdWithFwdSlash(filePath) {
+    return filePath.split("\\").join("/");
+}
 function getFileNameFromFilePath(filePath) {
-    const filePathReplaced = filePath.split("\\").join("/")
-    const fileName = filePathReplaced.substring(FILE_DIR.length + 1, filePathReplaced.length)
-    return fileName;
+    const filePathReplaced = replaceBwdWithFwdSlash(filePath);
+    return filePathReplaced.substring(FILE_DIR.length + 1, filePathReplaced.length);
 }
 
 function uploadLocalFilesToDropbox(fileName, fileHash) {
@@ -241,31 +242,37 @@ function uploadLocalFileMetaDataToEth(fileData) {
     return new Promise((resolve, reject) => {
         const fileName = fileData.fileName;
         const fileHash = fileData.fileHash;
-        encryptWithUserPublicKey(fileData.fileSharedLink).then(fileDropboxSharedLink => {
-            ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName)
+        encryptWithUserPublicKey(fileData.fileSharedLink).then(fileDropboxSharedLinkEncrypted => {
+            ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLinkEncrypted, fileName)
         }).then(() => {
             return resolve()
         });
     })
 }
 
-// TODO: if the file was in a dir, put it into a dir
-function downloadFileFromDropbox(fileMetaDataFromEth) {
+function getFileFromDropboxToFileDir(fileMetaDataFromEth) {
     return Promise.resolve(fileMetaDataFromEth.link).then(encryptedDownloadUrl => {
         return decryptWithUserPrivateKey(encryptedDownloadUrl)
     }).then(function (dropboxLink) {
-        return new Promise((resolve, reject) => {
-            const downloadUrl = DropboxClient.getDirectDownloadLink(dropboxLink);
-            const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
-            const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
-
-            https.get(downloadUrl, (fileToDownload) => {
-                fileToDownload.pipe(fileStream);
-                return resolve(fileName)
-            })
-        })
+        logError(dropboxLink);
+        return downloadFileFromDropbox(dropboxLink);
     }).then(function (fileName) {
         return decryptFileIfEncrypted(fileName)
+    })
+}
+
+// TODO: if the file was in a dir, put it into a dir
+function downloadFileFromDropbox(dropboxLink) {
+    return new Promise((resolve, reject) => {
+        const downloadUrl = DropboxClient.getDirectDownloadLink(dropboxLink);
+        logError(downloadUrl);
+        const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
+        const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
+
+        https.get(downloadUrl, (fileToDownload) => {
+            fileToDownload.pipe(fileStream);
+            return resolve(fileName)
+        })
     })
 }
 
