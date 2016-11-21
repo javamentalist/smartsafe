@@ -57,6 +57,7 @@ function getDefaultDatadir() {
         case 'Darwin':
             break;
         case 'Windows_NT':
+            dataDir = pathJoin(__dirname, '\\..\\chain\\testnet')
             break;
         default:
             throw new Error('osType not supported');
