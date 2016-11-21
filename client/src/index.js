@@ -66,16 +66,14 @@ function getDefaultDatadir() {
 
 function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
-    const filesHashesFromEth2 = Promise.resolve(filesHashesFromEth);
 
-    const localFilesFullPaths2 = Promise.resolve(localFilesFullPaths);
-    const preparedFileDataForFiles = localFilesFullPaths2.then(localFilesFullPaths21 => {
+    const preparedFileDataForFiles = Promise.resolve(localFilesFullPaths).then(localFilesFullPaths21 => {
         return Promise.all(localFilesFullPaths21.map(localFileFullPath => {
             return prepareFileDataForFiles(localFileFullPath);
         }));
     });
 
-    Promise.join(preparedFileDataForFiles, filesHashesFromEth2, (localFilesData, filesHashesFromEth21) => {
+    Promise.join(preparedFileDataForFiles, filesHashesFromEth, (localFilesData, filesHashesFromEth21) => {
         return Promise.all(localFilesData.map(localFileData => {
             const localFileName = localFileData.fileName;
             const localFileHash = localFileData.fileInfo;
@@ -95,27 +93,20 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     });
 
     /// Download missing local files
-    const filesHashesFromEth3 = Promise.resolve(filesHashesFromEth);
 
-    const localFilesFullPaths3 = Promise.resolve(localFilesFullPaths);
-    const preparedFileDataForFiles2 = localFilesFullPaths3.then(localFilesFullPaths31 => {
-        return Promise.all(localFilesFullPaths31.map(localFileFullPath => {
-            return prepareFileDataForFiles(localFileFullPath);
-        }));
-    });
 
-    Promise.join(preparedFileDataForFiles2, filesHashesFromEth3, (localFilesData, filesHashesFromEth31) => {
-        return Promise.all(filesHashesFromEth31.map(filesHash => {
-            return getFilesOnEthNotLocallyPresent(localFilesData, filesHash);
-        }))
-    }).then(filesEthMetaData => {
-        return Promise.all(filesEthMetaData.map(fileEthMetaData => {
-            if (fileEthMetaData == null) return Promise.resolve();
-            return Promise.resolve(downloadFileFromDropbox(fileEthMetaData));
-        }))
-    }).catch(err => {
-        logError(err);
-    })
+    // Promise.join(preparedFileDataForFiles, filesHashesFromEth, (localFilesData, filesHashesFromEth31) => {
+    //     return Promise.all(filesHashesFromEth31.map(filesHash => {
+    //         return getFilesOnEthNotLocallyPresent(localFilesData, filesHash);
+    //     }))
+    // }).then(filesEthMetaData => {
+    //     return Promise.all(filesEthMetaData.map(fileEthMetaData => {
+    //         if (fileEthMetaData == null) return Promise.resolve();
+    //         return Promise.resolve(downloadFileFromDropbox(fileEthMetaData));
+    //     }))
+    // }).catch(err => {
+    //     logError(err);
+    // })
 
 }
 
@@ -178,7 +169,6 @@ function getFileNameFromFilePath(filePath) {
 
 function uploadLocalFilesToDropbox(fileName, fileHash) {
     return new Promise((resolve, reject) => {
-        logError(`${FILE_DIR}/${fileName}`)
         Promise.resolve(dropboxClient.upload(`${FILE_DIR}/${fileName}`, `/${fileName}`))
             .then(responseJson => {
                 return resolve({
@@ -263,7 +253,6 @@ function downloadFileFromDropbox(fileMetaDataFromEth) {
     return Promise.resolve(fileMetaDataFromEth.link).then(encryptedDownloadUrl => {
         return decryptWithUserPrivateKey(encryptedDownloadUrl)
     }).then(function (dropboxLink) {
-        const encryptedDownloadUrl = fileMetaDataFromEth.link;
         return new Promise((resolve, reject) => {
             const downloadUrl = DropboxClient.getDirectDownloadLink(dropboxLink);
             const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
@@ -272,9 +261,7 @@ function downloadFileFromDropbox(fileMetaDataFromEth) {
             https.get(downloadUrl, (fileToDownload) => {
                 fileToDownload.pipe(fileStream);
                 return resolve(fileName)
-            }).on('error', (err) => {
-                logError(err);
-            });
+            })
         })
     }).then(function (fileName) {
         return decryptFileIfEncrypted(fileName)
