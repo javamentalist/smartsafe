@@ -9,7 +9,7 @@ import * as cryptoUtils from './utils/cryptoUtils.js'
 import winston from './utils/log';
 const readFile = Promise.promisify(require("fs").readFile);
 import { type as osType } from 'os';
-import { join } from 'path';
+import { join as pathJoin } from 'path';
 
 const CONTRACTS_FILE = '/../contracts.json';
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
@@ -42,7 +42,7 @@ function getDefaultIpcPath() {
             ipcPath = '\\\\.\\pipe\\geth.ipc';
             break;
         default:
-            ipcPath = join(dataDirPath, 'geth.ipc');
+            ipcPath = pathJoin(dataDirPath, 'geth.ipc');
             break;
     }
     return ipcPath;
@@ -52,7 +52,7 @@ function getDefaultDatadir() {
     let dataDir;
     switch (osType()) {
         case 'Linux':
-            dataDir = '../chain/datadir';
+            dataDir = __dirname + '/../chain/datadir';
             break;
         case 'Darwin':
             break;
