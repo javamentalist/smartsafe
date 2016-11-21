@@ -12,13 +12,14 @@ function logError(err) {
 }
 
 export default class EthereumClient {
-    constructor(contractAddresses) {
+
+    constructor(ipcProvider) {
         this.contractAddress = null;
         this.compiledContract = null;
         const web3 = this.web3 = new Web3();
 
         const socket = new net.Socket();
-        web3.setProvider(new web3.providers.IpcProvider('\\\\.\\pipe\\geth.ipc', socket));
+        web3.setProvider(new web3.providers.IpcProvider(ipcProvider, socket));
 
         try {
             web3.eth.getCoinbase(function(error, coinbase) {
@@ -126,7 +127,10 @@ export default class EthereumClient {
         return new Promise((resolve, reject) => {
             logDebug('getPeer');
             this.getFileContract().then((contract) => {
-                return resolve(contract.getPeers.call(hash)[1])
+                return resolve(contract.getPeers.call((hash)[1]), (error, result) => {
+                    if (error) return reject(error);
+                    return resolve(result)
+                });
             }).catch(err => {
                 logError(err);
                 reject(err)
@@ -138,12 +142,18 @@ export default class EthereumClient {
         return new Promise((resolve, reject) => {
             this.getFileContract()
                 .then((contract) => {
-                    const fileCount = +contract.getUserFileCount.call();
+                    const fileCount = +contract.getUserFileCount.call((error, result) => {
+                        if (error) return reject(error);
+                        return resolve(result)
+                    });
 
                     if (!fileCount) return resolve([]);
 
                     const hashes = _.times(fileCount, i => {
-                        return contract.getUserFile.call(i);
+                        return contract.getUserFile.call(i, (error, result) => {
+                            if (error) return reject(error);
+                            return resolve(result)
+                        });
                     }).map(result => {
                         return result
                     });
@@ -159,7 +169,10 @@ export default class EthereumClient {
     findFileMetaDataFromEthChain(fileHash) {
         return new Promise((resolve, reject) => {
             this.getFileContract().then((contract) => {
-                const result = contract.getFileByHash.call(fileHash);
+                const result = contract.getFileByHash.call((fileHash), (error, result) => {
+                    if (error) return reject(error);
+                    return resolve(result)
+                });
                 return resolve({link: result[0], name: result[1]})
             }).catch(err => {
                 logError(err);

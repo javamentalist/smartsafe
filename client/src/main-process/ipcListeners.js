@@ -3,7 +3,7 @@ import _ from 'lodash'
 import winston from '../utils/log'
 
 import { dropboxClient } from '../main'
-import { synchronizeFolders, uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox } from './fileSynchronization'
+import { synchronizeFolders, uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, encryptAndUploadFileToDropbox } from './fileSynchronization'
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
@@ -33,7 +33,7 @@ ipcMain.on('upload-file-async', (event, file) => {
 
   if (willBeEncrypted) {
     // TODO add hash - WHERE TO GET THE HASH???
-    uploadEncryptedLocalFilesToDropbox(file.name, '').then(() => {
+    encryptAndUploadFileToDropbox(file.path, '').then(() => {
       logDebug('Upload done');
       event.sender.send('file-upload-finished-async', file);
       return getFilesFromDropbox(event);
