@@ -46,19 +46,19 @@ class FileTable extends React.Component {
         if (!file.status || file.status == 'unprotected') {
             return (
                 // <IconButton>
-                  <FontIcon className="fa fa-chain-broken" />
+                <FontIcon className="fa fa-chain-broken" />
                 // </IconButton>
                 );
         } else if (file.status == 'protected') {
             return (
                 // <IconButton>
-                  <FontIcon className="fa fa-chain" color={ green700 } />
+                <FontIcon className="fa fa-chain" color={ green700 } />
                 // </IconButton>
                 );
         } else if (file.status == 'faulty') {
             return (
                 // <IconButton>
-                  <FontIcon className="fa fa-warning" color={ red700 } />
+                <FontIcon className="fa fa-warning" color={ red700 } />
                 // </IconButton>
                 );
         }
@@ -87,11 +87,7 @@ class FileTable extends React.Component {
               </TableHeader>
               <TableBody displayRowCheckbox={ false }>
                 { /*onMouseUp={ () => onRowClick(file.id) }*/ }
-                { isLoading &&
-                  <TableRow>
-                    <TableRowColumn colSpan="6" style={ { textAlign: 'center' } }>Loading</TableRowColumn>
-                  </TableRow> }
-                { (!isLoading && files && files.length > 0) &&
+                { (files && files.length > 0) &&
                   files.map((file) => (
                       <TableRow key={ file.id } selectable={ false } style={ { backgroundColor: (file.status == 'protected') ? lightGreen300 : ((file.status == 'faulty') ? red300 : grey100) } }>
                         <TableRowColumn style={ statusColStyle }>
@@ -119,6 +115,10 @@ class FileTable extends React.Component {
                         </TableRowColumn>
                       </TableRow>
                   )) }
+                { isLoading &&
+                  <TableRow>
+                    <TableRowColumn colSpan="6" style={ { textAlign: 'center' } }>Loading</TableRowColumn>
+                  </TableRow> }
                 { !isLoading && (!files || files.length <= 0) &&
                   <TableRow>
                     <TableRowColumn colSpan="6" style={ { textAlign: 'center' } }>No files</TableRowColumn>

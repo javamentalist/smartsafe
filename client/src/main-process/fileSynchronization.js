@@ -371,5 +371,8 @@ function synchronizeFolders() {
     }).catch(err => logError(err));
 }
 
+// Do it here for now. Ideally this should be in main.js? Or somewhere more logical where it is easier to spot
+synchronizeFolders();
+
 
 export { uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, synchronizeFolders, getFileMetadataFromEth };
