@@ -46,7 +46,7 @@ class UploadQueue extends React.Component {
                 <small>{ file.dir }</small>
               </TableRowColumn>
               <TableRowColumn style={ style.progressCol }>
-                <LinearProgress mode={ file.isUploadInProgress ? ((!file.progress || file.progress === 0) ? "indeterminate" : "determinate") : "determinate" } value={ file.progress } />
+                <LinearProgress mode={ file.isUploadInProgress ? ((!file.progress || file.progress === 0) ? "indeterminate" : "determinate") : "determinate" } value={ file.progress } color={ file.isComplete ? green500 : '' } />
               </TableRowColumn>
               <TableRowColumn style={ style.actionsCol }>
                 { !file.isComplete &&
