@@ -2,12 +2,10 @@ import Promise from 'bluebird';
 import fs from 'fs';
 import https from 'https';
 import path from 'path';
-import { readDir, createHashForFile, checkExistence } from '../utils/fileUtils.js';
+import { readDir, createHashForFile, checkExistence, isFileEncrypted } from '../utils/fileUtils.js';
 import * as cryptoUtils from '../utils/cryptoUtils.js';
 import winston from '../utils/log';
 const readFile = Promise.promisify(require("fs").readFile);
-import { type as osType } from 'os';
-import { join as pathJoin } from 'path';
 
 
 const CONTRACTS_FILE = '/../../contracts.json';
@@ -276,15 +274,20 @@ function downloadFileFromDropbox(dropboxLink) {
 }
 
 function decryptFileIfEncrypted(fileName) {
-    const suffix = '.enc';
     const fullName = `${FILE_DIR}/${fileName}`;
-    if (fileName.indexOf(suffix, fileName.length - suffix.length) !== -1) {
+    if (isFileEncrypted(fileName)) {
         return cryptoUtils.decryptWithSymmetricKey(fullName, SYMMETRIC_KEY);
     } else {
         return Promise.resolve(fullName);
     }
 }
 
+function getFileMetadataFromEth() {
+    ethereumClient.getUserFilesHashes().then((userFileHashes) => {
+        winston.debug('Got file info from Eth');
+        winston.debug(JSON.stringify(userFileHashes));
+    });
+}
 
 // set the watcher for contracts.js
 // ethereumClient.loadContracts().then((address) => {
@@ -369,4 +372,4 @@ function synchronizeFolders() {
 }
 
 
-export { uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, synchronizeFolders };
+export { uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, synchronizeFolders, getFileMetadataFromEth };

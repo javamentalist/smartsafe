@@ -3,7 +3,7 @@ import _ from 'lodash';
 import winston from '../utils/log';
 
 import { dropboxClient } from '../main';
-import { synchronizeFolders, encryptAndUploadFileToDropbox } from './fileSynchronization';
+import { synchronizeFolders, encryptAndUploadFileToDropbox, getFileMetadataFromEth } from './fileSynchronization';
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
@@ -56,6 +56,7 @@ ipcMain.on('delete-file-async', (event, file) => {
 ipcMain.on('download-file-async', (event, file) => {
 //get file metadata
 //downloadFileFromDropbox(fileMetaDataFromEth)
+    getFileMetadataFromEth();
 });
 
 ipcMain.on('get-files-from-dropbox-async', (event) => {
