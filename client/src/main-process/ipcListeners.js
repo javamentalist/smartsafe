@@ -12,7 +12,7 @@ import { synchronizeFolders, uploadLocalFilesToDropbox, uploadEncryptedLocalFile
 ipcMain.on('open-file-dialog-async', (event) => {
   dialog.showOpenDialog({
     properties: ['openFile']
-  }, function(filePaths) {
+  }, function (filePaths) {
     if (filePaths && filePaths.length > 0) {
       let filePath = filePaths[0];
       logDebug(`File chosen: ${filePath}`);
@@ -32,8 +32,7 @@ ipcMain.on('upload-file-async', (event, file) => {
   const willBeEncrypted = true;
 
   if (willBeEncrypted) {
-    // TODO add hash - WHERE TO GET THE HASH???
-    encryptAndUploadFileToDropbox(file.path, '').then(() => {
+    encryptAndUploadFileToDropbox(file.path).then(() => {
       logDebug('Upload done');
       event.sender.send('file-upload-finished-async', file);
       return getFilesFromDropbox(event);
@@ -66,15 +65,7 @@ function getFilesFromDropbox(event) {
   return dropboxClient.listFolder()
     .then((result) => {
       let files = Array.from(result);
-
-      if (files.length !== 0) {
-        logDebug(`Found ${files.length} file(s)`);
-        files.forEach(res => {
-          logDebug(`- Name: ${res.name}`);
-        });
-      } else {
-        logDebug('Found no files in app folder');
-      }
+      logDebug(`Found ${files.length} file(s) from dropbox app folder`);
       return files;
     })
     .then((files) => {
