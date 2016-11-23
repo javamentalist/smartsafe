@@ -185,7 +185,7 @@ function uploadBrowsedFileToDropbox(filePath, fileHash) {
 }
 
 // toDo: ??? delete encrypted file
-function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
+function uploadEncryptedLocalFilesToDropbox(fileName) {
     return cryptoUtils.generatePassword().then(function (password) {
         saveEncryptedPasswordToDatabase(password);
         return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), SYMMETRIC_KEY);
@@ -199,7 +199,7 @@ function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
     })
 }
 
-function encryptAndUploadFileToDropbox(filePath, fileHash) {
+function encryptAndUploadFileToDropbox(filePath) {
     return cryptoUtils.generatePassword().then(function (password) {
         saveEncryptedPasswordToDatabase(password);
         return cryptoUtils.encryptWithSymmetricKey(filePath, SYMMETRIC_KEY);
