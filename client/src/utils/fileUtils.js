@@ -32,7 +32,16 @@ export const checkExistence = (path) => {
     });
 };
 
+const indexOfSuffix = (fileName, suffix) => {
+    return fileName.indexOf(suffix, fileName.length - suffix.length);
+};
+
 export const isFileEncrypted = (fileName) => {
     const suffix = '.enc';
-    return fileName.indexOf(suffix, fileName.length - suffix.length) !== -1;
+    return indexOfSuffix(fileName, suffix) !== -1;
+};
+
+export const removeExtension = (fileName, extension) => {
+    const extensionPos = indexOfSuffix(fileName, extension);
+    return (extensionPos !== -1) ? fileName.substring(0, extensionPos) : fileName;
 };
