@@ -3,6 +3,7 @@ import Contract from './contract.js'
 import _ from 'lodash'
 import winston from 'winston'
 import net from 'net'
+import BigNumber from 'bignumber.js'
 
 function logDebug(err) {
     winston.log('debug', err)
@@ -22,7 +23,7 @@ export default class EthereumClient {
         web3.setProvider(new web3.providers.IpcProvider(ipcProvider, socket));
 
         try {
-            web3.eth.getCoinbase(function(error, coinbase) {
+            web3.eth.getCoinbase(function (error, coinbase) {
                 if (error) {
                     logError(error);
                 } else {
@@ -40,16 +41,17 @@ export default class EthereumClient {
         return new Promise((resolve, reject) => {
             this.contract.compileContract().then(compiledContract => {
 
+                this.compiledContract = compiledContract;
+
                 if (parsedContracts.contractAddress == null) {
-                    this.compiledContract = compiledContract;
                     return this.contract.deployContract(compiledContract);
                 }
 
-                this.compiledContract = compiledContract;
                 return parsedContracts.contractAddress
 
             }).then(contractAddressOnChain => {
                 this.contractAddress = contractAddressOnChain;
+
                 resolve()
             }).catch(err => {
                 logError(err)
@@ -70,11 +72,21 @@ export default class EthereumClient {
     addFileMetaData(hash, link, name) {
         return new Promise((resolve, reject) => {
             this.getFileContract().then(contract => {
-                contract.saveFile(hash, link, name, (error) => {
-                    if (error) return reject(error);
-                    return resolve()
-                });
-                // return contract.getLink.call(hash)
+                logError("hln" + hash + link + name)
+                this.web3.eth.getAccounts((error, accounts) => {
+                    if (error) {
+                        logError(error);
+                        reject(error);
+                    }
+                    const defaultAccount = accounts[0];
+                    contract.saveFile.sendTransaction(hash, link, name, {
+                        from: defaultAccount,
+                        gas: 13421772
+                    }, (error) => {
+                        if (error) return reject(error);
+                        return resolve()
+                    });
+                })
             })
         })
     }
@@ -88,29 +100,25 @@ export default class EthereumClient {
     }
 
     watchFileChanges(callback) {
-        const web3 = this.web3;
-        const filter = web3.eth.filter('latest');
-
         this.getFileContract().then((contract) => {
-            contract.allEvents().watch((error, result) => {
+            contract.NewFile().watch((error, result) => {
                 if (error) {
                     logError('Error', error);
                     return
                 }
-
-                const url = result.args._link;
-                const hash = result.args._hash;
+                logError("WATCHING!")
+                const url = result.args.link;
+                const hash = result.args.hash;
                 return callback({url, hash})
             })
         }).catch(err => {
             logError(err);
-            Promise.reject(err)
         })
     }
 
     addAPeer(hash, link) {
         return new Promise((resolve, reject) => {
-            logDebug('addAPeer');
+            logDebug('adPeer');
             this.getFileContract().then((contract) => {
                 contract.addPeer.sendTransaction(hash, link, (error) => {
                     if (error) return reject(error);
@@ -118,14 +126,13 @@ export default class EthereumClient {
                 })
             }).catch(err => {
                 logError(err);
-                Promise.reject(err)
             })
         })
     }
 
     getPeer(hash) {
         return new Promise((resolve, reject) => {
-            logDebug('getPeer');
+            logDebug('gtPeer');
             this.getFileContract().then((contract) => {
                 return resolve(contract.getPeers.call((hash)[1]), (error, result) => {
                     if (error) return reject(error);
@@ -133,7 +140,6 @@ export default class EthereumClient {
                 });
             }).catch(err => {
                 logError(err);
-                reject(err)
             })
         })
     }
@@ -142,41 +148,43 @@ export default class EthereumClient {
         return new Promise((resolve, reject) => {
             this.getFileContract()
                 .then((contract) => {
-                    const fileCount = +contract.getUserFileCount.call((error, result) => {
+                    contract.getUserFileCount.call((error, result) => {
+                        const fileCount = new BigNumber(result).toString(10);
+
                         if (error) return reject(error);
-                        return resolve(result)
+                        if (fileCount == 0) return resolve([]);
+
+                        let hashes = [];
+                        for (let userFileNo = 0; userFileNo < fileCount; userFileNo++) {
+                            hashes[userFileNo] = this.getUserFileNoFromContract(contract, userFileNo);
+                        }
+                        return resolve(Promise.all(hashes))
                     });
-
-                    if (!fileCount) return resolve([]);
-
-                    const hashes = _.times(fileCount, i => {
-                        return contract.getUserFile.call(i, (error, result) => {
-                            if (error) return reject(error);
-                            return resolve(result)
-                        });
-                    }).map(result => {
-                        return result
-                    });
-
-                    return resolve(hashes)
                 }).catch(err => {
                 logError(err);
-                reject(err)
             })
+        })
+    }
+
+    getUserFileNoFromContract(contract, userFileNo) {
+        return new Promise((resolve, reject) => {
+            contract.getUserFile.call(userFileNo, (error, result) => {
+                if (error) return reject(error);
+                return resolve(result)
+            });
         })
     }
 
     findFileMetaDataFromEthChain(fileHash) {
         return new Promise((resolve, reject) => {
             this.getFileContract().then((contract) => {
-                const result = contract.getFileByHash.call((fileHash), (error, result) => {
+                contract.getFileByHash.call((fileHash), (error, result) => {
                     if (error) return reject(error);
-                    return resolve(result)
+                    return resolve({link: result[0], name: result[1]})
+
                 });
-                return resolve({link: result[0], name: result[1]})
             }).catch(err => {
                 logError(err);
-                Promise.reject(err)
             })
         })
 

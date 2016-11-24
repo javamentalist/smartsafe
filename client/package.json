@@ -19,6 +19,7 @@
   "author": "Jaan Lambert",
   "license": "MIT",
   "dependencies": {
+    "bignumber.js": "^3.0.1",
     "bluebird": "^3.4.6",
     "bytes": "^2.4.0",
     "chokidar": "^1.4.3",

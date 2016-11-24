@@ -47,7 +47,7 @@ ipcMain.on('upload-file-async', (event, file) => {
 })
 
 ipcMain.on('delete-file-async', (event, file) => {
-  dropboxClient.delete(file.path_display).then(() => {
+  dropboxClient.deleteFile(file.path_display).then(() => {
     logDebug(`File ${file.name} deleted from ${file.path_display}`);
   }).catch((error) => {
   })

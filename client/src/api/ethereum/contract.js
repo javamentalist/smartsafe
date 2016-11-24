@@ -30,8 +30,7 @@ export default class Contract {
     instantiateCompiledContractAtAddress(compiledContract, contractAddressOnChain) {
         return new Promise((resolve, reject) => {
             const abi = compiledContract.FileSharing.info.abiDefinition;
-            this.contract = this.web3.eth.contract(abi).at(contractAddressOnChain);
-            return resolve(this.contract)
+            resolve(this.web3.eth.contract(abi).at(contractAddressOnChain));
         })
     }
 
@@ -53,8 +52,7 @@ export default class Contract {
                 this.web3.eth.contract(abi).new({
                     data: compiledByteCode,
                     gas: 13421772,
-                    // from is the default account by default, anyway
-                    from: defaultAccount }, (err, contractOnChain) => {
+                    from: defaultAccount}, (err, contractOnChain) => {
                         if (err) return reject(err);
                         if (contractOnChain.address) {
                             writeFile('contracts.json',

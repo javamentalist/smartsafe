@@ -69,7 +69,7 @@ export default class DropboxClient {
         })
     }
 
-    delete(filePath) {
+    deleteFile(filePath) {
         return new Promise((resolve, reject) => {
             return this.dbx.filesDelete({path: filePath})}).then(response_json => {
                 return resolve(response_json)
