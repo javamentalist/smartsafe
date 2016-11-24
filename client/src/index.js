@@ -66,9 +66,6 @@ function getDefaultDatadir() {
 
 function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
-
-    logError("filesHashesFromEth"+filesHashesFromEth)
-
     const preparedFileDataForFiles = Promise.resolve(localFilesFullPaths).then(localFilesFullPaths => {
         return Promise.all(localFilesFullPaths.map(localFileFullPath => {
             return prepareFileDataForFiles(localFileFullPath);
@@ -286,15 +283,6 @@ function decryptFileIfEncrypted(fileName) {
         return Promise.resolve(fullName);
     }
 }
-
-
-// set the watcher for contracts.js
-// ethereumClient.loadContracts().then((address) => {
-//
-//     console.log('contracts loaded')
-// }).catch((e) => {
-//     console.log(e)
-// });
 
 // folder synchronization
 readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
