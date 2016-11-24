@@ -1,16 +1,16 @@
-import Promise from 'bluebird'
-import fs from 'fs'
-import path from 'path'
-import https from 'https'
-import {readDir, createHashForFile, checkExistence} from '../utils/fileUtils.js'
-import * as cryptoUtils from '../utils/cryptoUtils.js'
+import Promise from 'bluebird';
+import fs from 'fs';
+import https from 'https';
+import path from 'path';
+import { readDir, createHashForFile, checkExistence, isFileEncrypted } from '../utils/fileUtils.js';
+import * as cryptoUtils from '../utils/cryptoUtils.js';
 import winston from '../utils/log';
 const readFile = Promise.promisify(require("fs").readFile);
 
+
 const CONTRACTS_FILE = '/../../contracts.json';
 const HOME_DIR = process.env.HOME || process.env.USERPROFILE;
-const FILE_DIR = `${HOME_DIR}/SmartsafeClient`.split("\\").join("/");
-const TEMP_DIR = `${HOME_DIR}/SmartsafeClient`;
+const FILE_DIR = replaceBwdWithFwdSlash(`${HOME_DIR}/SmartsafeClient`);
 const KEYS_DIR = `${HOME_DIR}/.smartsafeKeys`;
 const PUBLIC_KEY = `${KEYS_DIR}/rsa.pub`;
 const PRIVATE_KEY = `${KEYS_DIR}/rsa`;
@@ -22,38 +22,37 @@ if (!fs.existsSync(FILE_DIR)) {
     fs.mkdirSync(FILE_DIR);
 }
 
-import {dropboxClient, ethereumClient} from '../main.js'
+import { dropboxClient, ethereumClient } from '../main.js';
 // NOTE exports at the very end of file
 
 function logDebug(err) {
-    winston.log('debug', err)
+    winston.log('debug', err);
 }
 
 function logError(err) {
-    winston.log('error', err)
+    winston.log('error', err);
 }
+
 
 function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
-    const filesHashesFromEth2 = Promise.resolve(filesHashesFromEth);
 
-    const localFilesFullPaths2 = Promise.resolve(localFilesFullPaths);
-    const preparedFileDataForFiles = localFilesFullPaths2.then(localFilesFullPaths21 => {
-        return Promise.all(localFilesFullPaths21.map(localFileFullPath => {
+    const preparedFileDataForFiles = Promise.resolve(localFilesFullPaths).then(localFilesFullPaths => {
+        return Promise.all(localFilesFullPaths.map(localFileFullPath => {
             return prepareFileDataForFiles(localFileFullPath);
         }));
     });
 
-    Promise.join(preparedFileDataForFiles, filesHashesFromEth2, (localFilesData, filesHashesFromEth21) => {
+    Promise.join(preparedFileDataForFiles, filesHashesFromEth, (localFilesData, filesHashesFromEth) => {
         return Promise.all(localFilesData.map(localFileData => {
             const localFileName = localFileData.fileName;
             const localFileHash = localFileData.fileInfo;
-            if (!fileMetaDataUploadedToEth(localFileHash, filesHashesFromEth21)) {
+            if (!fileMetaDataUploadedToEth(localFileHash, filesHashesFromEth)) {
                 return uploadLocalFilesToDropbox(localFileName, localFileHash)
             }
-            return Promise.resolve()
+            return Promise.resolve();
 
-        }))
+        }));
     }).then(filesDataToEth => {
         return Promise.all(filesDataToEth.map(fileDataToEth => {
             if (fileDataToEth == null) return Promise.resolve();
@@ -64,27 +63,20 @@ function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     });
 
     /// Download missing local files
-    const filesHashesFromEth3 = Promise.resolve(filesHashesFromEth);
 
-    const localFilesFullPaths3 = Promise.resolve(localFilesFullPaths);
-    const preparedFileDataForFiles2 = localFilesFullPaths3.then(localFilesFullPaths31 => {
-        return Promise.all(localFilesFullPaths31.map(localFileFullPath => {
-            return prepareFileDataForFiles(localFileFullPath);
-        }));
-    });
 
-    Promise.join(preparedFileDataForFiles2, filesHashesFromEth3, (localFilesData, filesHashesFromEth31) => {
-        return Promise.all(filesHashesFromEth31.map(filesHash => {
-            return getFilesOnEthNotLocallyPresent(localFilesData, filesHash);
-        }))
-    }).then(filesEthMetaData => {
-        return Promise.all(filesEthMetaData.map(fileEthMetaData => {
-            if (fileEthMetaData == null) return Promise.resolve();
-            return Promise.resolve(downloadFileFromDropbox(fileEthMetaData));
-        }))
-    }).catch(err => {
-        logError(err);
-    })
+    // Promise.join(preparedFileDataForFiles, filesHashesFromEth, (localFilesData, filesHashesFromEth31) => {
+    //     return Promise.all(filesHashesFromEth31.map(filesHash => {
+    //         return getFilesOnEthNotLocallyPresent(localFilesData, filesHash);
+    //     }))
+    // }).then(filesEthMetaData => {
+    //     return Promise.all(filesEthMetaData.map(fileEthMetaData => {
+    //         if (fileEthMetaData == null) return Promise.resolve();
+    //         return Promise.resolve(getFileFromDropboxToFileDir(fileEthMetaData));
+    //     }))
+    // }).catch(err => {
+    //     logError(err);
+    // })
 
 }
 
@@ -94,21 +86,21 @@ function getFilesOnEthNotLocallyPresent(localFilesData, fileEthHash) {
             const localFileData = localFilesData[localFileNo];
             const localFileHash = localFileData.fileInfo;
             if (localFileHash === fileEthHash) {
-                return resolve()
+                return resolve();
             }
         }
         downloadMetaDataFromEthWithHash(fileEthHash).then(fileMetaDataFromEth => {
             return resolve(fileMetaDataFromEth);
-        })
+        });
     });
 }
 
 function downloadMetaDataFromEthWithHash(fileHash) {
     return new Promise((resolve, reject) => {
         (ethereumClient.findFileMetaDataFromEthChain(fileHash)).then(fileMetaDataFromEth => {
-            return resolve(fileMetaDataFromEth)
-        })
-    })
+            return resolve(fileMetaDataFromEth);
+        });
+    });
 }
 
 function fileMetaDataUploadedToEth(hash, ethHashes) {
@@ -118,13 +110,13 @@ function fileMetaDataUploadedToEth(hash, ethHashes) {
 function prepareFileDataForFiles(filePath) {
     return new Promise((resolve, reject) => {
         const fileName = getFileNameFromFilePath(filePath);
-        const fileHash = getHashForFile(fileName);
+        const fileHash = getHashForFile(filePath);
 
         return resolve({
             fileName: fileName,
             fileInfo: fileHash
-        })
-    })
+        });
+    });
 }
 
 function getHashForFile(filePath) {
@@ -134,7 +126,7 @@ function getHashForFile(filePath) {
             return reject(error);
         });
         return resolve(createHashForFile(readStream));
-    })
+    });
 }
 
 
@@ -142,34 +134,26 @@ function getFullPathForFileName(fileName) {
     return `${FILE_DIR}/${fileName}`;
 }
 
-
+function replaceBwdWithFwdSlash(filePath) {
+    return filePath.split("\\").join("/");
+}
 function getFileNameFromFilePath(filePath) {
-    const filePathReplaced = filePath.split("\\").join("/")
-    const fileName = filePathReplaced.substring(FILE_DIR.length + 1, filePathReplaced.length)
-    return fileName;
+    const filePathReplaced = replaceBwdWithFwdSlash(filePath);
+    return filePathReplaced.substring(FILE_DIR.length + 1, filePathReplaced.length);
 }
 
 function uploadLocalFilesToDropbox(fileName, fileHash) {
-    return new Promise((resolve, reject) => {
-        logError(`${FILE_DIR}/${fileName}`)
-        Promise.resolve(dropboxClient.upload(`${FILE_DIR}/${fileName}`, `/${fileName}`))
-            .then(responseJson => {
-                return resolve({
-                    fileName: fileName,
-                    fileHash: fileHash,
-                    fileSharedLink: responseJson.url
-                });
-            }).catch(err => {
-            logError(err)
-            return reject(err)
-        })
-    })
+    return uploadFileToDropbox(`${FILE_DIR}/${fileName}`, fileHash);
 }
 
 function uploadBrowsedFileToDropbox(filePath, fileHash) {
+    return uploadFileToDropbox(filePath, fileHash);
+}
+
+function uploadFileToDropbox(filePath, fileHash) {
     return new Promise((resolve, reject) => {
-        logError(filePath)
-        const fileName = path.basename(filePath)
+        logDebug(`Uploading ${filePath}`);
+        const fileName = path.basename(filePath);
         Promise.resolve(dropboxClient.upload(filePath, `/${fileName}`))
             .then(responseJson => {
                 return resolve({
@@ -178,38 +162,38 @@ function uploadBrowsedFileToDropbox(filePath, fileHash) {
                     fileSharedLink: responseJson.url
                 });
             }).catch(err => {
-            logError(err)
-            return reject(err)
-        })
-    })
+            logError(err);
+            return reject(err);
+        });
+    });
 }
 
 // toDo: ??? delete encrypted file
-function uploadEncryptedLocalFilesToDropbox(fileName, fileHash) {
-    return cryptoUtils.generatePassword().then(function (password) {
+function uploadEncryptedLocalFilesToDropbox(fileName) {
+    return cryptoUtils.generatePassword().then(function(password) {
         saveEncryptedPasswordToDatabase(password);
         return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), SYMMETRIC_KEY);
-    }).then(function (encryptedFileName) {
+    }).then(function(encryptedFileName) {
         const encryptedFileLocalName = getFileNameFromFilePath(encryptedFileName);
-        return Promise.all([encryptedFileLocalName, getHashForFile(encryptedFileLocalName)]);
-    }).then(function ([encryptedFileName, encryptedFileHash]) {
+        return new Promise([encryptedFileLocalName, getHashForFile(encryptedFileName)]);
+    }).then(function([encryptedFileName, encryptedFileHash]) {
         return uploadLocalFilesToDropbox(encryptedFileName, encryptedFileHash);
-    }).catch(function (err) {
+    }).catch(function(err) {
         logError(err);
-    })
+    });
 }
 
-function encryptAndUploadFileToDropbox(filePath, fileHash) {
-    return cryptoUtils.generatePassword().then(function (password) {
+function encryptAndUploadFileToDropbox(filePath) {
+    return cryptoUtils.generatePassword().then(function(password) {
         saveEncryptedPasswordToDatabase(password);
         return cryptoUtils.encryptWithSymmetricKey(filePath, SYMMETRIC_KEY);
-    }).then(function (encryptedFilePath) {
+    }).then(function(encryptedFilePath) {
         return Promise.all([encryptedFilePath, getHashForFile(encryptedFilePath)]);
-    }).then(function ([encryptedFilePath, encryptedFileHash]) {
+    }).then(function([encryptedFilePath, encryptedFileHash]) {
         return uploadBrowsedFileToDropbox(encryptedFilePath, encryptedFileHash);
-    }).catch(function (err) {
+    }).catch(function(err) {
         logError(err);
-    })
+    });
 }
 
 function saveEncryptedPasswordToDatabase(password) {
@@ -218,84 +202,92 @@ function saveEncryptedPasswordToDatabase(password) {
 }
 
 function encryptWithUserPublicKey(text) {
-    return ensureKeyPair().then(function () {
+    return ensureKeyPair().then(function() {
         return Promise.resolve(fs.readFileSync(PUBLIC_KEY));
-    }).then(function (key) {
+    }).then(function(key) {
         return cryptoUtils.encryptWithPublicKey(text, key);
-    })
+    });
 }
 
 function decryptWithUserPrivateKey(text) {
-    return ensureKeyPair().then(function () {
+    return ensureKeyPair().then(function() {
         return Promise.resolve(fs.readFileSync(PRIVATE_KEY));
-    }).then(function (key) {
+    }).then(function(key) {
         return cryptoUtils.decryptWithPrivateKey(text, key);
-    })
+    });
 }
 
 function ensureKeyPair() {
-    return checkExistence(KEYS_DIR).catch(function () {
+    return checkExistence(KEYS_DIR).catch(function() {
         return Promise.resolve(fs.mkdirSync(KEYS_DIR));
-    }).then(function () {
-        return Promise.all([checkExistence(PUBLIC_KEY), checkExistence(PRIVATE_KEY)])
-    }).catch(function (err) {
-        return createKeyPair()
-    })
+    }).then(function() {
+        return Promise.all([checkExistence(PUBLIC_KEY), checkExistence(PRIVATE_KEY)]);
+    }).catch(function(err) {
+        return createKeyPair();
+    });
 }
 
 function createKeyPair() {
-    return cryptoUtils.generateRsaKeyPair().then(function (keys) {
-        return Promise.all([fs.writeFileSync(PUBLIC_KEY, keys.public), fs.writeFileSync(PRIVATE_KEY, keys.private)])
-    }).catch(function (err) {
+    return cryptoUtils.generateRsaKeyPair().then(function(keys) {
+        return Promise.all([fs.writeFileSync(PUBLIC_KEY, keys.public), fs.writeFileSync(PRIVATE_KEY, keys.private)]);
+    }).catch(function(err) {
         logError(err);
-    })
+    });
 }
 
 function uploadLocalFileMetaDataToEth(fileData) {
     return new Promise((resolve, reject) => {
         const fileName = fileData.fileName;
         const fileHash = fileData.fileHash;
-        encryptWithUserPublicKey(fileData.fileSharedLink).then(fileDropboxSharedLink => {
-            ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLink, fileName)
+        encryptWithUserPublicKey(fileData.fileSharedLink).then(fileDropboxSharedLinkEncrypted => {
+            ethereumClient.addFileMetaData(fileHash, fileDropboxSharedLinkEncrypted, fileName);
         }).then(() => {
-            return resolve()
+            return resolve();
         });
-    })
+    });
+}
+
+function getFileFromDropboxToFileDir(fileMetaDataFromEth) {
+    return Promise.resolve(fileMetaDataFromEth.link).then(encryptedDownloadUrl => {
+        return decryptWithUserPrivateKey(encryptedDownloadUrl);
+    }).then(function(dropboxLink) {
+        logError(dropboxLink);
+        return downloadFileFromDropbox(dropboxLink);
+    }).then(function(fileName) {
+        return decryptFileIfEncrypted(fileName);
+    });
 }
 
 // TODO: if the file was in a dir, put it into a dir
-function downloadFileFromDropbox(fileMetaDataFromEth) {
-    return Promise.resolve(fileMetaDataFromEth.link).then(encryptedDownloadUrl => {
-        return decryptWithUserPrivateKey(encryptedDownloadUrl)
-    }).then(function (dropboxLink) {
-        const encryptedDownloadUrl = fileMetaDataFromEth.link;
-        return new Promise((resolve, reject) => {
-            const downloadUrl = dropboxClient.getDirectDownloadLink(dropboxLink);
-            const fileName = dropboxClient.getFileNameFromUrl(downloadUrl);
-            const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
+function downloadFileFromDropbox(dropboxLink) {
+    return new Promise((resolve, reject) => {
+        const downloadUrl = dropboxClient.getDirectDownloadLink(dropboxLink);
+        logError(downloadUrl);
+        const fileName = dropboxClient.getFileNameFromUrl(downloadUrl);
+        const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
 
-            https.get(downloadUrl, (fileToDownload) => {
-                fileToDownload.pipe(fileStream);
-                return resolve(fileName)
-            }).on('error', (err) => {
-                logError(err);
-            });
-        })
-    }).then(function (fileName) {
-        return decryptFileIfEncrypted(fileName)
-    })
+        https.get(downloadUrl, (fileToDownload) => {
+            fileToDownload.pipe(fileStream);
+            return resolve(fileName);
+        });
+    });
 }
 
 function decryptFileIfEncrypted(fileName) {
-    const suffix = '.enc';
     const fullName = `${FILE_DIR}/${fileName}`;
-    if (fileName.indexOf(suffix, fileName.length - suffix.length) !== -1) {
+    if (isFileEncrypted(fileName)) {
         return cryptoUtils.decryptWithSymmetricKey(fullName, SYMMETRIC_KEY);
     } else {
         return Promise.resolve(fullName);
     }
 }
 
+function getFileMetadataFromEth() {
+    ethereumClient.getUserFilesHashes().then((userFileHashes) => {
+        winston.debug('Got file info from Eth');
+        winston.debug(JSON.stringify(userFileHashes));
+    });
+}
 
 // set the watcher for contracts.js
 // ethereumClient.loadContracts().then((address) => {
@@ -360,31 +352,27 @@ function decryptFileIfEncrypted(fileName) {
 
 function synchronizeFolders() {
     readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
-        return JSON.parse(contracts)
+        return JSON.parse(contracts);
     }).then(parsedContracts => {
-        return ethereumClient.deployParsedContract(parsedContracts)
+        return ethereumClient.deployParsedContract(parsedContracts);
     }).then(() => {
-        return dropboxClient.authenticate()
+        return dropboxClient.authenticate();
     }).then(() => {
-        return readDir(FILE_DIR)
-    })
-        .then(files => {
-            const userFilesLocations = files.filter((file) => {
-                return IGNORED_FILES.indexOf(file) === -1
+        return readDir(FILE_DIR);
+    }).then(files => {
+        const userFilesLocations = files.filter((file) => {
+            return IGNORED_FILES.indexOf(file) === -1;
+        });
+
+        return ethereumClient.getUserFilesHashes()
+            .then(filesHashesFromEth => {
+                return synchronizeUserFiles(filesHashesFromEth, userFilesLocations);
             });
-
-            return ethereumClient.getUserFilesHashes()
-                .then(filesHashesFromEth => {
-                    return synchronizeUserFiles(filesHashesFromEth, userFilesLocations)
-                })
-        }).catch(err => logError(err));
+    }).catch(err => logError(err));
 }
 
+// Do it here for now. Ideally this should be in main.js? Or somewhere more logical where it is easier to spot
+synchronizeFolders();
 
-export {
-    uploadLocalFilesToDropbox,
-    uploadEncryptedLocalFilesToDropbox,
-    encryptAndUploadFileToDropbox,
-    synchronizeUserFiles,
-    synchronizeFolders
-}
+
+export { uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, synchronizeFolders, getFileMetadataFromEth };

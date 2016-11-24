@@ -6,11 +6,11 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <div className="row">
+      <div className="row row--no-margin row--stretch-to-bottom">
         <div className="col-xs-3 col-md-2 sidebar">
           <Sidebar/>
         </div>
-        <div className="col-xs-9 col-md-10">
+        <div className="col-xs-9 col-md-10 content">
           { /* Actual content */ }
           { this.props.children }
         </div>

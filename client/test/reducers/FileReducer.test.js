@@ -54,14 +54,8 @@ describe('fileReducer', () => {
 
       const state = fileReducer(initialState, FileActions.setFiles(files));
 
-      (state.userFiles)
-        .should
-        .have
-        .lengthOf(files.length);
-      (state.userFiles)
-        .should
-        .deep
-        .equal(files);
+      (state.userFiles).should.have.lengthOf(files.length);
+      (state.userFiles).should.deep.equal(files);
     });
   });
 
@@ -254,6 +248,63 @@ describe('fileReducer', () => {
 
       (state.uploadQueue[1].isComplete).should.be.true;
       (state.uploadQueue[1].progress).should.equal(100);
+    });
+  });
+
+  describe('SET_FILE_STATUS', () => {
+    beforeEach(() => {
+      initialState.userFiles = [
+        {
+          id: 'randomid',
+          name: 'heaven',
+          status: 'protected'
+        },
+        {
+          id: 'anotherrandomid',
+          name: 'hell',
+          status: 'faulty'
+        },
+        {
+          id: 'thirdid',
+          name: 'earth',
+          status: 'unprotected'
+        }
+      ]
+    });
+
+    it('should return all user files', () => {
+      const newStatus = 'protected';
+      const file = initialState.userFiles[2];
+      const state = fileReducer(initialState, FileActions.setFileStatus(file, newStatus));
+
+      (state.userFiles).should.have.lengthOf(initialState.userFiles.length);
+    });
+
+    it('should set file status to desired status', () => {
+      const newStatus = 'protected';
+      const file = initialState.userFiles[2];
+      const state = fileReducer(initialState, FileActions.setFileStatus(file, newStatus));
+
+      (state.userFiles[2].status).should.equal(newStatus);
+    });
+
+    it('should not change other files', () => {
+      const newStatus = 'protected';
+      const file = initialState.userFiles[2];
+      const state = fileReducer(initialState, FileActions.setFileStatus(file, newStatus));
+
+      (state.userFiles[1].status).should.not.equal(newStatus);
+    });
+
+    it('should not break if file is not found and not change any status', () => {
+      const newStatus = 'protected';
+      const nonExistingFile = { id: 'nonexistentid', name: 'not there', status: 'unprotected' };
+
+      const state = fileReducer(initialState, FileActions.setFileStatus(nonExistingFile, newStatus));
+
+      // not testing userFiles[0] because it already has protected status
+      (state.userFiles[1].status).should.not.equal(newStatus);
+      (state.userFiles[2].status).should.not.equal(newStatus);
     });
   });
 });

@@ -5,22 +5,22 @@
 // BrowserWindow - module to create native browser window.
 // ipcMain - listens to renderer process and sends messages to it
 // dialog - native fail dialog
-import {app, BrowserWindow} from 'electron'
+import {app, BrowserWindow} from 'electron';
 
-import winston from './utils/log'
+import winston from './utils/log';
 
 import {type as osType} from 'os';
 import {join as pathJoin} from 'path';
 
-import authData from '../dropbox-auth.json'
-import DropboxClient from './api/dropboxApi.js'
-import EthereumClient from './api/ethereum/ethereumApi.js'
+import authData from '../dropbox-auth.json';
+import DropboxClient from './api/dropboxApi.js';
+import EthereumClient from './api/ethereum/ethereumApi.js';
 
-export const dropboxClient = new DropboxClient(authData.key, authData.secret)
+export const dropboxClient = new DropboxClient(authData.key, authData.secret);
 export const ethereumClient = new EthereumClient(getDefaultIpcPath());
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
+let mainWindow;
 
 function getDefaultIpcPath() {
     let ipcPath;
@@ -57,13 +57,13 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1100,
         height: 700
-    })
+    });
 
     // and instantiateCompiledContractAtAddress the index.html of the app.
-    mainWindow.loadURL(`file://${__dirname}/index.html`)
+    mainWindow.loadURL(`file://${__dirname}/index.html`);
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools()
+    mainWindow.webContents.openDevTools();
 
     dropboxClient.authenticate()
         .then(() => winston.log('info', 'Dropbox authenticated'))
@@ -75,8 +75,8 @@ function createWindow() {
         // Dereference the window object, usually you would store windows in an array if
         // your app supports multi windows, this is the time when you should delete the
         // corresponding element.
-        mainWindow = null
-    })
+        mainWindow = null;
+    });
 }
 
 // This method will be called when Electron has finished initialization and is
@@ -88,23 +88,23 @@ app.on('window-all-closed', function () {
     // On OS X it is common for applications and their menu bar to stay active until
     // the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
-        app.quit()
+        app.quit();
     }
-})
+});
 
 app.on('activate', function () {
     // On OS X it's common to re-create a window in the app when the dock icon is
     // clicked and there are no other windows open.
     if (mainWindow === null) {
-        createWindow()
+        createWindow();
     }
-})
+});
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-require('./main-process/ipcListeners')
-require('./main-process/fileSynchronization')
+require('./main-process/ipcListeners');
+require('./main-process/fileSynchronization');
 
 
-require('electron-reload')(__dirname)
+require('electron-reload')(__dirname);
 

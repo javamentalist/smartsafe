@@ -51,6 +51,10 @@ export class UserFileList extends React.Component {
     ipcRenderer.on('file-upload-finished-async', (event, file) => {
       this.props.actions.setUploadFinished(file);
     });
+
+    ipcRenderer.on('file-status-changed', (event, file, status) => {
+      this.props.actions.setFileStatus(file, status);
+    });
   }
 
   setUpClickHandlers() {
@@ -74,8 +78,8 @@ export class UserFileList extends React.Component {
   // We don't currently want to show file details on row click
   openDetailView(fileId) {
     return false;
-  // this.props.actions.setDetail(fileId);
-  // this.context.router.push(`/files/${fileId}`);
+    // this.props.actions.setDetail(fileId);
+    // this.context.router.push(`/files/${fileId}`);
   }
 
   handleFileUpload(file) {
@@ -102,29 +106,29 @@ export class UserFileList extends React.Component {
               <h2>Files</h2>
             </div>
             <div className="col-xs-2 center-xs">
-              <FloatingActionButton onClick={ this.refreshDropbox }>
+              <FloatingActionButton onClick={this.refreshDropbox}>
                 <Refresh />
               </FloatingActionButton>
             </div>
           </div>
           <div className="row">
             <div className="col-xs-12">
-              <FileTable files={ this.props.files } onRowClick={ this.openDetailView } onFileDelete={ this.handleFileDelete } onFileDownload={ this.handleFileDownload } isLoading={ this.props.isLoading }/>
+              <FileTable files={this.props.files} onRowClick={this.openDetailView} onFileDelete={this.handleFileDelete} onFileDownload={this.handleFileDownload} isLoading={this.props.isLoading} />
             </div>
           </div>
           <div className="row">
             <div className="col-xs-12">
-              <UploadQueue files={ this.props.uploadQueue } onFileRemove={ this.props.actions.removeFileFromUploadQueue } onFileUpload={ this.handleFileUpload } />
+              <UploadQueue files={this.props.uploadQueue} onFileRemove={this.props.actions.removeFileFromUploadQueue} onFileUpload={this.handleFileUpload} />
             </div>
           </div>
           <div className="row">
             <div className="col-xs-12">
-              <RaisedButton label={ 'Add file' } primary icon={ < Add /> } onClick={ this.openFileDialog } />
+              <RaisedButton label={'Add file'} primary icon={< Add />} onClick={this.openFileDialog} />
             </div>
           </div>
         </div>
       </div>
-      );
+    );
   }
 }
 

@@ -1,4 +1,4 @@
-import { SET_LOADING_STATUS, SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE, START_UPLOAD, UPLOAD_FINISHED } from '../actions'
+import { SET_LOADING_STATUS, SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE, START_UPLOAD, UPLOAD_FINISHED, SET_FILE_STATUS } from '../actions'
 import { uploadQueueObjectStructure } from '../actions'
 
 import path from 'path'
@@ -9,6 +9,28 @@ const initialState = {
   userFiles: [],
   detailedFile: {},
   uploadQueue: []
+}
+
+function findFileById(files, id) {
+  return _
+    .chain(files)
+    .find({
+      'id': id
+    })
+    .defaultTo({})
+    .value();
+}
+
+function updateMatchingItems(items, file, newValues) {
+  return items.map((item) => {
+    if (item.name !== file.name) {
+      // This isn't the item we care about - keep it as-is
+      return item;
+    }
+
+    // Otherwise, this is the one we want - return an updated value
+    return Object.assign({}, item, newValues);
+  });
 }
 
 
@@ -24,13 +46,7 @@ function fileReducer(state = initialState, action) {
       });
     case SET_DETAIL:
       return Object.assign({}, state, {
-        detailedFile: _
-          .chain(state.userFiles)
-          .find({
-            'id': action.payload
-          })
-          .defaultTo({})
-          .value()
+        detailedFile: findFileById(state.userFiles, action.payload)
       });
     case ADD_FILE_TO_UPLOAD_QUEUE:
       return Object.assign({}, state, {
@@ -50,34 +66,48 @@ function fileReducer(state = initialState, action) {
       });
     case START_UPLOAD:
       return Object.assign({}, state, {
-        uploadQueue: state.uploadQueue.map((item, index) => {
-          if (item.name !== action.payload.name) {
-            // This isn't the item we care about - keep it as-is
-            return item;
-          }
-
-          // Otherwise, this is the one we want - return an updated value
-          return Object.assign({}, item, {
-            isUploadInProgress: true
-          });
+        uploadQueue: updateMatchingItems(state.uploadQueue, action.payload, {
+          isUploadInProgress: true
         })
+        //  state.uploadQueue.map((item, index) => {
+        // if (item.name !== action.payload.name) {
+        //   // This isn't the item we care about - keep it as-is
+        //   return item;
+        // }
+
+        // // Otherwise, this is the one we want - return an updated value
+        // return Object.assign({}, item, {
+        //   isUploadInProgress: true
+        // });
+        // })
       });
     case UPLOAD_FINISHED:
       return Object.assign({}, state, {
-        uploadQueue: state.uploadQueue.map((item, index) => {
-          if (item.name !== action.payload.name) {
-            // This isn't the item we care about - keep it as-is
-            return item;
-          }
-
-          // Otherwise, this is the one we want - return an updated value
-          return Object.assign({}, item, {
-            isUploadInProgress: false,
-            isComplete: true,
-            progress: 100
-          });
+        uploadQueue: updateMatchingItems(state.uploadQueue, action.payload, {
+          isUploadInProgress: false,
+          isComplete: true,
+          progress: 100
         })
+        // state.uploadQueue.map((item, index) => {
+        //   if (item.name !== action.payload.name) {
+        //     // This isn't the item we care about - keep it as-is
+        //     return item;
+        //   }
+
+        //   // Otherwise, this is the one we want - return an updated value
+        //   return Object.assign({}, item, {
+        //     isUploadInProgress: false,
+        //     isComplete: true,
+        //     progress: 100
+        //   });
+        // })
       });
+    case SET_FILE_STATUS:
+      return Object.assign({}, state, {
+        userFiles: updateMatchingItems(state.userFiles, action.payload.file, {
+          status: action.payload.status
+        })
+      })
     default:
       return state
   }
