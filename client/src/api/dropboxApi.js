@@ -3,10 +3,10 @@ import {doAuthentication} from './dropboxAuth.js'
 import {getOAuthToken, saveOAuthToken} from './oauthToken.js'
 import fs from 'fs'
 import {post} from './apiUtils.js'
-import winston from 'winston'
+// import winston from 'winston'
 import Dropbox from 'dropbox'
 
-var logger = require('winston')
+import logger from '../utils/log';
 
 export default class DropboxClient {
     constructor(key, secret) {
@@ -71,12 +71,14 @@ export default class DropboxClient {
 
     deleteFile(filePath) {
         return new Promise((resolve, reject) => {
-            return this.dbx.filesDelete({path: filePath})}).then(response_json => {
-                return resolve(response_json)
-            }).catch(err => {
-                logger.error('Failed to delete file %s! Cause: %s', filePath, err)
-                return reject(err)
-            })
+            this.dbx.filesDelete({path: filePath})
+                .then(response_json => {
+                    resolve(response_json);
+                }).catch(err => {
+                    logger.error('Failed to delete file %s! Cause: %s', filePath, err);
+                    reject(err);
+                });
+        });
     }
 
     createSharedLink(path) {

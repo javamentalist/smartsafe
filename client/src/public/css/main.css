@@ -17,7 +17,8 @@ body{
     margin-bottom: 0;
 }
 .row--stretch-to-bottom{
-    height: 100%;
+    min-height: 100%;
+    height: auto;
 }
 
 

@@ -2,8 +2,8 @@ import { ipcMain, dialog } from 'electron';
 import _ from 'lodash';
 import winston from '../utils/log';
 
-import { dropboxClient } from '../main';
-import { synchronizeFolders, encryptAndUploadFileToDropbox, getFileMetadataFromEth } from './fileSynchronization';
+import { dropboxClient, ethereumClient } from '../main';
+import { synchronizeFolders, encryptAndUploadFileToDropbox, getFileMetadataFromEth, uploadLocalFileMetaDataToEth } from './fileSynchronization';
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
@@ -32,30 +32,42 @@ ipcMain.on('upload-file-async', (event, file) => {
     const willBeEncrypted = true;
 
     if (willBeEncrypted) {
-        encryptAndUploadFileToDropbox(file.path).then(() => {
-            winston.debug('Upload done');
-            event.sender.send('file-upload-finished-async', file);
-            return getFilesFromDropbox(event);
-        }).then(() => {
-            return synchronizeFolders();
-        });
+        encryptAndUploadFileToDropbox(file.path)
+            .then((fileData) => {
+                winston.debug('Upload done');
+                event.sender.send('file-upload-finished-async', file);
+                winston.debug('File info: ', JSON.stringify(fileData));
 
+                // just start updating file list, don't wait for it to complete before continuing
+                // it's not necessary for what comes next, it's just so that user can see his file in the list
+                getFilesFromDropbox(event);
+
+                return uploadLocalFileMetaDataToEth(fileData);
+            })
+            .then(() => {
+                winston.debug('File successfully uploaded to Eth');
+                ethereumClient.getUserFilesHashes().then((userFileHashes) => {
+                    winston.debug('Got file hashes from Eth', JSON.stringify(userFileHashes));
+                });
+                // return synchronizeFolders();
+            });
     } else {
         // upload without encyption. THIS WILL BE DONE LATER, RIGHT NOW USER CANNOT CHOOSE
     }
 });
 
 ipcMain.on('delete-file-async', (event, file) => {
-    dropboxClient.delete(file.path_display).then(() => {
+    dropboxClient.deleteFile(file.path_display).then(() => {
         winston.debug(`File ${file.name} deleted from ${file.path_display}`);
+        return getFilesFromDropbox(event);
     }).catch((error) => {
         winston.error(`Error deleting file from Dropbox: ${error}`);
     });
 });
 
 ipcMain.on('download-file-async', (event, file) => {
-//get file metadata
-//downloadFileFromDropbox(fileMetaDataFromEth)
+    //get file metadata
+    //downloadFileFromDropbox(fileMetaDataFromEth)
     getFileMetadataFromEth();
 });
 
