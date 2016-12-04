@@ -38,30 +38,26 @@ ipcMain.on('upload-file-async', (event, file) => {
                 event.sender.send('file-upload-finished-async', file);
                 winston.debug('File info: ', JSON.stringify(fileData));
 
-                // just start updating file list, don't wait for it to complete before continuing
-                // it's not necessary for what comes next, it's just so that user can see his file in the list
-                getFilesFromDropbox(event);
-
                 return uploadLocalFileMetaDataToEth(fileData);
-                // return true;
+            // return true;
             })
             .then(() => {
                 winston.info(`File ${file.name} successfully uploaded to Eth`);
-                // ethereumClient.getUserFilesHashes().then((userFileHashes) => {
-                //     winston.debug('Got file hashes from Eth', JSON.stringify(userFileHashes));
-                // });
-                // return synchronizeFolders();
+                return getFilesFromDropboxAndCheckStatus(event);
+            // return synchronizeFolders();
             });
+
     } else {
         // upload without encyption. THIS WILL BE DONE LATER, RIGHT NOW USER CANNOT CHOOSE
     }
 });
 
 ipcMain.on('delete-file-async', (event, file) => {
-    dropboxClient.deleteFile(file.path_display).then(() => {
-        winston.debug(`File ${file.name} deleted from ${file.path_display}`);
-        return getFilesFromDropbox(event);
-    }).catch((error) => {
+    dropboxClient.deleteFile(file.path_display)
+        .then(() => {
+            winston.debug(`File ${file.name} deleted from ${file.path_display}`);
+            return getFilesFromDropbox(event);
+        }).catch((error) => {
         winston.error(`Error deleting file from Dropbox: ${error}`);
     });
 });
@@ -73,10 +69,12 @@ ipcMain.on('download-file-async', (event, file) => {
 });
 
 ipcMain.on('get-files-from-dropbox-async', (event) => {
-    getFilesFromDropbox(event).then((files) => {
-        winston.debug(`Got db files: ${files.length}`);
-    });
+    getFilesFromDropboxAndCheckStatus(event);
 });
+
+// ipcMain.on('get-files-from-eth-async', (event) => {
+//     getFileDataFromChain(event);
+// });
 
 function getFilesFromDropbox(event) {
     event.sender.send('set-dropbox-loading-status-async', true);
@@ -94,14 +92,40 @@ function getFilesFromDropbox(event) {
         });
 }
 
+function getFileDataFromChain(event) {
+    return ethereumClient.getUserFilesHashes()
+        .then((userFileHashes) => {
+
+            _.forEach(userFileHashes, (fileHash) => {
+                winston.debug(`Searhing for metadata from eth for hash ${fileHash}`);
+                ethereumClient.findFileMetaDataFromEthChain(fileHash).then((metaData) => {
+
+                    winston.debug(`Found metadata from eth: ${JSON.stringify(metaData)}`);
+                    event.sender.send('file-status-changed', metaData, 'protected');
+                });
+            });
+
+            winston.debug('Got file hashes from Eth', JSON.stringify(userFileHashes));
+        });
+}
+
+function getFilesFromDropboxAndCheckStatus(event) {
+    return getFilesFromDropbox(event)
+        .then((files) => {
+            winston.debug(`Got ${files.length} files form dropbox`);
+            // Also find file status from chain
+            return getFileDataFromChain(event);
+        });
+}
+
 // Logging
 
 ipcMain.on('log-async', (event, ...args) => {
     if (args.length === 1) {
         winston.debug(args[0]);
     } else if (args.length > 1) {
-        const   level = args[0],
-                msg = _.drop(args,1);
+        const level = args[0],
+            msg = _.drop(args, 1);
         winston.log(level, _.join(msg, ' '));
     }
 });

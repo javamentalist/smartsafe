@@ -278,7 +278,7 @@ function getFileFromDropboxToFileDir(fileMetaDataFromEth) {
 function downloadFileFromDropbox(dropboxLink) {
     return new Promise((resolve, reject) => {
         const downloadUrl = dropboxClient.getDirectDownloadLink(dropboxLink);
-        logError(downloadUrl);
+        logDebug(`Downloading file: ${downloadUrl}`);
         const fileName = dropboxClient.getFileNameFromUrl(downloadUrl);
         const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
 
@@ -398,7 +398,7 @@ function synchronizeFolders() {
 }
 
 function onNewFile({url, hash}) {
-    logError(url + " url&hash " + hash)
+    logDebug(url + " url&hash " + hash)
 // const dlUrl = DropboxClient.getDirectDownloadLink(url);
 // const fileName = DropboxClient.getFileNameFromUrl(dlUrl);
 // const file = fs.createWriteStream(`${TEMP_DIR}/${fileName}`);
