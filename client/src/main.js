@@ -55,8 +55,8 @@ function getDefaultDatadir() {
 function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 1100,
-        height: 700
+        width: 1200,
+        height: 750
     });
 
     // and instantiateCompiledContractAtAddress the index.html of the app.

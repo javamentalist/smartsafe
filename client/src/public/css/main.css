@@ -126,6 +126,16 @@ small {
     padding-top: 100%;
     background: #0d47a1; /* material blue900 */
     border-radius: 50%;
+    position: relative;
+}
+
+.sidebar .logo__icon > .fa {
+    font-size: 7rem !important;
+    position: absolute !important;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #B2FF59 !important; /* material light green A200 */
 }
 
 .sidebar nav{

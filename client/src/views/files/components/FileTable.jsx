@@ -20,7 +20,9 @@ const style = {
         textAlign: 'center'
     },
     statusIcon: {
-        paddingLeft: '15px'
+        paddingLeft: '15px',
+        width: '25px',
+        textAlign: 'left'
     },
     nameCol: {
 
@@ -101,7 +103,7 @@ class FileTable extends React.Component {
                           <TableRow key={ file.id } selectable={ false } style={ { backgroundColor: (file.status == 'protected') ? lightGreen300 : ((file.status == 'faulty') ? red300 : grey100) } }>
                             <TableRowColumn style={ style.statusCol }>
                               { this.renderStatusIcon(file) }
-                              <FontIcon className="fa fa-key" style={ style.statusIcon } color={ file.isEncrypted ? amber500 : grey300 } />
+                              <FontIcon className={ file.isEncrypted ? 'fa fa-lock' : 'fa fa-unlock' } style={ style.statusIcon } color={ file.isEncrypted ? amber500 : grey300 } />
                             </TableRowColumn>
                             <TableRowColumn style={ style.nameCol }>
                               { file.isEncrypted ? removeExtension(file.name, '.enc') : file.name }
@@ -124,7 +126,7 @@ class FileTable extends React.Component {
                               </IconButton>
                             </TableRowColumn>
                           </TableRow>
-                      );
+                          );
                   }) }
                 { isLoading &&
                   <TableRow>
