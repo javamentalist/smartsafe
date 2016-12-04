@@ -56,10 +56,10 @@ ipcMain.on('delete-file-async', (event, file) => {
     dropboxClient.deleteFile(file.path_display)
         .then(() => {
             winston.debug(`File ${file.name} deleted from ${file.path_display}`);
-            return getFilesFromDropbox(event);
+            return getFilesFromDropboxAndCheckStatus(event);
         }).catch((error) => {
-        winston.error(`Error deleting file from Dropbox: ${error}`);
-    });
+            winston.error(`Error deleting file from Dropbox: ${error}`);
+        });
 });
 
 ipcMain.on('download-file-async', (event, file) => {
