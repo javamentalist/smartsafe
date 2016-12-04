@@ -1,5 +1,5 @@
 html {
-    height: 100%;
+  height: 100%;
   line-height: 1.5;
   font-family: "Roboto", sans-serif;
   font-weight: normal;
@@ -19,6 +19,23 @@ body{
 .row--stretch-to-bottom{
     min-height: 100%;
     height: auto;
+}
+
+.app-wrap {
+  min-height: 100%;
+  /* equal to footer height */
+    margin-bottom: -50px;
+}
+.app-wrap:after {
+  content: "";
+  display: block;
+}
+.app-footer, .app-wrap:after {
+  /* .push must be the same height as footer */
+    height: 50px;
+}
+.app-footer {
+  background: orange;
 }
 
 
@@ -160,3 +177,4 @@ small {
     padding-left: 1rem;
     padding-right: 1rem;
 }
+
