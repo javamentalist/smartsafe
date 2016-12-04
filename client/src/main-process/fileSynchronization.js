@@ -369,22 +369,29 @@ function getFileMetadataFromEth() {
 
 
 function synchronizeFolders() {
-    readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
+    return readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
+        winston.debug('Folder sync - parse contracts');
         return JSON.parse(contracts);
     }).then(parsedContracts => {
+        winston.debug('Folder sync - deploy contracts');
         return ethereumClient.deployParsedContract(parsedContracts);
-    }).then(() => {
+    })/*.then(() => {
+        winston.debug('Folder sync - auth dropbox');
         return dropboxClient.authenticate();
-    }).then(() => {
+    })*/.then(() => {
+        winston.debug('Folder sync - set watch for file changes');
         ethereumClient.watchFileChanges(onNewFile);
         return readDir(FILE_DIR);
     }).then(files => {
+        winston.debug('Folder sync - start file sync');
         const userFilesLocations = files.filter((file) => {
             return IGNORED_FILES.indexOf(file) === -1;
         });
 
+        winston.debug('Folder sync - get file hashes');
         return ethereumClient.getUserFilesHashes()
             .then(filesHashesFromEth => {
+                winston.debug('Folder sync - sync files');
                 return synchronizeUserFiles(filesHashesFromEth, userFilesLocations);
             });
     }).catch(err => logError(err));
@@ -417,7 +424,6 @@ function onNewFile({url, hash}) {
 }
 
 // Do it here for now. Ideally this should be in main.js? Or somewhere more logical where it is easier to spot
-synchronizeFolders();
 
 
-export { uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, synchronizeFolders, getFileMetadataFromEth, uploadLocalFileMetaDataToEth };
+export { uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, synchronizeFolders, getFileMetadataFromEth, uploadLocalFileMetaDataToEth};

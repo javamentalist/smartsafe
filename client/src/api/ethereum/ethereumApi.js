@@ -44,17 +44,20 @@ export default class EthereumClient {
                 this.compiledContract = compiledContract;
 
                 if (parsedContracts.contractAddress == null) {
+                    logDebug('parsed contract is null');
                     return this.contract.deployContract(compiledContract);
                 }
 
-                return parsedContracts.contractAddress
+                logDebug('contract address',parsedContracts.contractAddress);
+                return parsedContracts.contractAddress;
 
             }).then(contractAddressOnChain => {
                 this.contractAddress = contractAddressOnChain;
-
+                logDebug('resolving promise now');
                 resolve()
             }).catch(err => {
-                logError(err)
+                logError(err);
+                reject(err);
             })
         })
     }
@@ -72,7 +75,7 @@ export default class EthereumClient {
     addFileMetaData(hash, link, name) {
         return new Promise((resolve, reject) => {
             this.getFileContract().then(contract => {
-                logError("hln" + hash + link + name)
+                logDebug("hln" + hash + link + name)
                 this.web3.eth.getAccounts((error, accounts) => {
                     if (error) {
                         logError(error);
@@ -158,12 +161,13 @@ export default class EthereumClient {
                         for (let userFileNo = 0; userFileNo < fileCount; userFileNo++) {
                             hashes[userFileNo] = this.getUserFileNoFromContract(contract, userFileNo);
                         }
-                        return resolve(Promise.all(hashes))
+                        resolve(Promise.all(hashes))
                     });
                 }).catch(err => {
-                logError(err);
+                    logError(err);
+                    reject(err);
+                })
             })
-        })
     }
 
     getUserFileNoFromContract(contract, userFileNo) {

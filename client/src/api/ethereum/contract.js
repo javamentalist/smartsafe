@@ -41,19 +41,24 @@ export default class Contract {
         return new Promise((resolve, reject) => {
             const compiledByteCode = compiledContract.FileSharing.code;
             const abi = compiledContract.FileSharing.info.abiDefinition;
-            
+            winston.debug('DeployContract - deploying contract');
             this.web3.eth.getAccounts((error, accounts) => {
                 if (error) {
                     logError(error);
                     reject(error);
                 }
                 const defaultAccount = accounts[0];
+                winston.debug('DeployContract - default account', defaultAccount);
 
                 this.web3.eth.contract(abi).new({
                     data: compiledByteCode,
                     gas: 13421772,
                     from: defaultAccount}, (err, contractOnChain) => {
-                        if (err) return reject(err);
+
+                        if (err){ winston.error('DeployContract - could not create new contract'); return reject(err);}
+
+                        winston.debug('DeployContract - creating new contract');
+
                         if (contractOnChain.address) {
                             writeFile('contracts.json',
                                 JSON.stringify({contractAddress: contractOnChain.address}),
@@ -63,7 +68,10 @@ export default class Contract {
                                     reject(err);
                                 }
                             });
-                            return resolve(contractOnChain.address)
+                            winston.debug('DeployContract - contract written');
+                            return resolve(contractOnChain.address);
+                        }else{
+                             winston.log('DeployContract - hash of the transaction', contractOnChain.transactionHash); // The hash of the transaction, which deploys the contract
                         }
                 })
             })

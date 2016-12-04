@@ -16,6 +16,8 @@ import authData from '../dropbox-auth.json';
 import DropboxClient from './api/dropboxApi.js';
 import EthereumClient from './api/ethereum/ethereumApi.js';
 
+import{synchronizeFolders} from './main-process/fileSynchronization';
+
 export const dropboxClient = new DropboxClient(authData.key, authData.secret);
 export const ethereumClient = new EthereumClient(getDefaultIpcPath());
 // Keep a global reference of the window object, if you don't, the window will
@@ -68,6 +70,10 @@ function createWindow() {
     dropboxClient.authenticate()
         .then(() => winston.log('info', 'Dropbox authenticated'))
         .catch((err) => winston.log('error', err));
+
+    synchronizeFolders().then(()=>{
+        winston.info('Folder synchrnization done');
+    });
 
 
     // Emitted when the window is closed.

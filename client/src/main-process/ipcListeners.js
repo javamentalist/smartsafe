@@ -15,18 +15,18 @@ ipcMain.on('open-file-dialog-async', (event) => {
     }, function(filePaths) {
         if (filePaths && filePaths.length > 0) {
             let filePath = filePaths[0];
-            winston.debug(`File chosen: ${filePath}`);
+            winston.info(`File chosen for upload: ${filePath}`);
             // Alert renderer that file was chosen
             event.sender.send('file-chosen-async', filePath);
         } else {
-            winston.debug('No file chosen');
+            winston.info('No file chosen for upload');
         }
     });
     winston.debug('Dialog open called');
 });
 
 ipcMain.on('upload-file-async', (event, file) => {
-    winston.log('info', `Uploading file: ${file.name} from ${file.path}`);
+    winston.info(`Uploading file: ${file.name} from ${file.path}`);
     event.sender.send('file-upload-started-async', file);
 
     const willBeEncrypted = true;
@@ -34,7 +34,7 @@ ipcMain.on('upload-file-async', (event, file) => {
     if (willBeEncrypted) {
         encryptAndUploadFileToDropbox(file.path)
             .then((fileData) => {
-                winston.debug('Upload done');
+                winston.info(`Finished uploading ${file.name}`);
                 event.sender.send('file-upload-finished-async', file);
                 winston.debug('File info: ', JSON.stringify(fileData));
 
@@ -43,12 +43,13 @@ ipcMain.on('upload-file-async', (event, file) => {
                 getFilesFromDropbox(event);
 
                 return uploadLocalFileMetaDataToEth(fileData);
+                // return true;
             })
             .then(() => {
-                winston.debug('File successfully uploaded to Eth');
-                ethereumClient.getUserFilesHashes().then((userFileHashes) => {
-                    winston.debug('Got file hashes from Eth', JSON.stringify(userFileHashes));
-                });
+                winston.info(`File ${file.name} successfully uploaded to Eth`);
+                // ethereumClient.getUserFilesHashes().then((userFileHashes) => {
+                //     winston.debug('Got file hashes from Eth', JSON.stringify(userFileHashes));
+                // });
                 // return synchronizeFolders();
             });
     } else {
@@ -83,9 +84,7 @@ function getFilesFromDropbox(event) {
         .then((result) => {
             let files = Array.from(result);
             winston.debug(`Found ${files.length} file(s) from dropbox app folder`);
-            return files;
-        })
-        .then((files) => {
+
             event.sender.send('set-dropbox-loading-status-async', false);
             event.sender.send('set-dropbox-files-async', files);
             return files;
@@ -101,10 +100,8 @@ ipcMain.on('log-async', (event, ...args) => {
     if (args.length === 1) {
         winston.debug(args[0]);
     } else if (args.length > 1) {
-        log(args[0], _.drop(args, 1));
+        const   level = args[0],
+                msg = _.drop(args,1);
+        winston.log(level, _.join(msg, ' '));
     }
 });
-
-function log(level, ...args) {
-    winston.log(level, _.join(args, ' '));
-}
