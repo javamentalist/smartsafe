@@ -155,7 +155,7 @@ export default class EthereumClient {
                         const fileCount = new BigNumber(result).toString(10);
 
                         if (error) return reject(error);
-                        if (fileCount == 0) return resolve([]);
+                        if (fileCount === 0) return resolve([]);
 
                         let hashes = [];
                         for (let userFileNo = 0; userFileNo < fileCount; userFileNo++) {
