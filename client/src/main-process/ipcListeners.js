@@ -34,7 +34,7 @@ ipcMain.on('upload-file-async', (event, file) => {
     if (willBeEncrypted) {
         encryptAndUploadFileToDropbox(file.path)
             .then((fileData) => {
-                winston.info(`Finished uploading ${file.name}`);
+                winston.info(`Finished uploading ${fileData.fileName}`);
                 event.sender.send('file-upload-finished-async', file);
                 winston.debug('File info: ', JSON.stringify(fileData));
 

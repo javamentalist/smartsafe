@@ -183,25 +183,26 @@ function uploadFileToDropbox(filePath, fileHash) {
     });
 }
 
-// toDo: ??? delete encrypted file
-function uploadEncryptedLocalFilesToDropbox(fileName) {
-    return cryptoUtils.generatePassword().then(function(password) {
-        saveEncryptedPasswordToDatabase(password);
-        return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), SYMMETRIC_KEY);
-    }).then(function(encryptedFileName) {
-        const encryptedFileLocalName = getFileNameFromFilePath(encryptedFileName);
-        return new Promise([encryptedFileLocalName, getHashForFile(encryptedFileName)]);
-    }).then(function([encryptedFileName, encryptedFileHash]) {
-        return uploadLocalFilesToDropbox(encryptedFileName, encryptedFileHash);
-    }).catch(function(err) {
-        logError(err);
-    });
-}
+// // toDo: ??? delete encrypted file
+// function uploadEncryptedLocalFilesToDropbox(fileName) {
+//     return cryptoUtils.generatePassword().then(function(password) {
+//         saveEncryptedPasswordToDatabase(password);
+//         return cryptoUtils.encryptWithSymmetricKey(getFullPathForFileName(fileName), SYMMETRIC_KEY, `${FILE_DIR}/${fileName}.enc`);
+//     }).then(function(encryptedFileName) {
+//         const encryptedFileLocalName = getFileNameFromFilePath(encryptedFileName);
+//         return new Promise([encryptedFileLocalName, getHashForFile(encryptedFileName)]);
+//     }).then(function([encryptedFileName, encryptedFileHash]) {
+//         return uploadLocalFilesToDropbox(encryptedFileName, encryptedFileHash);
+//     }).catch(function(err) {
+//         logError(err);
+//     });
+// }
 
 function encryptAndUploadFileToDropbox(filePath) {
     return cryptoUtils.generatePassword().then(function(password) {
         saveEncryptedPasswordToDatabase(password);
-        return cryptoUtils.encryptWithSymmetricKey(filePath, SYMMETRIC_KEY);
+        const fileName = path.basename(filePath);
+        return cryptoUtils.encryptWithSymmetricKey(filePath, SYMMETRIC_KEY, `${FILE_DIR}/${fileName}.enc`);
     }).then(function(encryptedFilePath) {
         return Promise.all([encryptedFilePath, getHashForFile(encryptedFilePath)]);
     }).then(function([encryptedFilePath, encryptedFileHash]) {
