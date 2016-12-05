@@ -4,7 +4,7 @@ import FontIcon from 'material-ui/FontIcon';
 import IconButton from 'material-ui/IconButton';
 import Delete from 'material-ui/svg-icons/action/delete';
 import CloudDownload from 'material-ui/svg-icons/file/cloud-download';
-import { lightBlue500, amber500, lightGreen300, green700, red300, red700, grey100, grey300 } from 'material-ui/styles/colors';
+import { lightBlue500, amber500, lightGreen100, green700, deepOrange100, red700, grey100, grey300 } from 'material-ui/styles/colors';
 
 import { formatBytes, formatDate } from '../../../utils/displayUtils';
 import { isFileEncrypted, removeExtension } from '../../../utils/fileUtils';
@@ -20,7 +20,9 @@ const style = {
         textAlign: 'center'
     },
     statusIcon: {
-        paddingLeft: '15px'
+        paddingLeft: '15px',
+        width: '25px',
+        textAlign: 'left'
     },
     nameCol: {
 
@@ -98,10 +100,10 @@ class FileTable extends React.Component {
                       file.isEncrypted = isFileEncrypted(file.name);
 
                       return (
-                          <TableRow key={ file.id } selectable={ false } style={ { backgroundColor: (file.status == 'protected') ? lightGreen300 : ((file.status == 'faulty') ? red300 : grey100) } }>
+                          <TableRow key={ file.id } selectable={ false } style={ { backgroundColor: (file.status == 'protected') ? lightGreen100 : ((file.status == 'faulty') ? deepOrange100 : grey100) } }>
                             <TableRowColumn style={ style.statusCol }>
                               { this.renderStatusIcon(file) }
-                              <FontIcon className="fa fa-key" style={ style.statusIcon } color={ file.isEncrypted ? amber500 : grey300 } />
+                              <FontIcon className={ file.isEncrypted ? 'fa fa-lock' : 'fa fa-unlock' } style={ style.statusIcon } color={ file.isEncrypted ? amber500 : grey300 } />
                             </TableRowColumn>
                             <TableRowColumn style={ style.nameCol }>
                               { file.isEncrypted ? removeExtension(file.name, '.enc') : file.name }
@@ -124,7 +126,7 @@ class FileTable extends React.Component {
                               </IconButton>
                             </TableRowColumn>
                           </TableRow>
-                      );
+                          );
                   }) }
                 { isLoading &&
                   <TableRow>

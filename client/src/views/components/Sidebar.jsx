@@ -5,7 +5,9 @@ import FontIcon from 'material-ui/FontIcon';
 const Sidebar = () => (
     <div>
       <div className="logo__border">
-        <div className="logo__icon"></div>
+        <div className="logo__icon">
+          <FontIcon className="fa fa-lock" style={{fontSize: '3em'}}/>
+        </div>
       </div>
       <nav>
         <Link to="/">
