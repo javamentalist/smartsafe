@@ -1,7 +1,6 @@
 node_modules
 data
 npm-debug.log
-dropbox-auth.json
 coverage/
 .DS_Store
 .node-xmlhttprequest-sync-*
@@ -21,6 +20,10 @@ local.properties
 
 #project specific
 contracts.json
+
+#Dropbox
+/client/dropbox-auth.json
+/client/oauth.json
 
 #IDEA
 .idea/
