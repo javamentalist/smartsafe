@@ -345,13 +345,16 @@ function getFileMetadataFromEth() {
 
 
 function startEthereum() {
+
     return readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
         winston.debug('Folder sync - parse contracts');
         return JSON.parse(contracts);
     }).then(parsedContracts => {
+        // ethereumClient.startMiner();
         winston.debug('Folder sync - deploy contracts');
         return ethereumClient.deployParsedContract(parsedContracts);
     }).then(() => {
+        // ethereumClient.stopMiner();
         winston.debug('Folder sync - set watch for file changes');
         ethereumClient.watchFileChanges(onNewFile);
         // return readDir(FILE_DIR);
@@ -416,4 +419,4 @@ function onNewFile({url, hash}) {
 }
 
 
-export { uploadLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, startEthereum, getFileMetadataFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFilesy };
+export { uploadLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, startEthereum, getFileMetadataFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles };
