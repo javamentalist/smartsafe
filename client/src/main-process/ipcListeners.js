@@ -3,7 +3,7 @@ import _ from 'lodash';
 import winston from '../utils/log';
 
 import { dropboxClient, ethereumClient } from '../main';
-import { synchronizeFolders, encryptAndUploadFileToDropbox, getFileMetadataFromEth, uploadLocalFileMetaDataToEth } from './fileSynchronization';
+import { encryptAndUploadFileToDropbox, getFileMetadataFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles } from './fileSynchronization';
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
@@ -12,7 +12,7 @@ import { synchronizeFolders, encryptAndUploadFileToDropbox, getFileMetadataFromE
 ipcMain.on('open-file-dialog-async', (event) => {
     dialog.showOpenDialog({
         properties: ['openFile']
-    }, function(filePaths) {
+    }, function (filePaths) {
         if (filePaths && filePaths.length > 0) {
             let filePath = filePaths[0];
             winston.info(`File chosen for upload: ${filePath}`);
@@ -39,12 +39,11 @@ ipcMain.on('upload-file-async', (event, file) => {
                 winston.debug('File info: ', JSON.stringify(fileData));
 
                 return uploadLocalFileMetaDataToEth(fileData);
-            // return true;
             })
             .then(() => {
                 winston.info(`File ${file.name} successfully uploaded to Eth`);
                 return getFilesFromDropboxAndCheckStatus(event);
-            // return synchronizeFolders();
+                // return synchronizeFolders();
             });
 
     } else {
@@ -63,18 +62,22 @@ ipcMain.on('delete-file-async', (event, file) => {
 });
 
 ipcMain.on('download-file-async', (event, file) => {
-    //get file metadata
-    //downloadFileFromDropbox(fileMetaDataFromEth)
-    getFileMetadataFromEth();
+    winston.debug(`Downloading file: ${JSON.stringify(file)}`);
+    return getFileFromDropboxToFileDir(file.ethInfo).then((fullName) => {
+        winston.info(`File downloaded to ${fullName}`);
+    });
+});
+
+ipcMain.on('download-all-files-async', (event, file) => {
+    return synchronizeAllFiles().then(() => {
+        winston.info('All files downloaded');
+    })
 });
 
 ipcMain.on('get-files-from-dropbox-async', (event) => {
     getFilesFromDropboxAndCheckStatus(event);
 });
 
-// ipcMain.on('get-files-from-eth-async', (event) => {
-//     getFileDataFromChain(event);
-// });
 
 function getFilesFromDropbox(event) {
     event.sender.send('set-dropbox-loading-status-async', true);
@@ -99,7 +102,8 @@ function getFileDataFromChain(event) {
             _.forEach(userFileHashes, (fileHash) => {
                 winston.debug(`Searhing for metadata from eth for hash ${fileHash}`);
                 ethereumClient.findFileMetaDataFromEthChain(fileHash).then((metaData) => {
-
+                    // Add file hash to be used later
+                    metaData.hash = fileHash;
                     winston.debug(`Found metadata from eth: ${JSON.stringify(metaData)}`);
                     event.sender.send('file-status-changed', metaData, 'protected');
                 });

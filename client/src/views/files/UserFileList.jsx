@@ -9,6 +9,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 import Add from 'material-ui/svg-icons/content/add';
 import Refresh from 'material-ui/svg-icons/navigation/refresh';
+import CloudDownload from 'material-ui/svg-icons/file/cloud-download';
 import { lightGreenA200 } from 'material-ui/styles/colors';
 
 // Sends messages to main process (and can listen too)
@@ -67,6 +68,7 @@ export class UserFileList extends React.Component {
         this.handleFileUpload = this.handleFileUpload.bind(this);
         this.handleFileDelete = this.handleFileDelete.bind(this);
         this.handleFileDownload = this.handleFileDownload.bind(this);
+        this.downloadAll = this.downloadAll.bind(this);
         this.props.actions.removeFileFromUploadQueue = this.props.actions.removeFileFromUploadQueue.bind(this);
     }
 
@@ -85,8 +87,8 @@ export class UserFileList extends React.Component {
     // We don't currently want to show file details on row click
     openDetailView(fileId) {
         return false;
-    // this.props.actions.setDetail(fileId);
-    // this.context.router.push(`/files/${fileId}`);
+        // this.props.actions.setDetail(fileId);
+        // this.context.router.push(`/files/${fileId}`);
     }
 
     handleFileUpload(file) {
@@ -104,45 +106,55 @@ export class UserFileList extends React.Component {
         ipcRenderer.send('download-file-async', file);
     }
 
+    downloadAll(){
+        ipcRenderer.send('log-async', 'debug', 'Downloading all files from Dropbox');
+        ipcRenderer.send('download-all-files-async');
+    }
+
     render() {
         return (
             <div className="row">
-              <div className="col-xs-12">
-                <div className="row bottom-xs">
-                  <div className="col-xs-10">
-                    <h2>Files</h2>
-                  </div>
-                  { /*<div className="col-xs-2 center-xs">
+                <div className="col-xs-12">
+                    <div className="row bottom-xs">
+                        <div className="col-xs-10">
+                            <h2>Files</h2>
+                        </div>
+                        { /*<div className="col-xs-2 center-xs">
                                                             <FloatingActionButton onClick={ this.refreshFileStatus } backgroundColor={ lightGreenA200 }>
                                                                 <Refresh />
                                                             </FloatingActionButton>
                                                         </div>
                                                     */ }
-                  <div className="col-xs-2 center-xs">
-                    <FloatingActionButton onClick={ this.refreshDropbox }>
-                      <Refresh />
-                    </FloatingActionButton>
-                  </div>
+                        <div className="col-xs-1 center-xs">
+                            <FloatingActionButton onClick={this.refreshDropbox}>
+                                <Refresh />
+                            </FloatingActionButton>
+                        </div>
+                        <div className="col-xs-1 center-xs">
+                            <FloatingActionButton onClick={this.downloadAll}>
+                                <CloudDownload />
+                            </FloatingActionButton>
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-xs-12">
+                            <FileTable files={this.props.files} onRowClick={this.openDetailView} onFileDelete={this.handleFileDelete} onFileDownload={this.handleFileDownload} isLoading={this.props.isLoading}
+                                />
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-xs-12">
+                            <UploadQueue files={this.props.uploadQueue} onFileRemove={this.props.actions.removeFileFromUploadQueue} onFileUpload={this.handleFileUpload} />
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-xs-12">
+                            <RaisedButton label={'Add file'} primary icon={< Add />} onClick={this.openFileDialog} />
+                        </div>
+                    </div>
                 </div>
-                <div className="row">
-                  <div className="col-xs-12">
-                    <FileTable files={ this.props.files } onRowClick={ this.openDetailView } onFileDelete={ this.handleFileDelete } onFileDownload={ this.handleFileDownload } isLoading={ this.props.isLoading }
-                    />
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-xs-12">
-                    <UploadQueue files={ this.props.uploadQueue } onFileRemove={ this.props.actions.removeFileFromUploadQueue } onFileUpload={ this.handleFileUpload } />
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-xs-12">
-                    <RaisedButton label={ 'Add file' } primary icon={ < Add /> } onClick={ this.openFileDialog } />
-                  </div>
-                </div>
-              </div>
             </div>
-            );
+        );
     }
 }
 

@@ -5,18 +5,18 @@
 // BrowserWindow - module to create native browser window.
 // ipcMain - listens to renderer process and sends messages to it
 // dialog - native fail dialog
-import {app, BrowserWindow} from 'electron';
+import { app, BrowserWindow } from 'electron';
 
 import winston from './utils/log';
 
-import {type as osType} from 'os';
-import {join as pathJoin} from 'path';
+import { type as osType } from 'os';
+import { join as pathJoin } from 'path';
 
 import authData from '../dropbox-auth.json';
 import DropboxClient from './api/dropboxApi.js';
 import EthereumClient from './api/ethereum/ethereumApi.js';
 
-import{synchronizeFolders} from './main-process/fileSynchronization';
+import { startEthereum } from './main-process/fileSynchronization';
 
 export const dropboxClient = new DropboxClient(authData.key, authData.secret);
 export const ethereumClient = new EthereumClient(getDefaultIpcPath());
@@ -71,8 +71,8 @@ function createWindow() {
         .then(() => winston.log('info', 'Dropbox authenticated'))
         .catch((err) => winston.log('error', err));
 
-    synchronizeFolders().then(()=>{
-        winston.info('Folder synchrnization done');
+    startEthereum().then(() => {
+        winston.info('Ethereum started (contracts deployed)');
     });
 
 

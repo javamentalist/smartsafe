@@ -5,6 +5,7 @@ import path from 'path';
 import { readDir, createHashForFile, checkExistence, isFileEncrypted } from '../utils/fileUtils.js';
 import * as cryptoUtils from '../utils/cryptoUtils.js';
 import winston from '../utils/log';
+import DropboxClient from '../api/dropboxApi.js';
 const readFile = Promise.promisify(require("fs").readFile);
 
 
@@ -177,9 +178,9 @@ function uploadFileToDropbox(filePath, fileHash) {
                     fileSharedLink: responseJson.url
                 });
             }).catch(err => {
-            logError(err);
-            return reject(err);
-        });
+                logError(err);
+                return reject(err);
+            });
     });
 }
 
@@ -199,54 +200,54 @@ function uploadFileToDropbox(filePath, fileHash) {
 // }
 
 function encryptAndUploadFileToDropbox(filePath) {
-    return cryptoUtils.generatePassword().then(function(password) {
+    return cryptoUtils.generatePassword().then(function (password) {
         saveEncryptedPasswordToDatabase(password);
         const fileName = path.basename(filePath);
         return cryptoUtils.encryptWithSymmetricKey(filePath, SYMMETRIC_KEY, `${FILE_DIR}/${fileName}.enc`);
-    }).then(function(encryptedFilePath) {
+    }).then(function (encryptedFilePath) {
         return Promise.all([encryptedFilePath, getHashForFile(encryptedFilePath)]);
-    }).then(function([encryptedFilePath, encryptedFileHash]) {
+    }).then(function ([encryptedFilePath, encryptedFileHash]) {
         return uploadBrowsedFileToDropbox(encryptedFilePath, encryptedFileHash);
-    }).catch(function(err) {
+    }).catch(function (err) {
         logError(err);
     });
 }
 
 function saveEncryptedPasswordToDatabase(password) {
     return encryptWithUserPublicKey(password);
-// save to database
+    // save to database
 }
 
 function encryptWithUserPublicKey(text) {
-    return ensureKeyPair().then(function() {
+    return ensureKeyPair().then(function () {
         return Promise.resolve(fs.readFileSync(PUBLIC_KEY));
-    }).then(function(key) {
+    }).then(function (key) {
         return cryptoUtils.encryptWithPublicKey(text, key);
     });
 }
 
 function decryptWithUserPrivateKey(text) {
-    return ensureKeyPair().then(function() {
+    return ensureKeyPair().then(function () {
         return Promise.resolve(fs.readFileSync(PRIVATE_KEY));
-    }).then(function(key) {
+    }).then(function (key) {
         return cryptoUtils.decryptWithPrivateKey(text, key);
     });
 }
 
 function ensureKeyPair() {
-    return checkExistence(KEYS_DIR).catch(function() {
+    return checkExistence(KEYS_DIR).catch(function () {
         return Promise.resolve(fs.mkdirSync(KEYS_DIR));
-    }).then(function() {
+    }).then(function () {
         return Promise.all([checkExistence(PUBLIC_KEY), checkExistence(PRIVATE_KEY)]);
-    }).catch(function(err) {
+    }).catch(function (err) {
         return createKeyPair();
     });
 }
 
 function createKeyPair() {
-    return cryptoUtils.generateRsaKeyPair().then(function(keys) {
+    return cryptoUtils.generateRsaKeyPair().then(function (keys) {
         return Promise.all([fs.writeFileSync(PUBLIC_KEY, keys.public), fs.writeFileSync(PRIVATE_KEY, keys.private)]);
-    }).catch(function(err) {
+    }).catch(function (err) {
         logError(err);
     });
 }
@@ -268,9 +269,9 @@ function uploadLocalFileMetaDataToEth(fileData) {
 function getFileFromDropboxToFileDir(fileMetaDataFromEth) {
     return Promise.resolve(fileMetaDataFromEth.link).then(encryptedDownloadUrl => {
         return decryptWithUserPrivateKey(encryptedDownloadUrl);
-    }).then(function(dropboxLink) {
+    }).then(function (dropboxLink) {
         return downloadFileFromDropbox(dropboxLink);
-    }).then(function(fileName) {
+    }).then(function (fileName) {
         return decryptFileIfEncrypted(fileName);
     });
 }
@@ -278,9 +279,9 @@ function getFileFromDropboxToFileDir(fileMetaDataFromEth) {
 // TODO: if the file was in a dir, put it into a dir
 function downloadFileFromDropbox(dropboxLink) {
     return new Promise((resolve, reject) => {
-        const downloadUrl = dropboxClient.getDirectDownloadLink(dropboxLink);
+        const downloadUrl = DropboxClient.getDirectDownloadLink(dropboxLink);
         logDebug(`Downloading file: ${downloadUrl}`);
-        const fileName = dropboxClient.getFileNameFromUrl(downloadUrl);
+        const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
         const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
 
         https.get(downloadUrl, (fileToDownload) => {
@@ -314,32 +315,6 @@ function getFileMetadataFromEth() {
 //     console.log(e)
 // });
 
-// commented out because it should no be run when this file is imported
-// folder synchronization
-// readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
-// +        return JSON.parse(contracts)
-// +    }).then(parsedContracts => {
-// +        return ethereumClient.deployParsedContract(parsedContracts)
-// +    }).then(() => {
-// +        return dropboxClient.authenticate()
-// +    }).then(() => {
-//         return readDir(FILE_DIR)
-//     }).then(files => {
-//     const userfileslocations = files.filter((file) => {
-//         return IGNORED_FILES.indexof(file) === -1
-//     });
-
-//     return ethereumClient.getUserFilesHashes()
-//         .then(fileshashesfrometh => {
-//             return synchronizeUserFiles(fileshashesfrometh, userfileslocations)
-//         })
-// }).catch(err => logError(err));
-
-//new file upload
-//dropboxClient.authenticate().then(() => {
-//    ethereumClient.watchFileChanges(onNewFile)
-//});
-
 
 // function onNewFile({url, hash}) {
 //     // Replace dl=0 with dl=1 to get direct downloadable link
@@ -369,62 +344,76 @@ function getFileMetadataFromEth() {
 
 
 
-function synchronizeFolders() {
+function startEthereum() {
     return readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
         winston.debug('Folder sync - parse contracts');
         return JSON.parse(contracts);
     }).then(parsedContracts => {
         winston.debug('Folder sync - deploy contracts');
         return ethereumClient.deployParsedContract(parsedContracts);
-    })/*.then(() => {
-        winston.debug('Folder sync - auth dropbox');
-        return dropboxClient.authenticate();
-    })*/.then(() => {
+    }).then(() => {
         winston.debug('Folder sync - set watch for file changes');
         ethereumClient.watchFileChanges(onNewFile);
-        return readDir(FILE_DIR);
-    }).then(files => {
-        winston.debug('Folder sync - start file sync');
-        const userFilesLocations = files.filter((file) => {
-            return IGNORED_FILES.indexOf(file) === -1;
-        });
-
-        winston.debug('Folder sync - get file hashes');
-        return ethereumClient.getUserFilesHashes()
-            .then(filesHashesFromEth => {
-                winston.debug('Folder sync - sync files');
-                return synchronizeUserFiles(filesHashesFromEth, userFilesLocations);
-            });
+        // return readDir(FILE_DIR);
     }).catch(err => logError(err));
+    /*.then(files => {
+    winston.debug('Folder sync - start file sync');
+    const userFilesLocations = files.filter((file) => {
+        return IGNORED_FILES.indexOf(file) === -1;
+    });
+
+    winston.debug('Folder sync - get file hashes');
+    return ethereumClient.getUserFilesHashes()
+        .then(filesHashesFromEth => {
+            winston.debug('Folder sync - sync files');
+            return synchronizeUserFiles(filesHashesFromEth, userFilesLocations);
+        });
+})*/
+}
+
+function synchronizeAllFiles() {
+    return readDir(FILE_DIR)
+        .then(files => {
+            winston.debug('File sync - start file sync');
+            const userFilesLocations = files.filter((file) => {
+                return IGNORED_FILES.indexOf(file) === -1;
+            });
+
+            winston.debug('File sync - get file hashes');
+            return ethereumClient.getUserFilesHashes()
+                .then(filesHashesFromEth => {
+                    winston.debug('File sync - sync files');
+                    return synchronizeUserFiles(filesHashesFromEth, userFilesLocations);
+                });
+        }).catch(err => logError(err));
 }
 
 function onNewFile({url, hash}) {
+    logDebug(`New file added to chain. Url ${url}, hash ${hash}`);
     logDebug(url + " url&hash " + hash)
-// const dlUrl = DropboxClient.getDirectDownloadLink(url);
-// const fileName = DropboxClient.getFileNameFromUrl(dlUrl);
-// const file = fs.createWriteStream(`${TEMP_DIR}/${fileName}`);
-// https.get(dlUrl, (res) => {
-//     res.pipe(file);
-//     file.on('finish', () => {
-//         if (fileName) {
-//             dropboxClient.upload(`${TEMP_DIR}/${fileName}`, `/${fileName}`)
-//                 .then((data) => {
-//                     ethereumClient.addAPeer(hash, data.url)
-//                         .then(() => {
-//                             ethereumClient.getPeer(hash)
-//                             .then((peerUrl) => {
-//                                 console.log('peerUrl', peerUrl)
-//                         })
-//                     }).catch((e) => {
-//                         console.log(e)
-//                     })
-//                 })
-//         }
-//     })
-// }).on('error', (err) => console.log(err))
+    // const dlUrl = DropboxClient.getDirectDownloadLink(url);
+    // const fileName = DropboxClient.getFileNameFromUrl(dlUrl);
+    // const file = fs.createWriteStream(`${TEMP_DIR}/${fileName}`);
+    // https.get(dlUrl, (res) => {
+    //     res.pipe(file);
+    //     file.on('finish', () => {
+    //         if (fileName) {
+    //             dropboxClient.upload(`${TEMP_DIR}/${fileName}`, `/${fileName}`)
+    //                 .then((data) => {
+    //                     ethereumClient.addAPeer(hash, data.url)
+    //                         .then(() => {
+    //                             ethereumClient.getPeer(hash)
+    //                             .then((peerUrl) => {
+    //                                 console.log('peerUrl', peerUrl)
+    //                         })
+    //                     }).catch((e) => {
+    //                         console.log(e)
+    //                     })
+    //                 })
+    //         }
+    //     })
+    // }).on('error', (err) => console.log(err))
 }
 
-// Do it here for now. Ideally this should be in main.js? Or somewhere more logical where it is easier to spot
 
-
-export { uploadLocalFilesToDropbox, uploadEncryptedLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, synchronizeFolders, getFileMetadataFromEth, uploadLocalFileMetaDataToEth};
+export { uploadLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, startEthereum, getFileMetadataFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFilesy };
