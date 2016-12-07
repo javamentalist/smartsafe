@@ -1,14 +1,15 @@
 /*
  * action types
  */
-export const SET_LOADING_STATUS = 'SET_LOADING_STATUS'
-export const SET_FILES = 'SET_FILES'
-export const SET_DETAIL = 'SET_DETAIL'
-export const ADD_FILE_TO_UPLOAD_QUEUE = 'ADD_FILE_TO_UPLOAD_QUEUE'
-export const REMOVE_FILE_FROM_UPLOAD_QUEUE = 'REMOVE_FILE_FROM_UPLOAD_QUEUE'
-export const START_UPLOAD = 'START_UPLOAD'
-export const UPLOAD_FINISHED = 'UPLOAD_FINISHED'
-export const SET_FILE_STATUS = 'SET_FILE_STATUS'
+export const SET_LOADING_STATUS = 'SET_LOADING_STATUS';
+export const SET_FILES = 'SET_FILES';
+export const SET_DETAIL = 'SET_DETAIL';
+export const ADD_FILE_TO_UPLOAD_QUEUE = 'ADD_FILE_TO_UPLOAD_QUEUE';
+export const REMOVE_FILE_FROM_UPLOAD_QUEUE = 'REMOVE_FILE_FROM_UPLOAD_QUEUE';
+export const START_UPLOAD = 'START_UPLOAD';
+export const UPLOAD_FINISHED = 'UPLOAD_FINISHED';
+export const SET_FILE_STATUS = 'SET_FILE_STATUS';
+export const SET_FILE_LOCAL_UNENCRYPTED_PATH = 'SET_FILE_LOCAL_UNENCRYPTED_PATH';
 
 /*
  * other constants
@@ -20,7 +21,7 @@ export const uploadQueueObjectStructure = {
   progress: 0,
   isComplete: false,
   isUploadInProgress: false
-}
+};
 
 /*
  * action creators
@@ -77,5 +78,12 @@ export function setFileStatus(file, status) {
   return {
     type: SET_FILE_STATUS,
     payload: { file: file, status: status }
+  }
+}
+
+export function setFileLocalUnencryptedPath(file, path) {
+  return {
+    type: SET_FILE_LOCAL_UNENCRYPTED_PATH,
+    payload: { file: file, path:path }
   }
 }

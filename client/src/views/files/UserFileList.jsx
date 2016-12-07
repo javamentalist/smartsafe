@@ -13,7 +13,7 @@ import CloudDownload from 'material-ui/svg-icons/file/cloud-download';
 import { lightGreenA200 } from 'material-ui/styles/colors';
 
 // Sends messages to main process (and can listen too)
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, shell } from 'electron';
 
 // named export. Useful for testing only component itself without store logic
 export class UserFileList extends React.Component {
@@ -58,6 +58,10 @@ export class UserFileList extends React.Component {
             console.log(`Updating file status. File: ${file.name}, status: ${status}`);
             this.props.actions.setFileStatus(file, status);
         });
+
+        ipcRenderer.on('set-file-local-unencrypted-path', (event, file, path) => {
+            this.props.actions.setFileLocalUnencryptedPath(file, path);
+        });
     }
 
     setUpClickHandlers() {
@@ -68,6 +72,7 @@ export class UserFileList extends React.Component {
         this.handleFileUpload = this.handleFileUpload.bind(this);
         this.handleFileDelete = this.handleFileDelete.bind(this);
         this.handleFileDownload = this.handleFileDownload.bind(this);
+        this.handleFileOpen = this.handleFileOpen.bind(this);
         this.downloadAll = this.downloadAll.bind(this);
         this.props.actions.removeFileFromUploadQueue = this.props.actions.removeFileFromUploadQueue.bind(this);
     }
@@ -106,7 +111,13 @@ export class UserFileList extends React.Component {
         ipcRenderer.send('download-file-async', file);
     }
 
-    downloadAll(){
+    handleFileOpen(file){
+        ipcRenderer.send('log-async', 'debug', `Opening file ${file.name}`);
+        ipcRenderer.send('log-async', 'debug', `${JSON.stringify(file)}`);
+        shell.openItem(file.localUnEncPath);
+    }
+
+    downloadAll() {
         ipcRenderer.send('log-async', 'debug', 'Downloading all files from Dropbox');
         ipcRenderer.send('download-all-files-async');
     }
@@ -138,7 +149,7 @@ export class UserFileList extends React.Component {
                     </div>
                     <div className="row">
                         <div className="col-xs-12">
-                            <FileTable files={this.props.files} onRowClick={this.openDetailView} onFileDelete={this.handleFileDelete} onFileDownload={this.handleFileDownload} isLoading={this.props.isLoading}
+                            <FileTable files={this.props.files} onRowClick={this.openDetailView} onFileDelete={this.handleFileDelete} onFileDownload={this.handleFileDownload} onFileOpen={this.handleFileOpen} isLoading={this.props.isLoading}
                                 />
                         </div>
                     </div>

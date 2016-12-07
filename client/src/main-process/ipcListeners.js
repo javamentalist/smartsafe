@@ -3,7 +3,9 @@ import _ from 'lodash';
 import winston from '../utils/log';
 
 import { dropboxClient, ethereumClient } from '../main';
-import { encryptAndUploadFileToDropbox, getFileMetadataFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles } from './fileSynchronization';
+import { encryptAndUploadFileToDropbox, getFileMetadataFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder } from './fileSynchronization';
+
+
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
@@ -63,8 +65,12 @@ ipcMain.on('delete-file-async', (event, file) => {
 
 ipcMain.on('download-file-async', (event, file) => {
     winston.debug(`Downloading file: ${JSON.stringify(file)}`);
+    // isUnencryptedFileInAppFolder(file.name).then((result) => {
+    //     winston.debug(`File ${file.name} is (${result}) in app dir in unencrypted form`);
+    // });
     return getFileFromDropboxToFileDir(file.ethInfo).then((fullName) => {
         winston.info(`File downloaded to ${fullName}`);
+        event.sender.send('set-file-local-status', file, 'local');
     });
 });
 
@@ -113,10 +119,21 @@ function getFileDataFromChain(event) {
         });
 }
 
+function getFilesStatusOnDisc(event, files) {
+    _.forEach(files, (file) => {
+        getUnencryptedFilePathInAppFolder(file.name).then((filePath) => {
+            event.sender.send('set-file-local-unencrypted-path', file, filePath);
+        })
+    });
+}
+
 function getFilesFromDropboxAndCheckStatus(event) {
     return getFilesFromDropbox(event)
         .then((files) => {
             winston.debug(`Got ${files.length} files form dropbox`);
+
+            return getFilesStatusOnDisc(event, files);
+        }).then((files) => {
             // Also find file status from chain
             return getFileDataFromChain(event);
         });

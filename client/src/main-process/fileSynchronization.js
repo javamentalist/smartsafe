@@ -2,7 +2,7 @@ import Promise from 'bluebird';
 import fs from 'fs';
 import https from 'https';
 import path from 'path';
-import { readDir, createHashForFile, checkExistence, isFileEncrypted } from '../utils/fileUtils.js';
+import { readDir, createHashForFile, checkExistence, isFileEncrypted, getUnencryptedFileName } from '../utils/fileUtils.js';
 import * as cryptoUtils from '../utils/cryptoUtils.js';
 import winston from '../utils/log';
 import DropboxClient from '../api/dropboxApi.js';
@@ -418,5 +418,18 @@ function onNewFile({url, hash}) {
     // }).on('error', (err) => console.log(err))
 }
 
+function getUnencryptedFilePathInAppFolder(fileName) {
+    const unencryptedFileName = getUnencryptedFileName(fileName);
+    return new Promise((resolve, reject) => {
+        const path = `${FILE_DIR}/${unencryptedFileName}`;
+        checkExistence(path).then((isExisting) => {
+            winston.debug(`${unencryptedFileName} ${isExisting ? 'does' : 'does not'} exists in ${FILE_DIR}`);
+            resolve(path);
+        }).catch(err => {
+            winston.debug(`${unencryptedFileName} not in ${FILE_DIR}`);
+            resolve(null);
+        });
+    })
+}
 
-export { uploadLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, startEthereum, getFileMetadataFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles };
+export { uploadLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, startEthereum, getFileMetadataFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder };

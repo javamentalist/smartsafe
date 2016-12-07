@@ -3,6 +3,8 @@ import { createHash } from 'crypto';
 import nodedir from 'node-dir';
 import fs from 'fs';
 
+const encSuffix = '.enc';
+
 export const readDir = (directory) => {
     return new Promise((resolve, reject) => {
         nodedir.files(directory, (err, files) => {
@@ -25,9 +27,9 @@ export const createHashForFile = (readStream) => {
 
 export const checkExistence = (path) => {
     return new Promise((resolve, reject) => {
-        fs.access(path, fs.F_OK, function(err) {
+        fs.access(path, fs.F_OK, function (err) {
             if (err) reject(err);
-            else resolve();
+            else resolve(true);
         });
     });
 };
@@ -37,11 +39,14 @@ const indexOfSuffix = (fileName, suffix) => {
 };
 
 export const isFileEncrypted = (fileName) => {
-    const suffix = '.enc';
-    return indexOfSuffix(fileName, suffix) !== -1;
+    return indexOfSuffix(fileName, encSuffix) !== -1;
 };
 
 export const removeExtension = (fileName, extension) => {
     const extensionPos = indexOfSuffix(fileName, extension);
     return (extensionPos !== -1) ? fileName.substring(0, extensionPos) : fileName;
 };
+
+export const getUnencryptedFileName = (unknownFileName) => {
+    return isFileEncrypted(unknownFileName) ? removeExtension(unknownFileName, encSuffix): unknownFileName;
+}
