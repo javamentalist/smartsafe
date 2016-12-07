@@ -1,4 +1,4 @@
-import { SET_LOADING_STATUS, SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE, START_UPLOAD, UPLOAD_FINISHED, SET_FILE_STATUS } from '../actions'
+import { SET_LOADING_STATUS, SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE, START_UPLOAD, UPLOAD_FINISHED, SET_FILE_STATUS, SET_FILE_LOCAL_UNENCRYPTED_PATH } from '../actions'
 import { uploadQueueObjectStructure } from '../actions'
 
 import path from 'path'
@@ -89,7 +89,13 @@ function fileReducer(state = initialState, action) {
                         }
                         : null
                 })
-            })
+            });
+        case SET_FILE_LOCAL_UNENCRYPTED_PATH:
+            return Object.assign({}, state, {
+                userFiles: updateMatchingItems(state.userFiles, action.payload.file, {
+                    localUnEncPath: action.payload.path
+                })
+            });
         default:
             return state
     }
