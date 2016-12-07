@@ -49,7 +49,18 @@ function fileReducer(state = initialState, action) {
                 detailedFile: findFileById(state.userFiles, action.payload)
             });
         case ADD_FILE_TO_UPLOAD_QUEUE:
-            return Object.assign({}, state, {
+        	var fileName = path.basename(action.payload.path);
+        	var hasFileWithTheSameName = state
+        			.userFiles
+        			.filter((item) => item.name === fileName.concat('.enc'))
+        			.length != 0;
+        	if (hasFileWithTheSameName) {
+        		alert('You tried to upload file with name ' + fileName + ', but it already exists on your Dropbox.\r\n' +
+        				'Choose another file to upload or rename it before attempting again.');
+        		return Object.assign({}, state, {});
+        	}
+        	
+        	return Object.assign({}, state, {
                 uploadQueue: [
                     ...state.uploadQueue,
                     Object.assign({}, uploadQueueObjectStructure, action.payload, { // payload contains {path: /path/to/file}
