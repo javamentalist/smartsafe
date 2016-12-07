@@ -1,6 +1,6 @@
 node_modules
 data
-npm-debug.log
+npm-debug.log*
 coverage/
 .DS_Store
 .node-xmlhttprequest-sync-*
@@ -32,7 +32,7 @@ contracts.json
 client/build/
 
 #geth
-client/chain/
+chain/
 
 # Images
 *.jpg
@@ -76,3 +76,6 @@ client/chain/
 
 # Code Recommenders
 .recommenders/
+
+# VS Code
+.vscode/
