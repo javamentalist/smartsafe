@@ -1,9 +1,10 @@
 import { ipcMain, dialog } from 'electron';
+import Promise from 'bluebird';
 import _ from 'lodash';
 import winston from '../utils/log';
 
 import { dropboxClient, ethereumClient } from '../main';
-import { encryptAndUploadFileToDropbox, getFileMetadataFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder } from './fileSynchronization';
+import { encryptAndUploadFileToDropbox, getFileHashesFromEth, getFullPathForFileName, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles } from './fileSynchronization';
 
 
 
@@ -14,7 +15,7 @@ import { encryptAndUploadFileToDropbox, getFileMetadataFromEth, uploadLocalFileM
 ipcMain.on('open-file-dialog-async', (event) => {
     dialog.showOpenDialog({
         properties: ['openFile']
-    }, function (filePaths) {
+    }, function(filePaths) {
         if (filePaths && filePaths.length > 0) {
             let filePath = filePaths[0];
             winston.info(`File chosen for upload: ${filePath}`);
@@ -59,15 +60,13 @@ ipcMain.on('delete-file-async', (event, file) => {
             winston.debug(`File ${file.name} deleted from ${file.path_display}`);
             return getFilesFromDropboxAndCheckStatus(event);
         }).catch((error) => {
-            winston.error(`Error deleting file from Dropbox: ${error}`);
-        });
+        winston.error(`Error deleting file from Dropbox: ${error}`);
+    });
 });
 
 ipcMain.on('download-file-async', (event, file) => {
     winston.debug(`Downloading file: ${JSON.stringify(file)}`);
-    // isUnencryptedFileInAppFolder(file.name).then((result) => {
-    //     winston.debug(`File ${file.name} is (${result}) in app dir in unencrypted form`);
-    // });
+
     return getFileFromDropboxToFileDir(file.ethInfo).then((fullName) => {
         winston.info(`File downloaded to ${fullName}`);
         event.sender.send('set-file-local-status', file, 'local');
@@ -101,43 +100,61 @@ function getFilesFromDropbox(event) {
         });
 }
 
-function getFileDataFromChain(event) {
-    return ethereumClient.getUserFilesHashes()
-        .then((userFileHashes) => {
-
-            _.forEach(userFileHashes, (fileHash) => {
-                winston.debug(`Searhing for metadata from eth for hash ${fileHash}`);
-                ethereumClient.findFileMetaDataFromEthChain(fileHash).then((metaData) => {
-                    // Add file hash to be used later
-                    metaData.hash = fileHash;
-                    winston.debug(`Found metadata from eth: ${JSON.stringify(metaData)}`);
-                    event.sender.send('file-status-changed', metaData, 'protected');
+function setFilesLocalUnencryptedPaths(event, files) {
+    return new Promise((resolve, reject) => {
+        let filePaths = [];
+        _.forEach(files, (file) => {
+            getUnencryptedFilePathInAppFolder(file.name).then((localFilePath) => {
+                event.sender.send('set-file-local-unencrypted-path', file, localFilePath);
+                filePaths.push({
+                    name: file.name,
+                    localPath: localFilePath
                 });
-            });
-
-            winston.debug('Got file hashes from Eth', JSON.stringify(userFileHashes));
+            })
         });
-}
-
-function getFilesStatusOnDisc(event, files) {
-    _.forEach(files, (file) => {
-        getUnencryptedFilePathInAppFolder(file.name).then((filePath) => {
-            event.sender.send('set-file-local-unencrypted-path', file, filePath);
-        })
+        resolve(filePaths);
     });
 }
 
+function checkFilesIntegrity(event) {
+    getFileHashesFromEth().then((hashes) => {
+        _.forEach(hashes, (hash) => {
+
+            winston.debug(`Checking hash ${hash}`);
+            downloadMetaDataFromEthWithHash(hash).then((metaData) => {
+                // metadata: link, name
+
+                metaData.filePath = getFullPathForFileName(metaData.name);
+                // metadata: link, name, filePath
+
+                // winston.debug(`Preparing data for file ${JSON.stringify(metaData)}`);
+                prepareFileDataForFiles(metaData.filePath).then((fileData) => {
+                    // filedata: filename, filehash
+
+                    winston.debug(`Comparing hashes for ${fileData.fileName}: ${fileData.fileHash} vs ${hash}`);
+
+                    const fileStatus = (fileData.fileHash === hash ? 'protected' : 'faulty');
+                    winston.debug(`File ${fileData.fileName} status: ${fileStatus}`);
+                    metaData.hash = hash;
+                    event.sender.send('set-file-status', metaData, fileStatus);
+                })
+            });
+        });
+    })
+}
+
 function getFilesFromDropboxAndCheckStatus(event) {
+
     return getFilesFromDropbox(event)
         .then((files) => {
-            winston.debug(`Got ${files.length} files form dropbox`);
+            winston.debug(`Got ${files.length} files from dropbox`);
 
-            return getFilesStatusOnDisc(event, files);
-        }).then((files) => {
-            // Also find file status from chain
-            return getFileDataFromChain(event);
+            return setFilesLocalUnencryptedPaths(event, files);
+        }).then(()=>{
+            checkFilesIntegrity(event);
         });
 }
+
 
 // Logging
 
