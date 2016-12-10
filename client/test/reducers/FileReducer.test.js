@@ -251,7 +251,7 @@ describe('fileReducer', () => {
         });
     });
 
-    describe('SET_FILE_STATUS', () => {
+    describe('SET_FILE_PROTECTION_STATUS', () => {
         beforeEach(() => {
             initialState.userFiles = [
                 {
@@ -279,7 +279,7 @@ describe('fileReducer', () => {
             const newStatus = 'protected';
             let file = initialState.userFiles[2];
             file.eth = { hash: 'hash', link: 'link' };
-            const state = fileReducer(initialState, FileActions.setFileStatus(file, newStatus));
+            const state = fileReducer(initialState, FileActions.setFileProtectionStatus(file, newStatus));
 
             (state.userFiles).should.have.lengthOf(initialState.userFiles.length);
         });
@@ -288,7 +288,7 @@ describe('fileReducer', () => {
             const newStatus = 'protected';
             let file = initialState.userFiles[2];
             file.eth = { hash: 'hash', link: 'link' };
-            const state = fileReducer(initialState, FileActions.setFileStatus(file, newStatus));
+            const state = fileReducer(initialState, FileActions.setFileProtectionStatus(file, newStatus));
 
             (state.userFiles[2].status).should.equal(newStatus);
         });
@@ -297,7 +297,7 @@ describe('fileReducer', () => {
             const newStatus = 'protected';
             let file = initialState.userFiles[2];
             file.eth = { hash: 'hash', link: 'link' };
-            const state = fileReducer(initialState, FileActions.setFileStatus(file, newStatus));
+            const state = fileReducer(initialState, FileActions.setFileProtectionStatus(file, newStatus));
 
             (state.userFiles[1].status).should.not.equal(newStatus);
         });
@@ -309,7 +309,7 @@ describe('fileReducer', () => {
                 eth: { hash: 'hash', link: 'link' }
             };
 
-            const state = fileReducer(initialState, FileActions.setFileStatus(nonExistingFile, newStatus));
+            const state = fileReducer(initialState, FileActions.setFileProtectionStatus(nonExistingFile, newStatus));
 
             // not testing userFiles[0] because it already has protected status
             (state.userFiles[1].status).should.not.equal(newStatus);
@@ -324,7 +324,7 @@ describe('fileReducer', () => {
                 hash: 'randomhash',
                 link: 'link'
             }
-            const state = fileReducer(initialState, FileActions.setFileStatus(file, newStatus));
+            const state = fileReducer(initialState, FileActions.setFileProtectionStatus(file, newStatus));
 
             (state.userFiles[2].status).should.equal(newStatus);
             (state.userFiles[2].eth).should.deep.equal(file.eth);

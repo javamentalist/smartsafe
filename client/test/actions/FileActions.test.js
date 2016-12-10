@@ -95,7 +95,7 @@ describe('File actions', () => {
         action.should.deep.equal(expectedAction);
     });
 
-    it('should create action to set file status', () => {
+    it('should create action to set file protection status', () => {
         const file = {
             path: '/path/to/file',
             eth: {
@@ -105,14 +105,14 @@ describe('File actions', () => {
         };
         const status = 'protected';
         const expectedAction = {
-            type: actions.SET_FILE_STATUS,
+            type: actions.SET_FILE_PROTECTION_STATUS,
             payload: {
                 file: file,
                 status: status
             }
         };
 
-        const action = actions.setFileStatus(file, status);
+        const action = actions.setFileProtectionStatus(file, status);
 
         action.should.deep.equal(expectedAction);
     });
