@@ -42,7 +42,7 @@ function getDefaultDatadir() {
     let dataDir;
     switch (osType()) {
         case 'Linux':
-            dataDir = __dirname + '/../chain/datadir';
+            dataDir = __dirname + '/../chain/testnet';
             break;
         case 'Darwin':
             break;
