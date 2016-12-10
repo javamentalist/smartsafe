@@ -54,7 +54,7 @@ export class UserFileList extends React.Component {
             this.props.actions.setUploadFinished(file);
         });
 
-        ipcRenderer.on('file-status-changed', (event, file, status) => {
+        ipcRenderer.on('set-file-status', (event, file, status) => {
             console.log(`Updating file status. File: ${file.name}, status: ${status}`);
             this.props.actions.setFileStatus(file, status);
         });

@@ -32,7 +32,7 @@ const Footer = () => (
     <footer className="app-footer row row--no-margin middle-xs">
       <div className="col-xs-12">
         <div className="row row--no-margin">
-          <div className="col-xs-10 center-xs">Uploading file...</div>
+          <div className="col-xs-10 center-xs">Status text...</div>
           <div className="col-xs-1 end-xs">
             <span className="indicator indicator--green" style={ style.indicatorGreen }></span>
           </div>
