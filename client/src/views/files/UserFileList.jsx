@@ -14,6 +14,7 @@ import { lightGreenA200 } from 'material-ui/styles/colors';
 
 // Sends messages to main process (and can listen too)
 import { ipcRenderer, shell } from 'electron';
+import {ipcEvents} from '../../main-process/ipcListeners';
 
 // named export. Useful for testing only component itself without store logic
 export class UserFileList extends React.Component {
@@ -26,47 +27,46 @@ export class UserFileList extends React.Component {
 
     componentDidMount() {
         if (this.props.files.length <= 0) {
-            console.log('asking fo files');
-            ipcRenderer.send('get-files-from-dropbox-async');
+            console.log('Asking for files');
+            ipcRenderer.send(ipcEvents.main.GET_FILES_FROM_DROPBOX_ASYNC);
         }
     }
 
     setUpListeners() {
-        ipcRenderer.on('file-chosen-async', (event, filePath) => {
+        ipcRenderer.on(ipcEvents.renderer.FILE_CHOSEN_ASYNC, (event, filePath) => {
             this.props.actions.addFileToUploadQueue({
                 path: filePath
             });
         });
 
-        ipcRenderer.on('set-dropbox-loading-status-async', (event, status) => {
+        ipcRenderer.on(ipcEvents.renderer.SET_DROPBOX_LOADING_STATUS_ASYNC, (event, status) => {
             this.props.actions.setLoadingStatus(status);
         });
 
-        ipcRenderer.on('set-dropbox-files-async', (event, files) => {
+        ipcRenderer.on(ipcEvents.renderer.SET_DROPBOX_FILES_ASYNC, (event, files) => {
             console.log(files);
             this.props.actions.setFiles(files);
         });
 
-        ipcRenderer.on('file-upload-started-async', (event, file) => {
+        ipcRenderer.on(ipcEvents.renderer.FILE_UPLOAD_STARTED_ASYNC, (event, file) => {
             this.props.actions.setStartUpload(file);
         });
-        ipcRenderer.on('file-upload-finished-async', (event, file) => {
+        ipcRenderer.on(ipcEvents.renderer.FILE_UPLOAD_FINISHED_ASYNC, (event, file) => {
             this.props.actions.setUploadFinished(file);
         });
 
-        ipcRenderer.on('set-file-status', (event, file, status) => {
+        ipcRenderer.on(ipcEvents.renderer.SET_FILE_PROTECTION_STATUS, (event, file, status) => {
             console.log(`Updating file status. File: ${file.name}, status: ${status}`);
-            this.props.actions.setFileStatus(file, status);
+            this.props.actions.setFileProtectionStatus(file, status);
         });
 
-        ipcRenderer.on('set-file-local-unencrypted-path', (event, file, path) => {
+        ipcRenderer.on(ipcEvents.renderer.SET_FILE_LOCAL_UNENCRYPTED_PATH, (event, file, path) => {
             this.props.actions.setFileLocalUnencryptedPath(file, path);
         });
     }
 
     setUpClickHandlers() {
         this.refreshDropbox = this.refreshDropbox.bind(this);
-        // this.refreshFileStatus = this.refreshFileStatus.bind(this);
         this.openFileDialog = this.openFileDialog.bind(this);
         this.openDetailView = this.openDetailView.bind(this);
         this.handleFileUpload = this.handleFileUpload.bind(this);
@@ -78,15 +78,12 @@ export class UserFileList extends React.Component {
     }
 
     refreshDropbox() {
-        ipcRenderer.send('get-files-from-dropbox-async');
+        ipcRenderer.send(ipcEvents.main.GET_FILES_FROM_DROPBOX_ASYNC);
     }
 
-    // refreshFileStatus() {
-    //     ipcRenderer.send('get-files-from-eth-async');
-    // }
 
     openFileDialog() {
-        ipcRenderer.send('open-file-dialog-async');
+        ipcRenderer.send(ipcEvents.main.OPEN_FILE_DIALOG_ASYNC);
     }
 
     // We don't currently want to show file details on row click
@@ -97,29 +94,29 @@ export class UserFileList extends React.Component {
     }
 
     handleFileUpload(file) {
-        ipcRenderer.send('log-async', 'debug', 'Sending file to the clouds');
-        ipcRenderer.send('upload-file-async', file);
+        ipcRenderer.send(ipcEvents.main.LOG_ASYNC, 'debug', 'Sending file to the clouds');
+        ipcRenderer.send(ipcEvents.main.UPLOAD_FILE_ASYNC, file);
     }
 
     handleFileDelete(file) {
-        ipcRenderer.send('log-async', 'debug', 'Deleting file from Dropbox');
-        ipcRenderer.send('delete-file-async', file);
+        ipcRenderer.send(ipcEvents.main.LOG_ASYNC, 'debug', 'Deleting file from Dropbox');
+        ipcRenderer.send(ipcEvents.main.DELETE_FILE_ASYNC, file);
     }
 
     handleFileDownload(file) {
-        ipcRenderer.send('log-async', 'debug', 'Downloading file from Dropbox');
-        ipcRenderer.send('download-file-async', file);
+        ipcRenderer.send(ipcEvents.main.LOG_ASYNC, 'debug', 'Downloading file from Dropbox');
+        ipcRenderer.send(ipcEvents.main.DOWNLOAD_FILE_ASYNC, file);
     }
 
     handleFileOpen(file){
-        ipcRenderer.send('log-async', 'debug', `Opening file ${file.name}`);
-        ipcRenderer.send('log-async', 'debug', `${JSON.stringify(file)}`);
+        ipcRenderer.send(ipcEvents.main.LOG_ASYNC, 'debug', `Opening file ${file.name}`);
+        // ipcRenderer.send(ipcEvents.main.LOG_ASYNC, 'debug', `${JSON.stringify(file)}`);
         shell.openItem(file.localUnEncPath);
     }
 
     downloadAll() {
-        ipcRenderer.send('log-async', 'debug', 'Downloading all files from Dropbox');
-        ipcRenderer.send('download-all-files-async');
+        ipcRenderer.send(ipcEvents.main.LOG_ASYNC, 'debug', 'Downloading all files from Dropbox');
+        ipcRenderer.send(ipcEvents.main.DOWNLOAD_ALL_FILES_ASYNC);
     }
 
     render() {
@@ -130,12 +127,6 @@ export class UserFileList extends React.Component {
                         <div className="col-xs-10">
                             <h2>Files</h2>
                         </div>
-                        { /*<div className="col-xs-2 center-xs">
-                                                            <FloatingActionButton onClick={ this.refreshFileStatus } backgroundColor={ lightGreenA200 }>
-                                                                <Refresh />
-                                                            </FloatingActionButton>
-                                                        </div>
-                                                    */ }
                         <div className="col-xs-1 center-xs">
                             <FloatingActionButton onClick={this.refreshDropbox}>
                                 <Refresh />
