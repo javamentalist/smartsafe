@@ -1,4 +1,4 @@
-import { SET_LOADING_STATUS, SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE, START_UPLOAD, UPLOAD_FINISHED, SET_FILE_PROTECTION_STATUS, SET_FILE_LOCAL_UNENCRYPTED_PATH } from '../actions'
+import { SET_LOADING_STATUS, SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE, START_UPLOAD, UPLOAD_FINISHED, SET_FILE_STATUS, SET_FILE_LOCAL_UNENCRYPTED_PATH } from '../actions'
 import { uploadQueueObjectStructure } from '../actions'
 
 import path from 'path'
@@ -49,18 +49,18 @@ function fileReducer(state = initialState, action) {
                 detailedFile: findFileById(state.userFiles, action.payload)
             });
         case ADD_FILE_TO_UPLOAD_QUEUE:
-            var fileName = path.basename(action.payload.path);
-            var hasFileWithTheSameName = state
-                    .userFiles
-                    .filter((item) => item.name === fileName.concat('.enc'))
-                    .length != 0;
-            if (hasFileWithTheSameName) {
-                alert('You tried to upload file with name ' + fileName + ', but it already exists on your Dropbox.\r\n' +
-                    'Choose another file to upload or rename it before attempting again.');
-                return Object.assign({}, state, {});
-            }
-
-            return Object.assign({}, state, {
+        	var fileName = path.basename(action.payload.path);
+        	var hasFileWithTheSameName = state
+        			.userFiles
+        			.filter((item) => item.name === fileName.concat('.enc'))
+        			.length != 0;
+        	if (hasFileWithTheSameName) {
+        		alert('You tried to upload file with name ' + fileName + ', but it already exists on your Dropbox.\r\n' +
+        				'Choose another file to upload or rename it before attempting again.');
+        		return Object.assign({}, state, {});
+        	}
+        	
+        	return Object.assign({}, state, {
                 uploadQueue: [
                     ...state.uploadQueue,
                     Object.assign({}, uploadQueueObjectStructure, action.payload, { // payload contains {path: /path/to/file}
@@ -89,7 +89,7 @@ function fileReducer(state = initialState, action) {
                     progress: 100
                 })
             });
-        case SET_FILE_PROTECTION_STATUS:
+        case SET_FILE_STATUS:
             return Object.assign({}, state, {
                 userFiles: updateMatchingItems(state.userFiles, action.payload.file, {
                     status: action.payload.status,

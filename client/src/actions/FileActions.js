@@ -8,7 +8,7 @@ export const ADD_FILE_TO_UPLOAD_QUEUE = 'ADD_FILE_TO_UPLOAD_QUEUE';
 export const REMOVE_FILE_FROM_UPLOAD_QUEUE = 'REMOVE_FILE_FROM_UPLOAD_QUEUE';
 export const START_UPLOAD = 'START_UPLOAD';
 export const UPLOAD_FINISHED = 'UPLOAD_FINISHED';
-export const SET_FILE_PROTECTION_STATUS = 'SET_FILE_PROTECTION_STATUS';
+export const SET_FILE_STATUS = 'SET_FILE_STATUS';
 export const SET_FILE_LOCAL_UNENCRYPTED_PATH = 'SET_FILE_LOCAL_UNENCRYPTED_PATH';
 
 /*
@@ -74,9 +74,9 @@ export function setUploadFinished(file) {
   }
 }
 
-export function setFileProtectionStatus(file, status) {
+export function setFileStatus(file, status) {
   return {
-    type: SET_FILE_PROTECTION_STATUS,
+    type: SET_FILE_STATUS,
     payload: { file: file, status: status }
   }
 }

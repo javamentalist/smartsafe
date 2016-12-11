@@ -6,34 +6,13 @@ import winston from '../utils/log';
 import { dropboxClient, ethereumClient } from '../main';
 import { encryptAndUploadFileToDropbox, getFileHashesFromEth, getFullPathForFileName, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles } from './fileSynchronization';
 
-export const ipcEvents = {
-    main: {
-        OPEN_FILE_DIALOG_ASYNC: 'open-file-dialog-async',
-        UPLOAD_FILE_ASYNC: 'upload-file-async',
-        DELETE_FILE_ASYNC: 'delete-file-async',
-        DOWNLOAD_FILE_ASYNC: 'download-file-async',
-        DOWNLOAD_ALL_FILES_ASYNC: 'download-all-files-async',
-        GET_FILES_FROM_DROPBOX_ASYNC: 'get-files-from-dropbox-async',
-        LOG_ASYNC: 'log-async'
-    },
-    renderer: {
-        FILE_CHOSEN_ASYNC: 'file-chosen-async',
-        FILE_UPLOAD_STARTED_ASYNC: 'file-upload-started-async',
-        FILE_UPLOAD_FINISHED_ASYNC: 'file-upload-finished-async',
-        SET_FILE_LOCAL_STATUS: 'set-file-local-status',
-        SET_DROPBOX_LOADING_STATUS_ASYNC: 'set-dropbox-loading-status-async',
-        SET_DROPBOX_FILES_ASYNC: 'set-dropbox-files-async',
-        SET_FILE_LOCAL_UNENCRYPTED_PATH: 'set-file-local-unencrypted-path',
-        SET_FILE_PROTECTION_STATUS: 'set-file-protection-status'
-    }
-};
 
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
 // Read: http://electron.atom.io/docs/api/ipc-main/
 
-ipcMain.on(ipcEvents.main.OPEN_FILE_DIALOG_ASYNC, (event) => {
+ipcMain.on('open-file-dialog-async', (event) => {
     dialog.showOpenDialog({
         properties: ['openFile']
     }, function(filePaths) {
@@ -41,7 +20,7 @@ ipcMain.on(ipcEvents.main.OPEN_FILE_DIALOG_ASYNC, (event) => {
             let filePath = filePaths[0];
             winston.info(`File chosen for upload: ${filePath}`);
             // Alert renderer that file was chosen
-            event.sender.send(ipcEvents.renderer.FILE_CHOSEN_ASYNC, filePath);
+            event.sender.send('file-chosen-async', filePath);
         } else {
             winston.info('No file chosen for upload');
         }
@@ -49,9 +28,9 @@ ipcMain.on(ipcEvents.main.OPEN_FILE_DIALOG_ASYNC, (event) => {
     winston.debug('Dialog open called');
 });
 
-ipcMain.on(ipcEvents.main.UPLOAD_FILE_ASYNC, (event, file) => {
+ipcMain.on('upload-file-async', (event, file) => {
     winston.info(`Uploading file: ${file.name} from ${file.path}`);
-    event.sender.send(ipcEvents.renderer.FILE_UPLOAD_STARTED_ASYNC, file);
+    event.sender.send('file-upload-started-async', file);
 
     const willBeEncrypted = true;
 
@@ -59,7 +38,7 @@ ipcMain.on(ipcEvents.main.UPLOAD_FILE_ASYNC, (event, file) => {
         encryptAndUploadFileToDropbox(file.path)
             .then((fileData) => {
                 winston.info(`Finished uploading ${fileData.fileName}`);
-                event.sender.send(ipcEvents.renderer.FILE_UPLOAD_FINISHED_ASYNC, file);
+                event.sender.send('file-upload-finished-async', file);
                 winston.debug('File info: ', JSON.stringify(fileData));
 
                 return uploadLocalFileMetaDataToEth(fileData);
@@ -67,7 +46,7 @@ ipcMain.on(ipcEvents.main.UPLOAD_FILE_ASYNC, (event, file) => {
             .then(() => {
                 winston.info(`File ${file.name} successfully uploaded to Eth`);
                 return getFilesFromDropboxAndCheckStatus(event);
-            // return synchronizeFolders();
+                // return synchronizeFolders();
             });
 
     } else {
@@ -75,7 +54,7 @@ ipcMain.on(ipcEvents.main.UPLOAD_FILE_ASYNC, (event, file) => {
     }
 });
 
-ipcMain.on(ipcEvents.main.DELETE_FILE_ASYNC, (event, file) => {
+ipcMain.on('delete-file-async', (event, file) => {
     dropboxClient.deleteFile(file.path_display)
         .then(() => {
             winston.debug(`File ${file.name} deleted from ${file.path_display}`);
@@ -85,35 +64,35 @@ ipcMain.on(ipcEvents.main.DELETE_FILE_ASYNC, (event, file) => {
     });
 });
 
-ipcMain.on(ipcEvents.main.DOWNLOAD_FILE_ASYNC, (event, file) => {
+ipcMain.on('download-file-async', (event, file) => {
     winston.debug(`Downloading file: ${JSON.stringify(file)}`);
 
     return getFileFromDropboxToFileDir(file.ethInfo).then((fullName) => {
         winston.info(`File downloaded to ${fullName}`);
-        event.sender.send(ipcEvents.renderer.SET_FILE_LOCAL_STATUS, file, 'local');
+        event.sender.send('set-file-local-status', file, 'local');
     });
 });
 
-ipcMain.on(ipcEvents.main.DOWNLOAD_ALL_FILES_ASYNC, (event, file) => {
+ipcMain.on('download-all-files-async', (event, file) => {
     return synchronizeAllFiles().then(() => {
         winston.info('All files downloaded');
     })
 });
 
-ipcMain.on(ipcEvents.main.GET_FILES_FROM_DROPBOX_ASYNC, (event) => {
+ipcMain.on('get-files-from-dropbox-async', (event) => {
     getFilesFromDropboxAndCheckStatus(event);
 });
 
 
 function getFilesFromDropbox(event) {
-    event.sender.send(ipcEvents.renderer.SET_DROPBOX_LOADING_STATUS_ASYNC, true);
+    event.sender.send('set-dropbox-loading-status-async', true);
     return dropboxClient.listFolder()
         .then((result) => {
             let files = Array.from(result);
             winston.debug(`Found ${files.length} file(s) from dropbox app folder`);
 
-            event.sender.send(ipcEvents.renderer.SET_DROPBOX_LOADING_STATUS_ASYNC, false);
-            event.sender.send(ipcEvents.renderer.SET_DROPBOX_FILES_ASYNC, files);
+            event.sender.send('set-dropbox-loading-status-async', false);
+            event.sender.send('set-dropbox-files-async', files);
             return files;
         })
         .catch((reject) => {
@@ -126,7 +105,7 @@ function setFilesLocalUnencryptedPaths(event, files) {
         let filePaths = [];
         _.forEach(files, (file) => {
             getUnencryptedFilePathInAppFolder(file.name).then((localFilePath) => {
-                event.sender.send(ipcEvents.renderer.SET_FILE_LOCAL_UNENCRYPTED_PATH, file, localFilePath);
+                event.sender.send('set-file-local-unencrypted-path', file, localFilePath);
                 filePaths.push({
                     name: file.name,
                     localPath: localFilePath
@@ -157,7 +136,7 @@ function checkFilesIntegrity(event) {
                     const fileStatus = (fileData.fileHash === hash ? 'protected' : 'faulty');
                     winston.debug(`File ${fileData.fileName} status: ${fileStatus}`);
                     metaData.hash = hash;
-                    event.sender.send(ipcEvents.renderer.SET_FILE_PROTECTION_STATUS, metaData, fileStatus);
+                    event.sender.send('set-file-status', metaData, fileStatus);
                 })
             });
         });
@@ -171,15 +150,15 @@ function getFilesFromDropboxAndCheckStatus(event) {
             winston.debug(`Got ${files.length} files from dropbox`);
 
             return setFilesLocalUnencryptedPaths(event, files);
-        }).then(() => {
-        checkFilesIntegrity(event);
-    });
+        }).then(()=>{
+            checkFilesIntegrity(event);
+        });
 }
 
 
 // Logging
 
-ipcMain.on(ipcEvents.main.LOG_ASYNC, (event, ...args) => {
+ipcMain.on('log-async', (event, ...args) => {
     if (args.length === 1) {
         winston.debug(args[0]);
     } else if (args.length > 1) {
