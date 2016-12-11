@@ -19,12 +19,14 @@ const SYMMETRIC_KEY = 'fkdhf209uc5v5mnr5e3e2';
 
 const IGNORED_FILES = ['.DS_Store', 'temp'];
 
+import { dropboxClient, ethereumClient } from '../main.js';
+// NOTE exports at the very end of file
+
+
 if (!fs.existsSync(FILE_DIR)) {
     fs.mkdirSync(FILE_DIR);
 }
 
-import { dropboxClient, ethereumClient } from '../main.js';
-// NOTE exports at the very end of file
 
 function logDebug(err) {
     winston.log('debug', err);
@@ -33,7 +35,6 @@ function logDebug(err) {
 function logError(err) {
     winston.log('error', err);
 }
-
 
 function synchronizeUserFiles(filesHashesFromEth, localFilesFullPaths) {
     /// Upload local files
@@ -433,4 +434,4 @@ function getUnencryptedFilePathInAppFolder(fileName) {
     })
 }
 
-export { uploadLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, startEthereum, getFileHashesFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles ,getFullPathForFileName};
+export { uploadLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, startEthereum, getFileHashesFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles, getFullPathForFileName };

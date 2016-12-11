@@ -3,7 +3,7 @@ import Promise from 'bluebird';
 import _ from 'lodash';
 import winston from '../utils/log';
 
-import { dropboxClient, ethereumClient } from '../main';
+import { dropboxClient, ethereumClient, sendRendererEvent } from '../main';
 import { encryptAndUploadFileToDropbox, getFileHashesFromEth, getFullPathForFileName, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles } from './fileSynchronization';
 
 export const ipcEvents = {
@@ -27,6 +27,10 @@ export const ipcEvents = {
         SET_FILE_PROTECTION_STATUS: 'set-file-protection-status'
     }
 };
+
+function setStatusMessage(message) {
+    sendRendererEvent('status-messages', message);
+}
 
 
 // Message listeners
@@ -52,6 +56,7 @@ ipcMain.on('open-file-dialog-async', (event) => {
 
 ipcMain.on('upload-file-async', (event, file) => {
     winston.info(`Uploading file: ${file.name} from ${file.path}`);
+    setStatusMessage(`Uploading ${file.name}`);
     event.sender.send('file-upload-started-async', file);
 
     const willBeEncrypted = true;
@@ -60,15 +65,17 @@ ipcMain.on('upload-file-async', (event, file) => {
         encryptAndUploadFileToDropbox(file.path)
             .then((fileData) => {
                 winston.info(`Finished uploading ${fileData.fileName}`);
+                setStatusMessage(`Finished uploading. Now inserting hash to chain...`);
                 event.sender.send('file-upload-finished-async', file);
-                winston.debug('File info: ', JSON.stringify(fileData));
+                // winston.debug('File info: ', JSON.stringify(fileData));
 
                 return uploadLocalFileMetaDataToEth(fileData);
             })
             .then(() => {
                 winston.info(`File ${file.name} successfully uploaded to Eth`);
+                setStatusMessage(`File metadata successfully added to chain`);
                 return getFilesFromDropboxAndCheckStatus(event);
-                // return synchronizeFolders();
+            // return synchronizeFolders();
             });
 
     } else {
@@ -80,6 +87,7 @@ ipcMain.on('delete-file-async', (event, file) => {
     dropboxClient.deleteFile(file.path_display)
         .then(() => {
             winston.debug(`File ${file.name} deleted from ${file.path_display}`);
+            setStatusMessage(`File ${file.name} deleted`);
             return getFilesFromDropboxAndCheckStatus(event);
         }).catch((error) => {
         winston.error(`Error deleting file from Dropbox: ${error}`);
@@ -88,9 +96,12 @@ ipcMain.on('delete-file-async', (event, file) => {
 
 ipcMain.on('download-file-async', (event, file) => {
     winston.debug(`Downloading file: ${JSON.stringify(file)}`);
+    setStatusMessage(`Downloading file...`);
 
     return getFileFromDropboxToFileDir(file.ethInfo).then((fullName) => {
         winston.info(`File downloaded to ${fullName}`);
+        setStatusMessage(`Downloading file...`);
+
         event.sender.send('set-file-local-status', file, 'local');
     });
 });
@@ -98,6 +109,7 @@ ipcMain.on('download-file-async', (event, file) => {
 ipcMain.on('download-all-files-async', (event, file) => {
     return synchronizeAllFiles().then(() => {
         winston.info('All files downloaded');
+        setStatusMessage('All files downloaded');
     })
 });
 
@@ -108,6 +120,8 @@ ipcMain.on('get-files-from-dropbox-async', (event) => {
 
 function getFilesFromDropbox(event) {
     event.sender.send('set-dropbox-loading-status-async', true);
+    setStatusMessage('Getting file list from Dropbox');
+
     return dropboxClient.listFolder()
         .then((result) => {
             let files = Array.from(result);
@@ -115,10 +129,12 @@ function getFilesFromDropbox(event) {
 
             event.sender.send('set-dropbox-loading-status-async', false);
             event.sender.send('set-dropbox-files-async', files);
+            setStatusMessage('Getting file list from Dropbox... Done.');
             return files;
         })
         .catch((reject) => {
             winston.debug(`Getting list of files from Dropbox failed. Reason: ${reject.error}`);
+            setStatusMessage('Getting file list from Dropbox... Failed.');
         });
 }
 
@@ -140,6 +156,8 @@ function setFilesLocalUnencryptedPaths(event, files) {
 
 function checkFilesIntegrity(event) {
     getFileHashesFromEth().then((hashes) => {
+        setStatusMessage('Verifying files...');
+
         _.forEach(hashes, (hash) => {
 
             winston.debug(`Checking hash ${hash}`);
@@ -149,7 +167,6 @@ function checkFilesIntegrity(event) {
                 metaData.filePath = getFullPathForFileName(metaData.name);
                 // metadata: link, name, filePath
 
-                // winston.debug(`Preparing data for file ${JSON.stringify(metaData)}`);
                 prepareFileDataForFiles(metaData.filePath).then((fileData) => {
                     // filedata: filename, filehash
 
@@ -166,15 +183,12 @@ function checkFilesIntegrity(event) {
 }
 
 function getFilesFromDropboxAndCheckStatus(event) {
-
     return getFilesFromDropbox(event)
         .then((files) => {
-            winston.debug(`Got ${files.length} files from dropbox`);
-
             return setFilesLocalUnencryptedPaths(event, files);
-        }).then(()=>{
-            checkFilesIntegrity(event);
-        });
+        }).then(() => {
+        checkFilesIntegrity(event);
+    });
 }
 
 

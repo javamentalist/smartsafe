@@ -8,6 +8,7 @@ import routes from './routes';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import rootReducer from './reducers';
+import {statusLevel} from './actions/StatusActions';
 
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
@@ -19,41 +20,53 @@ injectTapEventPlugin();
 
 // TODO read initial state from localstorage
 const initialState = {
-  // files: name given to fileReducer in when combining reducers
-  files: {
-    isLoading: false,
-    userFiles: [],
-    detailedFile: {},
-    uploadQueue: []
-  },
-  user: {
-    isAuthenticated: false
-  }
+    // files: name given to fileReducer in when combining reducers
+    files: {
+        isLoading: false,
+        userFiles: [],
+        detailedFile: {},
+        uploadQueue: []
+    },
+    user: {
+        isAuthenticated: false
+    },
+    status: {
+        storage: {
+            location: 'Dropbox',
+            status: statusLevel.ERROR,
+            description: 'Not connected'
+        },
+        ethereum: {
+            status: statusLevel.ERROR,
+            description: 'Not connected'
+        },
+        message: 'Starting up...'
+    }
 };
 
 let store = createStore(rootReducer, initialState);
 
 const muiTheme = getMuiTheme({
-  palette: {
-      textColor:grey900,
-    primary1Color: blue500,
-    primary2Color: blue700,
-    accent1Color: lightGreenA200
-  }
+    palette: {
+        textColor: grey900,
+        primary1Color: blue500,
+        primary2Color: blue700,
+        accent1Color: lightGreenA200
+    }
 });
 
 const Root = ({store}) => (
-  <Provider store={ store }>
-    <MuiThemeProvider muiTheme={ muiTheme }>
-      <Router history={ hashHistory } routes={ routes } />
-    </MuiThemeProvider>
-  </Provider>
+    <Provider store={ store }>
+      <MuiThemeProvider muiTheme={ muiTheme }>
+        <Router history={ hashHistory } routes={ routes } />
+      </MuiThemeProvider>
+    </Provider>
 );
 
 render(
-  <Root store={ store } />, document.getElementById('root')
+    <Root store={ store } />, document.getElementById('root')
 );
 
 Root.propTypes = {
-  store: React.PropTypes.object.isRequired
+    store: React.PropTypes.object.isRequired
 };

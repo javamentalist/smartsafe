@@ -14,7 +14,7 @@ import { lightGreenA200 } from 'material-ui/styles/colors';
 
 // Sends messages to main process (and can listen too)
 import { ipcRenderer, shell } from 'electron';
-// import { ipcEvents } from '../../main-process/ipcListeners';
+// import { ipcEvents } from '../../main-process/ipcFileListeners';
 
 // named export. Useful for testing only component itself without store logic
 export class UserFileList extends React.Component {
@@ -27,7 +27,7 @@ export class UserFileList extends React.Component {
 
     componentDidMount() {
         if (this.props.files.length <= 0) {
-            console.log('asking fo files');
+            console.log('asking for files');
             ipcRenderer.send('get-files-from-dropbox-async');
         }
     }

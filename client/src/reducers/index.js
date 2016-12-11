@@ -1,9 +1,13 @@
-import {combineReducers} from 'redux'
+import { combineReducers } from 'redux';
 
-import fileReducer from './fileReducer'
-import userReducer from './userReducer'
+import fileReducer from './fileReducer';
+import userReducer from './userReducer';
+import statusReducer from './statusReducer';
 
+const rootReducer = combineReducers({
+    files: fileReducer,
+    user: userReducer,
+    status: statusReducer
+});
 
-const rootReducer = combineReducers({files: fileReducer, user: userReducer})
-
-export default rootReducer
+export default rootReducer;
