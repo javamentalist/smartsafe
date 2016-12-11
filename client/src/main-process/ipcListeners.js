@@ -4,7 +4,7 @@ import _ from 'lodash';
 import winston from '../utils/log';
 
 import { dropboxClient, ethereumClient, sendRendererEvent } from '../main';
-import { encryptAndUploadFileToDropbox, getFileHashesFromEth, getFullPathForFileName, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles } from './fileSynchronization';
+import { startEthereum, encryptAndUploadFileToDropbox, getFileHashesFromEth, getFullPathForFileName, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles } from './fileSynchronization';
 
 export const ipcEvents = {
     main: {
@@ -37,6 +37,38 @@ function setStatusMessage(message) {
 // TODO make channel names constants (channel name is first argument of .on())
 // Read: http://electron.atom.io/docs/api/ipc-main/
 // This almost works, but importing constants in view makes app go blank with a cryptic error
+
+ipcMain.on('app-loaded', () => {
+    winston.info('App loaded');
+    initStorage();
+    initChain();
+});
+
+function initStorage() {
+    dropboxClient.authenticate()
+        .then(() => {
+            winston.log('info', 'Dropbox authenticated');
+            sendRendererEvent('set-storage-status', 'ok', 'Authenticated');
+        })
+        .catch((err) => {
+            winston.error(err);
+            sendRendererEvent('set-storage-status', 'error', 'Could not authenticate Dropbox account');
+        });
+}
+
+function initChain() {
+    startEthereum().then(() => {
+        winston.info('Ethereum started (contracts deployed)');
+        sendRendererEvent('status-messages', 'Ethereum started');
+        sendRendererEvent('set-ethereum-status', 'ok', 'Ethereum chain connected, contracts deployed.');
+    }).catch((err) => {
+        winston.error(err);
+        sendRendererEvent('set-ethereum-status', 'error', 'Chain is not properly connected');
+    });
+}
+
+
+/** Files */
 
 ipcMain.on('open-file-dialog-async', (event) => {
     dialog.showOpenDialog({
@@ -75,7 +107,6 @@ ipcMain.on('upload-file-async', (event, file) => {
                 winston.info(`File ${file.name} successfully uploaded to Eth`);
                 setStatusMessage(`File metadata successfully added to chain`);
                 return getFilesFromDropboxAndCheckStatus(event);
-            // return synchronizeFolders();
             });
 
     } else {
@@ -192,7 +223,7 @@ function getFilesFromDropboxAndCheckStatus(event) {
 }
 
 
-// Logging
+/** Logging */
 
 ipcMain.on('log-async', (event, ...args) => {
     if (args.length === 1) {

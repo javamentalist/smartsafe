@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import { FileTable, UploadQueue } from '.';
 import * as Actions from '../../actions';
+import { statusLevel } from '../../actions/StatusActions';
 
 import RaisedButton from 'material-ui/RaisedButton';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
@@ -26,7 +27,7 @@ export class UserFileList extends React.Component {
     }
 
     componentDidMount() {
-        if (this.props.files.length <= 0) {
+        if (this.props.files.length <= 0 && this.props.storage.status === statusLevel.OK) {
             console.log('asking for files');
             ipcRenderer.send('get-files-from-dropbox-async');
         }
@@ -132,11 +133,11 @@ export class UserFileList extends React.Component {
                     <h2>Files</h2>
                   </div>
                   { /*<div className="col-xs-2 center-xs">
-                                                                                                            <FloatingActionButton onClick={ this.refreshFileStatus } backgroundColor={ lightGreenA200 }>
-                                                                                                                <Refresh />
-                                                                                                            </FloatingActionButton>
-                                                                                                        </div>
-                                                                                                    */ }
+                                                                                                                                                                                    <FloatingActionButton onClick={ this.refreshFileStatus } backgroundColor={ lightGreenA200 }>
+                                                                                                                                                                                        <Refresh />
+                                                                                                                                                                                    </FloatingActionButton>
+                                                                                                                                                                                </div>
+                                                                                                                                                                            */ }
                   <div className="col-xs-1 center-xs">
                     <FloatingActionButton onClick={ this.refreshDropbox }>
                       <Refresh />
@@ -174,6 +175,7 @@ UserFileList.propTypes = {
     isLoading: React.PropTypes.bool.isRequired,
     files: React.PropTypes.array.isRequired,
     uploadQueue: React.PropTypes.array.isRequired,
+    storage: React.PropTypes.object.isRequired,
     actions: React.PropTypes.object,
     children: React.PropTypes.node
 };
@@ -187,7 +189,8 @@ const mapStateToProps = (state) => {
         // key - props key value - which part of state to bind
         isLoading: state.files.isLoading,
         files: state.files.userFiles,
-        uploadQueue: state.files.uploadQueue
+        uploadQueue: state.files.uploadQueue,
+        storage: state.status.storage
     };
 };
 

@@ -17,7 +17,7 @@ import authData from '../dropbox-auth.json';
 import DropboxClient from './api/dropboxApi.js';
 import EthereumClient from './api/ethereum/ethereumApi.js';
 
-import { startEthereum } from './main-process/fileSynchronization';
+
 
 export const dropboxClient = new DropboxClient(authData.key, authData.secret);
 export const ethereumClient = new EthereumClient(getDefaultIpcPath());
@@ -68,16 +68,6 @@ function createWindow() {
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
 
-    dropboxClient.authenticate()
-        .then(() => winston.log('info', 'Dropbox authenticated'))
-        .catch((err) => winston.log('error', err));
-
-    startEthereum().then(() => {
-        winston.info('Ethereum started (contracts deployed)');
-        sendRendererEvent('status-messages', 'Ethereum started');
-    });
-
-
     // Emitted when the window is closed.
     mainWindow.on('closed', function() {
         // Dereference the window object, usually you would store windows in an array if
@@ -86,11 +76,6 @@ function createWindow() {
         mainWindow = null;
     });
 }
-
-export function sendRendererEvent(channel, ...args) {
-    mainWindow.webContents.send(channel, _.join(args, ' '));
-}
-
 
 // This method will be called when Electron has finished initialization and is
 // ready to create browser windows.
@@ -112,6 +97,11 @@ app.on('activate', function() {
         createWindow();
     }
 });
+
+
+export function sendRendererEvent(channel, ...args) {
+    mainWindow.webContents.send(channel, _.join(args, ' '));
+}
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.

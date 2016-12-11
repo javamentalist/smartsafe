@@ -50,9 +50,37 @@ export class Footer extends React.Component {
         ipcRenderer.on('status-messages', (event, msg) => {
             this.props.actions.setStatusText(msg);
         });
+
+        ipcRenderer.on('set-storage-status', (event, statusStr, description) => {
+            const status = this.getStatusFromText(statusStr);
+            this.props.actions.setStorageStatus(status, description);
+        });
+
+        ipcRenderer.on('set-ethereum-status', (event, statusStr, description) => {
+            const status = this.getStatusFromText(statusStr);
+            this.props.actions.setEthereumStatus(status, description);
+        });
     }
 
     setUpClickHandlers() {}
+
+    getStatusFromText(text) {
+        let status;
+        switch (text) {
+            case 'ok':
+                status = statusLevel.OK;
+                break;
+            case 'warning':
+                status = statusLevel.WARNING;
+                break;
+            case 'error':
+                status = statusLevel.ERROR;
+                break;
+            default:
+                status = statusLevel.ERROR;
+        }
+        return status;
+    }
 
     render() {
         let ethStatus = this.props.ethereum.status,
@@ -73,7 +101,7 @@ export class Footer extends React.Component {
                                                       (ethStatus === statusLevel.WARNING ?
                                                           style.indicatorOrange :
                                                           style.indicatorGreen) }>
-                                                                                      <span className="tooltip__text">{ ethMessage }</span>
+                                                                                                                                                  <span className="tooltip__text">{ ethMessage }</span>
                     </span>
                   </div>
                   <div className="col-xs-1 start-xs">
@@ -82,7 +110,7 @@ export class Footer extends React.Component {
                                                       (storageStatus === statusLevel.WARNING ?
                                                           style.indicatorOrange :
                                                           style.indicatorGreen) }>
-                                                                          <span className="tooltip__text">{ storageMessage }</span>
+                                                                                                                                      <span className="tooltip__text">{ storageMessage }</span>
                     </span>
                   </div>
                 </div>

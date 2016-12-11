@@ -2,8 +2,13 @@ import React from 'react';
 import { Sidebar } from '.';
 import { Footer } from '.';
 
+import { ipcRenderer } from 'electron';
 
 export default class App extends React.Component {
+
+    componentDidMount() {
+        ipcRenderer.send('app-loaded');
+    }
 
     render() {
         return (
