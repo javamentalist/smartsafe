@@ -6,11 +6,33 @@ import winston from '../utils/log';
 import { dropboxClient, ethereumClient } from '../main';
 import { encryptAndUploadFileToDropbox, getFileHashesFromEth, getFullPathForFileName, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles } from './fileSynchronization';
 
+export const ipcEvents = {
+    main: {
+        OPEN_FILE_DIALOG_ASYNC: 'open-file-dialog-async',
+        UPLOAD_FILE_ASYNC: 'upload-file-async',
+        DELETE_FILE_ASYNC: 'delete-file-async',
+        DOWNLOAD_FILE_ASYNC: 'download-file-async',
+        DOWNLOAD_ALL_FILES_ASYNC: 'download-all-files-async',
+        GET_FILES_FROM_DROPBOX_ASYNC: 'get-files-from-dropbox-async',
+        LOG_ASYNC: 'log-async'
+    },
+    renderer: {
+        FILE_CHOSEN_ASYNC: 'file-chosen-async',
+        FILE_UPLOAD_STARTED_ASYNC: 'file-upload-started-async',
+        FILE_UPLOAD_FINISHED_ASYNC: 'file-upload-finished-async',
+        SET_FILE_LOCAL_STATUS: 'set-file-local-status',
+        SET_DROPBOX_LOADING_STATUS_ASYNC: 'set-dropbox-loading-status-async',
+        SET_DROPBOX_FILES_ASYNC: 'set-dropbox-files-async',
+        SET_FILE_LOCAL_UNENCRYPTED_PATH: 'set-file-local-unencrypted-path',
+        SET_FILE_PROTECTION_STATUS: 'set-file-protection-status'
+    }
+};
 
 
 // Message listeners
 // TODO make channel names constants (channel name is first argument of .on())
 // Read: http://electron.atom.io/docs/api/ipc-main/
+// This almost works, but importing constants in view makes app go blank with a cryptic error
 
 ipcMain.on('open-file-dialog-async', (event) => {
     dialog.showOpenDialog({
@@ -136,7 +158,7 @@ function checkFilesIntegrity(event) {
                     const fileStatus = (fileData.fileHash === hash ? 'protected' : 'faulty');
                     winston.debug(`File ${fileData.fileName} status: ${fileStatus}`);
                     metaData.hash = hash;
-                    event.sender.send('set-file-status', metaData, fileStatus);
+                    event.sender.send('set-file-protection-status', metaData, fileStatus);
                 })
             });
         });

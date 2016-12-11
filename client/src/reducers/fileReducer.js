@@ -1,4 +1,4 @@
-import { SET_LOADING_STATUS, SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE, START_UPLOAD, UPLOAD_FINISHED, SET_FILE_STATUS, SET_FILE_LOCAL_UNENCRYPTED_PATH } from '../actions'
+import { SET_LOADING_STATUS, SET_FILES, SET_DETAIL, ADD_FILE_TO_UPLOAD_QUEUE, REMOVE_FILE_FROM_UPLOAD_QUEUE, START_UPLOAD, UPLOAD_FINISHED, SET_FILE_PROTECTION_STATUS, SET_FILE_LOCAL_UNENCRYPTED_PATH } from '../actions'
 import { uploadQueueObjectStructure } from '../actions'
 
 import path from 'path'
@@ -59,7 +59,7 @@ function fileReducer(state = initialState, action) {
         				'Choose another file to upload or rename it before attempting again.');
         		return Object.assign({}, state, {});
         	}
-        	
+
         	return Object.assign({}, state, {
                 uploadQueue: [
                     ...state.uploadQueue,
@@ -89,7 +89,7 @@ function fileReducer(state = initialState, action) {
                     progress: 100
                 })
             });
-        case SET_FILE_STATUS:
+        case SET_FILE_PROTECTION_STATUS:
             return Object.assign({}, state, {
                 userFiles: updateMatchingItems(state.userFiles, action.payload.file, {
                     status: action.payload.status,
