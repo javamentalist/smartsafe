@@ -59,7 +59,8 @@ function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
         width: 1200,
-        height: 750
+        height: 750,
+        icon: `${__dirname}/public/icon.png`
     });
 
     // and instantiateCompiledContractAtAddress the index.html of the app.
@@ -100,7 +101,7 @@ app.on('activate', function() {
 
 
 export function sendRendererEvent(channel, ...args) {
-    mainWindow.webContents.send(channel, _.join(args, ' '));
+    mainWindow.webContents.send(channel, ...args);
 }
 
 // In this file you can include the rest of your app's specific main process
