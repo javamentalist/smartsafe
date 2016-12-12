@@ -35,8 +35,8 @@ client/build/
 chain/
 
 # Images
-*.jpg
-*.png
+#*.jpg
+#*.png
 
 # Eclipse Core
 .project
