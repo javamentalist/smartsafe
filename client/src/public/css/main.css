@@ -189,7 +189,7 @@ small {
 .tooltip {
     position: relative;
     display: inline-block;
-    border-bottom: 1px dotted black;
+    /*border-bottom: 1px dotted black;*/
 }
 
 .tooltip__text {
@@ -223,4 +223,12 @@ small {
 .tooltip:hover .tooltip__text {
     visibility: visible;
     opacity: 1;
+}
+
+.indicator{
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 5px;
 }

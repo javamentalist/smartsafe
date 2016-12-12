@@ -13,26 +13,14 @@ import { ipcRenderer } from 'electron';
 
 const style = {
     indicatorGreen: {
-        display: 'inline-block',
-        width: '10px',
-        height: '10px',
-        borderRadius: '50%',
         backgroundColor: lightGreenA400,
         boxShadow: `0px 0px 2px ${lightGreenA400}`
     },
     indicatorOrange: {
-        display: 'inline-block',
-        width: '10px',
-        height: '10px',
-        borderRadius: '50%',
         backgroundColor: amberA400,
         boxShadow: `0px 0px 2px ${amberA400}`
     },
     indicatorRed: {
-        display: 'inline-block',
-        width: '10px',
-        height: '10px',
-        borderRadius: '50%',
         backgroundColor: deepOrangeA400,
         boxShadow: `0px 0px 2px ${deepOrangeA400}`
     }
@@ -96,22 +84,26 @@ export class Footer extends React.Component {
                     { this.props.message }
                   </div>
                   <div className="col-xs-1 end-xs">
-                    <span className="tooltip" style={ ethStatus === statusLevel.ERROR ?
-                                                      style.indicatorRed :
-                                                      (ethStatus === statusLevel.WARNING ?
-                                                          style.indicatorOrange :
-                                                          style.indicatorGreen) }>
-                                                                                                                                                  <span className="tooltip__text">{ ethMessage }</span>
-                    </span>
+                    <div className="tooltip"> Ethereum
+                      <div className="indicator" style={ ethStatus === statusLevel.ERROR ?
+                                   style.indicatorRed :
+                                   (ethStatus === statusLevel.WARNING ?
+                                       style.indicatorOrange :
+                                       style.indicatorGreen) }>
+                        <span className="tooltip__text">{ ethMessage }</span>
+                      </div>
+                    </div>
                   </div>
                   <div className="col-xs-1 start-xs">
-                    <span className="tooltip" style={ storageStatus === statusLevel.ERROR ?
-                                                      style.indicatorRed :
-                                                      (storageStatus === statusLevel.WARNING ?
-                                                          style.indicatorOrange :
-                                                          style.indicatorGreen) }>
-                                                                                                                                      <span className="tooltip__text">{ storageMessage }</span>
-                    </span>
+                    <div className="tooltip"> Dropbox
+                      <div className="indicator" style={ storageStatus === statusLevel.ERROR ?
+                                   style.indicatorRed :
+                                   (storageStatus === statusLevel.WARNING ?
+                                       style.indicatorOrange :
+                                       style.indicatorGreen) }>
+                        <span className="tooltip__text">{ storageMessage }</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
