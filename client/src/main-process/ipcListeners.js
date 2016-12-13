@@ -4,7 +4,7 @@ import _ from 'lodash';
 import winston from '../utils/log';
 
 import { dropboxClient, ethereumClient, sendRendererEvent } from '../main';
-import { startEthereum, encryptAndUploadFileToDropbox, getFileHashesFromEth, getFullPathForFileName, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles } from './fileSynchronization';
+import { startEthereum, encryptAndUploadFileToDropbox, getFileHashesFromEth, getFullPathForFileName, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles, checkFileByHash } from './fileSynchronization';
 
 export const ipcEvents = {
     main: {
@@ -27,6 +27,7 @@ export const ipcEvents = {
         SET_FILE_PROTECTION_STATUS: 'set-file-protection-status'
     }
 };
+
 
 function setStatusMessage(message) {
     sendRendererEvent('status-messages', message);
@@ -59,12 +60,14 @@ function initStorage() {
 }
 
 function initChain() {
+    sendRendererEvent('status-messages', 'Connecting to Ethereum...');
     return startEthereum().then(() => {
         winston.info('Ethereum started (contracts deployed)');
         sendRendererEvent('status-messages', 'Ethereum started');
         sendRendererEvent('set-ethereum-status', 'ok', 'Ethereum chain connected, contracts deployed');
     }).catch((err) => {
         winston.error(err);
+        sendRendererEvent('status-messages', 'Starting Ethereum failed. Chain not connected.');
         sendRendererEvent('set-ethereum-status', 'error', 'Chain is not properly connected');
     });
 }
@@ -133,13 +136,13 @@ ipcMain.on('download-file-async', (event, file) => {
 
     return getFileFromDropboxToFileDir(file.ethInfo).then((fullName) => {
         winston.info(`File downloaded to ${fullName}`);
-        setStatusMessage(`Downloading file...`);
+        setStatusMessage(`File "${file.name}" downloaded`);
 
         event.sender.send('set-file-local-status', file, 'local');
     });
 });
 
-ipcMain.on('download-all-files-async', (event, file) => {
+ipcMain.on('download-all-files-async', (event) => {
     return synchronizeAllFiles().then(() => {
         winston.info('All files downloaded');
         setStatusMessage('All files downloaded');
@@ -189,29 +192,18 @@ function setFilesLocalUnencryptedPaths(files) {
 }
 
 function checkFilesIntegrity() {
-    getFileHashesFromEth().then((hashes) => {
+    setStatusMessage('Gathering hashes from Ethereum...');
+
+    return getFileHashesFromEth().then((hashes) => {
         setStatusMessage('Verifying files...');
 
-        _.forEach(hashes, (hash) => {
-
-            winston.debug(`Checking hash ${hash}`);
-            downloadMetaDataFromEthWithHash(hash).then((metaData) => {
-                // metadata: link, name
-
-                metaData.filePath = getFullPathForFileName(metaData.name);
-                // metadata: link, name, filePath
-
-                prepareFileDataForFiles(metaData.filePath).then((fileData) => {
-                    // filedata: filename, filehash
-
-                    winston.debug(`Comparing hashes for ${fileData.fileName}: ${fileData.fileHash} vs ${hash}`);
-
-                    const fileStatus = (fileData.fileHash === hash ? 'protected' : 'faulty');
-                    winston.debug(`File ${fileData.fileName} status: ${fileStatus}`);
-                    metaData.hash = hash;
-                    sendRendererEvent('set-file-protection-status', metaData, fileStatus);
-                })
+        return Promise.all(hashes.map(hash => {
+            return checkFileByHash(hash).then(([metaData, fileStatus]) => {
+                sendRendererEvent('set-file-protection-status', metaData, fileStatus);
+                return metaData;
             });
+        })).then((metaDatas) => {
+            setStatusMessage('Verification finished');
         });
     })
 }

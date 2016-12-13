@@ -19,7 +19,7 @@ const SYMMETRIC_KEY = 'fkdhf209uc5v5mnr5e3e2';
 
 const IGNORED_FILES = ['.DS_Store', 'temp'];
 
-import { dropboxClient, ethereumClient } from '../main.js';
+import { dropboxClient, ethereumClient, sendRendererEvent } from '../main.js';
 // NOTE exports at the very end of file
 
 
@@ -349,31 +349,15 @@ function getFileHashesFromEth() {
 function startEthereum() {
 
     return readFile(__dirname + CONTRACTS_FILE, 'utf8').then(contracts => {
-        winston.debug('Folder sync - parse contracts');
+        logDebug('Ethereum start - parse contracts');
         return JSON.parse(contracts);
     }).then(parsedContracts => {
-        // ethereumClient.startMiner();
-        winston.debug('Folder sync - deploy contracts');
+        logDebug('Ethereum start - deploy contracts');
         return ethereumClient.deployParsedContract(parsedContracts);
     }).then(() => {
-        // ethereumClient.stopMiner();
-        winston.debug('Folder sync - set watch for file changes');
+        logDebug('Ethereum start - set watch for file changes');
         ethereumClient.watchFileChanges(onNewFile);
-    // return readDir(FILE_DIR);
     }).catch(err => logError(err));
-/*.then(files => {
-winston.debug('Folder sync - start file sync');
-const userFilesLocations = files.filter((file) => {
-    return IGNORED_FILES.indexOf(file) === -1;
-});
-
-winston.debug('Folder sync - get file hashes');
-return ethereumClient.getUserFilesHashes()
-    .then(filesHashesFromEth => {
-        winston.debug('Folder sync - sync files');
-        return synchronizeUserFiles(filesHashesFromEth, userFilesLocations);
-    });
-})*/
 }
 
 function synchronizeAllFiles() {
@@ -394,8 +378,10 @@ function synchronizeAllFiles() {
 }
 
 function onNewFile({url, hash}) {
-    logDebug(`New file added to chain. Url ${url}, hash ${hash}`);
-    logDebug(url + " url&hash " + hash)
+    logDebug(`New file added to chain. Url: ${url}, hahs: ${hash}`);
+    checkFileByHash(hash).then(([metaData, fileStatus]) => {
+        sendRendererEvent('set-file-protection-status', metaData, fileStatus);
+    });
 // const dlUrl = DropboxClient.getDirectDownloadLink(url);
 // const fileName = DropboxClient.getFileNameFromUrl(dlUrl);
 // const file = fs.createWriteStream(`${TEMP_DIR}/${fileName}`);
@@ -420,6 +406,33 @@ function onNewFile({url, hash}) {
 // }).on('error', (err) => console.log(err))
 }
 
+
+function checkFileByHash(hash) {
+    logDebug(`Checking hash ${hash}`);
+    return new Promise((resolve, reject) => {
+        downloadMetaDataFromEthWithHash(hash).then((metaData) => {
+            // metadata: link, name
+
+            metaData.filePath = getFullPathForFileName(metaData.name);
+            // metadata: link, name, filePath
+
+            prepareFileDataForFiles(metaData.filePath).then((fileData) => {
+                // filedata: filename, filehash
+
+                logDebug(`Comparing hashes for ${fileData.fileName}: ${fileData.fileHash} vs ${hash}`);
+
+                const fileStatus = (fileData.fileHash === hash ? 'protected' : 'faulty');
+                logDebug(`File ${fileData.fileName} status: ${fileStatus}`);
+                metaData.hash = hash;
+
+                resolve([metaData, fileStatus]);
+            })
+        }).catch(err => {
+            reject(err);
+        });
+    });
+}
+
 function getUnencryptedFilePathInAppFolder(fileName) {
     const unencryptedFileName = getUnencryptedFileName(fileName);
     return new Promise((resolve, reject) => {
@@ -434,4 +447,4 @@ function getUnencryptedFilePathInAppFolder(fileName) {
     })
 }
 
-export { uploadLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, startEthereum, getFileHashesFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles, getFullPathForFileName };
+export { uploadLocalFilesToDropbox, encryptAndUploadFileToDropbox, synchronizeUserFiles, startEthereum, getFileHashesFromEth, uploadLocalFileMetaDataToEth, getFileFromDropboxToFileDir, synchronizeAllFiles, getUnencryptedFilePathInAppFolder, getHashForFile, downloadMetaDataFromEthWithHash, prepareFileDataForFiles, getFullPathForFileName, checkFileByHash };
