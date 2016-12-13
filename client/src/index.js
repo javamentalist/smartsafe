@@ -51,7 +51,7 @@ function getDefaultDatadir() {
     let dataDir;
     switch (osType()) {
         case 'Linux':
-            dataDir = __dirname + '/../chain/testnet';
+            dataDir = __dirname + '/../chain/datadir';
             break;
         case 'Darwin':
             break;
@@ -266,10 +266,12 @@ function downloadFileFromDropbox(dropboxLink) {
         const downloadUrl = DropboxClient.getDirectDownloadLink(dropboxLink);
         const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
         const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
-
+        fileStream.on('end', function() {
+            return resolve(fileName)
+        });
         https.get(downloadUrl, (fileToDownload) => {
             fileToDownload.pipe(fileStream);
-            return resolve(fileName)
+            
         })
     })
 }
