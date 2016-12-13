@@ -134,11 +134,11 @@ ipcMain.on('download-file-async', (event, file) => {
     winston.debug(`Downloading file: ${JSON.stringify(file)}`);
     setStatusMessage(`Downloading file...`);
 
-    return getFileFromDropboxToFileDir(file.ethInfo).then((fullName) => {
-        winston.info(`File downloaded to ${fullName}`);
+    return getFileFromDropboxToFileDir(file.ethInfo).then((downloadPath) => {
+        winston.info(`File downloaded to ${downloadPath}`);
         setStatusMessage(`File "${file.name}" downloaded`);
 
-        event.sender.send('set-file-local-status', file, 'local');
+        event.sender.send('set-file-local-unencrypted-path', file, downloadPath);
     });
 });
 

@@ -285,9 +285,12 @@ function downloadFileFromDropbox(dropboxLink) {
         const fileName = DropboxClient.getFileNameFromUrl(downloadUrl);
         const fileStream = fs.createWriteStream(`${FILE_DIR}/${fileName}`);
 
+        fileStream.on('finish', () => {
+            resolve(fileName);
+        });
+
         https.get(downloadUrl, (fileToDownload) => {
             fileToDownload.pipe(fileStream);
-            return resolve(fileName);
         });
     });
 }
