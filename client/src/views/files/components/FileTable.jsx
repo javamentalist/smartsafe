@@ -26,15 +26,20 @@ const style = {
         textAlign: 'left'
     },
     nameCol: {
-
+        width: '38%',
+        maxWidth: '265px'
     },
     sizeCol: {
-        width: '10%',
-        maxWidth: '100px'
+        width: '13%',
+        maxWidth: '130px'
     },
-    modCol: {
+    storageDateCol: {
         width: '20%',
         maxWidth: '200px'
+    },
+    ethDateCol: {
+        width: '10%',
+        maxWidth: '100px'
     },
     actionsCol: {
         width: '125px',
@@ -70,7 +75,7 @@ class FileTable extends React.Component {
 
     render() {
         let files = this.props.files;
-        let onRowClick = this.props.onRowClick;
+        // let onRowClick = this.props.onRowClick;
         let onFileDelete = this.props.onFileDelete;
         let onFileDownload = this.props.onFileDownload;
         let onFileOpen = this.props.onFileOpen;
@@ -85,8 +90,9 @@ class FileTable extends React.Component {
                   <TableHeaderColumn style={ style.statusCol }>Status</TableHeaderColumn>
                   <TableHeaderColumn style={ style.nameCol }>Name</TableHeaderColumn>
                   <TableHeaderColumn style={ style.sizeCol }>Size</TableHeaderColumn>
-                  <TableHeaderColumn style={ style.modCol }>Client modified</TableHeaderColumn>
-                  <TableHeaderColumn style={ style.modCol }>Server modified</TableHeaderColumn>
+                  <TableHeaderColumn style={ style.storageDateCol }>Last modified</TableHeaderColumn>
+                  <TableHeaderColumn style={ style.ethDateCol }>Added to
+                    <br/> Ethereum</TableHeaderColumn>
                   <TableHeaderColumn style={ style.actionsCol }></TableHeaderColumn>
                 </TableRow>
               </TableHeader>
@@ -96,7 +102,7 @@ class FileTable extends React.Component {
                   files.map((file) => {
                       file.isEncrypted = isFileEncrypted(file.name);
                       let status = file.status;
-                  
+
                       return (
                           <TableRow key={ file.id } selectable={ false } style={ { backgroundColor: (status === 'protected' ? lightGreen100 : (status === 'faulty' ? deepOrange100 : grey100)) } }>
                             <TableRowColumn style={ style.statusCol }>
@@ -109,11 +115,11 @@ class FileTable extends React.Component {
                             <TableRowColumn style={ style.sizeCol }>
                               { formatBytes(file.size) }
                             </TableRowColumn>
-                            <TableRowColumn style={ style.modCol }>
+                            <TableRowColumn style={ style.storageDateCol }>
                               { formatDate(file.client_modified) }
                             </TableRowColumn>
-                            <TableRowColumn style={ style.modCol }>
-                              { formatDate(file.server_modified) }
+                            <TableRowColumn style={ style.ethDateCol }>
+                              { file.added_to_eth ? formatDate(file.added_to_eth) : '-' }
                             </TableRowColumn>
                             <TableRowColumn style={ style.actionsCol }>
                               <IconButton onClick={ () => onFileDelete(file) }>
