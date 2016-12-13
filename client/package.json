@@ -1,6 +1,6 @@
 {
   "name": "smartsafe",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Dropbox file syncing",
   "main": "index.js",
   "scripts": {
