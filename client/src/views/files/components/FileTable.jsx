@@ -119,7 +119,8 @@ class FileTable extends React.Component {
                               { formatDate(file.client_modified) }
                             </TableRowColumn>
                             <TableRowColumn style={ style.ethDateCol }>
-                              { file.added_to_eth ? formatDate(file.added_to_eth) : '-' }
+                              { /* file.added_to_eth ? formatDate(file.added_to_eth) : '-' */ }
+                              { status === 'protected' || status === 'faulty' ? '?' : '-' }
                             </TableRowColumn>
                             <TableRowColumn style={ style.actionsCol }>
                               <IconButton onClick={ () => onFileDelete(file) }>

@@ -419,17 +419,29 @@ function checkFileByHash(hash) {
             metaData.filePath = getFullPathForFileName(metaData.name);
             // metadata: link, name, filePath
 
-            prepareFileDataForFiles(metaData.filePath).then((fileData) => {
-                // filedata: filename, filehash
+            return checkExistence(metaData.filePath).then((isExisting) => {
+                return [metaData, isExisting];
+            }).catch(() => {
+                // checkExistance returns an error if file does not exist
+                return [metaData, false];
+            });
+        }).then(([metaData, isExisting]) => {
+            // winston.debug(`File ${metaData.name} is existing: ${isExisting}`);
+            if (!isExisting) {
+                resolve([metaData, 'unprotected']);
+            } else {
+                prepareFileDataForFiles(metaData.filePath).then((fileData) => {
+                    // filedata: filename, filehash
 
-                logDebug(`Comparing hashes for ${fileData.fileName}: ${fileData.fileHash} vs ${hash}`);
+                    logDebug(`Comparing hashes for ${fileData.fileName}: ${fileData.fileHash} vs ${hash}`);
 
-                const fileStatus = (fileData.fileHash === hash ? 'protected' : 'faulty');
-                logDebug(`File ${fileData.fileName} status: ${fileStatus}`);
-                metaData.hash = hash;
+                    const fileStatus = (fileData.fileHash === hash ? 'protected' : 'faulty');
+                    logDebug(`File ${fileData.fileName} status: ${fileStatus}`);
+                    metaData.hash = hash;
 
-                resolve([metaData, fileStatus]);
-            })
+                    resolve([metaData, fileStatus]);
+                })
+            }
         }).catch(err => {
             reject(err);
         });
